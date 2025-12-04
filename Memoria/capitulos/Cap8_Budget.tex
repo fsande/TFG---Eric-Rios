@@ -1,0 +1,139 @@
+% ---------------------------------------------------
+% Trabajo Final de Grado
+% Author: Eric Ríos Hamilton <alu0101549835@ull.edu.es>
+% Chapter: Budget
+% ----------------------------------------------------
+
+\chapter{Budget} \label{chap:Budget} 
+Para elaborar este capítulo, consultar en el RIULL diferentes memorias de TFG que nos parezcan razonables y puedan servir de guía.
+
+This chapter presents a detailed budget for the development and deployment of the research project \textbf{"Application of Deep Learning Techniques in Multispectral Image Processing."}
+
+The budget has been carefully designed to reflect the scope and complexity of a project focused on the implementation and evaluation of six distinct neural network architectures for detecting roads and urban infrastructures in satellite imagery. 
+The cost estimation considers both human resources and computational infrastructure, ensuring a realistic projection of the resources required.
+
+The main cost components are:
+
+\begin{itemize}
+  \item \textbf{Working hours}: including research, data preprocessing, model development, experimentation, and documentation.
+  \item \textbf{Computational resources}: through cloud platforms or local hardware acquisition.
+\end{itemize}
+
+\section{Working Hours}
+The labor cost is calculated at \textbf{20.00€/hour}, based on the average salary of a junior machine learning/deep learning developer in Spain (35,000€-37,000€ annually), sourced from PayScale\footnote{https://www.payscale.com/research/ES/Job=Machine\_Learning\_Engineer/Salary}, Glassdoor España\footnote{https://www.glassdoor.es/Sueldos/machine-learning-engineer-sueldo-SRCH\_KO0,25.htm}, and specialized tech salary reports from Manfred\footnote{https://www.getmanfred.com/en/blog/guia-salarial-2024-salarios-en-tecnologia-espana-manfred}.
+
+The project spans \textbf{18 weeks} (4.5 months), with \textbf{37.5 hours per week}. Table \ref{tab:work_distribution} shows the distribution of the work.
+
+\begin{table}[H]
+\centering
+\caption{Estimated cost of working hours by task}
+\label{tab:work_distribution}
+\begin{tabular}{|l|r|r|}
+\hline
+\textbf{Task} & \textbf{Hours} & \textbf{Cost (€)} \\
+\hline
+Literature Review \& Theoretical Framework & 112 & 2,240.00 \\
+Data Acquisition \& Preprocessing & 99 & 1,980.00 \\
+Architecture Implementation & 225 & 4,500.00 \\
+Experimentation \& Evaluation & 183 & 3,660.00 \\
+Documentation \& Writing & 56 & 1,120.00 \\
+\hline
+\textbf{Total} & \textbf{675} & \textbf{13,500.00} \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Execution Platform}
+Two approaches were considered: purchasing hardware or using cloud services.
+
+\subsection*{Hardware Acquisition (Alternative Option)}
+
+\begin{itemize}
+  \item \textbf{HPC Node (VERODE Cluster)}:
+    \begin{itemize}
+      \item \textbf{CPU:} 2× Intel Xeon Gold 6230N @ 2.30 GHz (40 cores).
+      \item \textbf{RAM:} 256 GB DDR4 ECC.
+      \item \textbf{GPU:} NVIDIA Tesla V100 PCIe (32 GB HBM2).
+      \item \textbf{Estimated hardware cost:} 14,700€ – 19,600€.
+    \end{itemize}
+    \item This configuration matches the computational node used from the VERODE HPC cluster, hosted by the ULL High-Performance Computing Group.
+    \item Access to this infrastructure was free of charge for this research project.
+\end{itemize}
+
+Based on market listings, the NVIDIA Tesla V100 32GB GPU ranges between \$11,458–\$19,200 USD \cite{microway2022,v100hp}, while the Intel Xeon Gold 6230N processor is listed between \$1,709–\$4,000 USD per unit \cite{intelRCP,distXeon}.
+
+\subsection*{Cloud Computing (Used Option)}
+
+\begin{table}[H]
+\centering
+\caption{GPU platform costs and specifications used in the project}
+\label{tab:gpu_costs}
+\begin{tabular}{|l|l|c|c|c|}
+\hline
+\textbf{GPU Platform} & \textbf{Provider} & \textbf{Hours} & \textbf{Rate/h} & \textbf{Cost (€)} \\
+\hline
+Quadro M4000 & Paperspace & 120 & 0.45€ & 54.00€ \\
+Tesla V100 & Paperspace & 150 & 2.30€ & 345.00€ \\
+H100 & Paperspace & 80 & 5.95€ & 476.00€ \\
+\hline
+\multicolumn{4}{|r|}{\textbf{Total GPU usage cost:}} & \textbf{875.00€} \\
+\hline
+\multicolumn{4}{|l|}{Pro subscription (\$8)} & $\approx$ 7.44€ \\
+\multicolumn{4}{|l|}{Disk storage 1000 GB (\$55)} & $\approx$ 51.15€ \\
+\multicolumn{4}{|l|}{Disk storage 100 GB (\$7)} & $\approx$ 6.51€ \\
+\multicolumn{4}{|l|}{Custom template fee (\$3.50)} & $\approx$ 3.26€ \\
+\hline
+\multicolumn{4}{|r|}{\textbf{Estimated monthly cost:}} & \textbf{68.36€} \\
+\hline
+\multicolumn{4}{|r|}{\textbf{Estimated cost for 18 weeks (4.5 months):}} & \textbf{307.62€} \\
+\hline
+\multicolumn{4}{|r|}{\textbf{Estimated total cost:}} & \textbf{1,182.62€} \\
+\hline
+\end{tabular}
+\end{table}
+
+Table \ref{tab:gpu_costs} summarizes the computational costs associated with GPU usage during the project, based on the Paperspace platform rates and actual hours used.
+
+In addition to the GPU hourly rates, there are recurring monthly fees for the Paperspace Pro subscription, disk storage, and custom template usage. These overhead costs, estimated at approximately 68.36€ per month, have been computed for the 18-week project duration (about 4.5 months), resulting in an additional cost of 307.62€.
+
+Combining the GPU usage cost (875.00€) with these overhead expenses, the total estimated cloud computing cost for the project amounts to approximately 1,182.62€.
+
+\section{Total Budget Breakdown}
+
+\begin{table}[H]
+\centering
+\caption{Total budget breakdown by category}
+\begin{tabular}{|l|r|r|}
+\hline
+\textbf{Category} & \textbf{Cost (€)} & \textbf{Percentage} \\
+\hline
+Working Hours & 13,500.00 & 91.9\% \\
+Execution Platform & 1,182.62 & 8.1\% \\
+\hline
+\textbf{Total} & \textbf{14,682.62} & \textbf{100\%} \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Final Budget Summary}
+
+\begin{table}[H]
+\centering
+\caption{Final budget summary by project phase}
+\label{tab:final_budget}
+\begin{tabular}{|l|r|r|r|}
+\hline
+\textbf{Phase} & \textbf{Working Hours (€)} & \textbf{Execution (€)} & \textbf{Total (€)} \\
+\hline
+Research & 2,240.00 & – & 2,240.00 \\
+Data Processing & 1,980.00 & – & 1,980.00 \\
+Implementation & 4,500.00 & – & 4,500.00 \\
+Experimentation & 3,660.00 & 1,182.62 & 4,842.62 \\
+Documentation & 1,120.00 & – & 1,120.00 \\
+\hline
+\textbf{Total} & \textbf{13,500.00} & \textbf{1,182.62} & \textbf{14,682.62} \\
+\hline
+\end{tabular}
+\end{table}
+
+Finally, as shown on Table \ref{tab:final_budget}, the total estimated budget for the project amounts to \textbf{14,682.62€}, covering both human resources and computational infrastructure. This amount represents the cost of carrying out the study presented in this project. Based on this estimate, it is possible to extrapolate the approximate cost of deploying a more ambitious version of the project, such as detecting all roads and urban infrastructure in a larger area beyond Tenerife.

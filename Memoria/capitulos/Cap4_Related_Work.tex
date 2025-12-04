@@ -1,0 +1,140 @@
+% ---------------------------------------------------
+% Trabajo Final de Grado
+% Author: Eric Ríos Hamilton <alu0101549835@ull.edu.es>
+% Chapter: Related Work
+% ----------------------------------------------------
+
+\cleardoublepage
+\chapter{Related Work} \label{chap:Related_Work}
+% Reseñar/Revisar aquí algunos de los trabajos más relevantes (related work) que hacen cosas similares a las que nosotros queremos hacer.
+
+% Algunos de estos trabajos parecen relevantes.
+% En cualquier caso, tener en cuenta la fecha de publicación de cada uno de ellos.
+% Los más recientes sería conveniente revisarlos y a partir de ellos hallar otros trabajos relacionados.
+
+\section{Content Generation}
+Procedural content generation (PCG) is a common way of tackling the aforementioned issue of unapproachable world sizes and amounts of assets and can be defined as \textit{the automatic creation of digital assets for games,
+simulations or movies based on predefined algorithms and patterns that require a minimal user input.} \cite{Freiknecht:2017:SPG}
+This TFG will be focused on terrain generation on a geological scale, disregarding, for the sake of simplicity, the procedural generation of other minor elements of the landscape. 
+However, it might prove useful to take the methods used in other areas of PCG into account, such as the prominent use of grammars and L-Systems in products like \textit{SpeedTree} \cite{SpeedTree}, meant for plant generation, or in building generation \cite{Müller:2006:PMB}.
+
+For concrete implementations of terrain generation there exists a varied assortment of methods used. They will be divided roughly as proposed by Valencia-Rosado and Starostenko \cite{Valencia-Rosado:2019:MPT}, condensed in some aspects and expanded in others.
+
+\begin{itemize}
+    \item \textbf{Stochastic Methods}:
+    The approaches in this block seek to emulate natural randomness through the definition and parametrization of mathematical models.
+    These methods tend to be fast and cost-effective, although they lack manipulability and require a deep understanding of the underlying theoretical model to be applied correctly.
+    They can be subdivided as follows:
+    \begin{itemize}
+        \item \textbf{Fractal Methods}:
+        Fractals are shapes that exhibit self-similarity on different scales \cite{Mandelbrot:1983:FGN}.
+        Most elements of nature can be understood as fractals and, as such, methods for their generation are of great use when attempting to imitate real geography.
+        Different methods of fractal generation have been proposed and refined throughout the years, such as \textit{Midpoint Displacement} \cite{Fournier:1982:CRS} \cite{Prusinkiewicz:1993:FMM}, consisting in the subdivision of a mesh's triangle into four smaller triangles, the vertical displacement of the three newly created vertices, and the recursive repetition of these two steps. There is also \textit{Fractal Noise}, mainly popularized by \textit{Perlin Noise} \cite{Perlin:1985:IS}, although other methods exist \cite{Gustavson:2005:SND}, which consists of the combination of multiple layers (or \textit{octaves}) of coherent noise at increasing frequencies and decreasing amplitudes, resulting in a continuous, natural-looking pattern that exhibits statistical self-similarity.
+        
+        \item \textbf{Grammar Methods}:
+        Grammars are sets of rules that define a formal language. 
+        They have mostly been used for other types of procedural generation, although some attempts have been made to incorporate them into terrain generation.
+    \end{itemize}
+    \item \textbf{Simulation Methods}:
+    These approaches attempt to emulate the physical processes that form real terrain and, as such, tend to be computationally expensive.
+    \begin{itemize}
+        \item \textbf{Erosion Simulation}:
+        These methods model natural erosion processes such as hydraulic, thermal, wind, or particle-based erosion to shape the landscape \cite{Musgrave:1989:SRE} 
+        Modern variants employ multi-scale or GPU-accelerated approaches for real-time applications 
+        
+        \item \textbf{Procedural Hydrology}:
+        Focused on the formation of the river network and drainage basins, these methods simulate water flow and sediment transport across elevation maps \cite{Tzathas:2024:PAE}. 
+        Incorporating flow routing improves realism in large-scale terrain structures.
+        
+        \item \textbf{Plate Tectonics and Thermal Uplift}:
+        Macro-scale geological formation can be emulated using plate motion and crust deformation models \cite{Cordonnier:2016:LST}
+        These are computationally demanding but generate globally coherent terrain features.
+    \end{itemize}
+    \item \textbf{Software agents}:Proposed by Doran and Parberry \cite{Doran:2010:CPT} to solve the unnatural looking results fractal noise can produce and to provide more extensive parametrization.
+    They implement different \textit{agents}, essentially algorithms, that specifically tackle concrete steps of terrain generation, such as coastline definition, mountain creation or river erosion. 
+    This approach seems to greatly facilitate concrete parametrization of different terrain features.
+    \item \textbf{Trained Models}:
+    These methods train models using mostly real-world terrain data and try to emulate it.
+    They have become increasingly popular in the last decade, thanks to the swift developments in the field of artificial intelligence and neural networks, although not many outstanding results have been shown.
+\end{itemize}
+
+When considering terrain generation, one shall not limit oneself solely to published scholarly papers on the matter.
+As Freiknech and Effelsberg \cite{Freiknecht:2017:SPG} point out in the conclusions to their survey, there exists a considerable disconnect between the advances of scholarly circles and the final implementations of PCG in market-ready games.
+Game companies tend to treat their algorithms in an hermetical way and game-centric conferences such as GDC (Game Developer's Conference) usually deal with less technical and more abstract aspects of game development, although some interesting implementations have been presented. \footnote{https://gdcvault.com/play/1024265/Continuous-World-Generation-in-No} \footnote{https://gdcvault.com/play/1025192/Math-for-Game-Programmers-Discrete}
+As such, it is reasonable to take a look into the results of PCG in commercially successful games. 
+While one may not find a specific procedure to replicate, comparing results can provide valuable insights, which is something most scientific literature is sorely lacking.
+The following section will briefly list some interesting case studies and the achievements they showcase that this work aims to build upon.
+
+\begin{itemize}
+    \item \textbf{The Elder Scrolls II: Daggerfall} \footnote{https://elderscrolls.bethesda.net/en/daggerfall} is a role playing game (RPG) published in 1996 in which the entire game world, which is around 229,848 square kilometers big, is procedurally generated.
+    The game takes places in the fictional provinces of Daggerfall and Hammerfell and sports lore-accurate biomes, elevations and general terrain data.
+    An endeavor to update the game for modern devices has been run by the Daggerfall Unity \footnote{https://www.dfworkshop.net/} open source project.
+    \item \textbf{Spore} \footnote{https://www.spore.com/} is a videogame published in 2008 in which most content is completely procedurally generated. 
+    The player can explore hundreds of planets in a galaxy, each with their own characteristics.
+    Flora and fauna are also procedurally generated.
+    \item \textbf{Minecraft} \footnote{https://www.minecraft.net} is one of the most commercially successful video games of all time. 
+    It procedurally generates its voxel-based maps, creating an expansive world that includes forests, mountains, caves, and oceans. 
+    The game's terrain generation algorithm uses a combination of noise functions, such as Perlin noise and simplex noise, to create natural-looking landscapes.
+    Players can explore an almost infinite world with unique biomes and features.
+    Minecraft's procedural generation also excels in its underground cave systems and resource distribution, which are key to the game's loop. % buscar alguna fuente decente para esto
+    \item \textbf{Vintage Story} \footnote{https://www.vintagestory.at} is an independent game that finds its origins in Minecraft modding.
+    It exists with the goal of creating a voxel-based world with a more realistic terrain when compared to Minecraft.
+    \item \textbf{No Man's Sky} \footnote{https://www.nomanssky.com} is a space exploration game in which most content is completely procedurally generated. 
+    The player can explore a theoretical endless number of planets, each with their own characteristics.
+    Flora and fauna are also procedurally generated.
+\end{itemize}
+% \begin{itemize}
+%     \item Esta de 2022 \cite{Zhang:2022:SPC} es una de las revisiones más recientes sobre el estado del arte en PCG (Procedural Content Generation).
+%     Yo creo que debieras empezar por revisar este.
+
+
+    
+%     \item Maleki \& Zhao (2024) \cite{Maleki:2024:PCG} hacen una revisión reciente sobre generación procedural de contenido en videojuegos.
+%     Creo que se centran en el uso de LLMs.
+
+%     \item Este trabajo \cite{Latif:2022:CEP} (de 2022) presenta una revisión crítica de herramientas y algoritmos para generación procedural de terrenos.
+
+%     \item Este \cite{Hendrikx:2013:PCG} (año 2013) es un Survey general sobre generación procedural de contenido en juegos.
+
+%     \item Este otro \cite{Raffe:2012:SPT} (2012) es otro survey, en este caso específico sobre generación procedural de terreno con algoritmos evolutivos.
+
+%     \item Otra revisión más \cite{Smelik:2014:SPM} (2014) sobre generación procedural de mundos virtuales.
+% \end{itemize}
+
+\section{Level of detail}
+Procedural terrain systems generate vast landscapes, but rendering terrain of such scales in real time requires careful management.
+Level of Detail (LOD) techniques seek to reduce rendering costs of assets while preserving perceptual quality, by adjusting the geometric and visual complexity of terrain as a function of different metrics, such as the viewer's position, orientation and the object's importance within the scene.
+LOD is thus vital for the feasability of interactive applications including large scale terrains.
+The core objective of LOD is to minimize workload without introducing visible artifacts.
+Effective LOD systems balance silhouette preservation, continuity and performance, ensuring that downgraded representations do not reveal obvious inconsistencies in the geometry.
+When approaching terrain LOD compared to generic LOD, there are some benefits and some difficulties to be found.
+The terrain's geometry will generally be more constrained, provide generally uniform height values and the algorithms designed to tackle the LOD can be tailor-made. 
+However the large scale of terrain makes it so the geometry can be simultaneously close and far away and might require slower disk paging. \footnote{https://graphics.pixar.com/library/LOD2002/4-terrain.pdf}
+
+
+Many different LOD systems have been implemented over the years, with different constraints and objectives in mind.\cite{Dalei:2022:RLB}
+Each one of these approaches encompasses many different algorithms, they are just a rough division.
+\begin{itemize}
+    \item \textbf{Discrete LOD (DLOD)}:
+    Terrain is statically partitioned into chunks or patches, each with a predefined levels of geometric detail.
+    The engine then switches between models as the observer moves.
+    This approach is straightforward to implement, benefits greatly from GPU parallelization and has seen widespread usage, although artifacts and seems between patches are a common occurrence, as well as popping.
+    
+    \item \textbf{Continuous LOD (CLOD)}:
+    Dynamic approach that represents the model in an efficient data structure, i.e. quadtrees\cite{Suarez:2015:ETL}, which allows for the desired LOD to be extracted at runtime.
+    The on demand generation of LODs helps provide better granularity and smoother transitions.
+    
+    \item \textbf{View Dependent LOD (VLOD)}:
+    A variant of CLOD which takes more viewer details into account.
+\end{itemize}
+
+\section{Quality evaluation}
+Possessing the capability of evaluating the quality of the generated terrain as well as that of the algorithms used is important.
+Over the years there have been many attempts to find universal metrics for the quality and realism of a terrain, although none are too satisfying.
+The development of a completely satisfactory universal terrain quality evaluation method is a complex endeavour that lands outside of the scope of this work, which will simply enumerate and apply some already proposed evaluation metrics.
+
+Olsen\cite{Olsen:2004:RPT} proposes Erosion Score, which values low average slope, but high standard deviation. 
+This tends to generate interesting terrain with abundant flat areas, but existing height differences.
+They later propose the design of specific metrics tailored to the purpose of the generated terrain, in their case a real time strategy computer game.
+Rajasekaran et al.\cite{Rajasekaran:2019:PTR} propose a geomorphon-based\cite{Jasiewicz:2013:GPR} statistical analysis validated by the conduction of perceptual studies on humans.
+

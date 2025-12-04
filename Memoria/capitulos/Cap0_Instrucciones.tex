@@ -1,0 +1,167 @@
+% ---------------------------------------------------
+% Trabajo Final de Grado
+% Author: Eric Ríos Hamilton <alu0101549835@ull.edu.es>
+% Chapter: Instrucciones y consejos para la redacción de la memoria
+% ----------------------------------------------------
+
+
+\chapter*{Instrucciones y consejos para la redacción de la memoria}
+La inclusión de este capítulo deberá comentarse (para su eliminación) en la versión definitiva del documento.
+
+Se describen a continuación algunas pautas que debieran seguirse a la hora de redactar el documento
+
+\begin{enumerate}
+\item En Latex solo dejar una línea en blanco después de un punto y aparte produce un punto y aparte en el renderizado.
+Si los párrafos se colocan en líneas diferentes (como se hace en el código latex de este párrafo) ello NO genera un punto y aparte en el pdf renderizado.
+Escribir SIEMPRE un retorno de carro duro después de cada punto.
+Dejar una línea en blanco a continuación, si se quiere un punto y aparte en el PDF resultante.
+
+\item Utilizar comentarios de OverLeaf para indicar cuestiones que queden pendientes en la redacción del documento o que requieren alguna revisión.
+En la versión final no debiera quedar ninguno de estos comentarios.
+
+\item Ejemplo de cómo realizar una referencia a una cita bibliográfica: Una vía que algunos economistas \cite{Smythe:2022:GMS} han comenzado a utilizar para realizar los conocidos como mapas de pobreza consiste en la aplicación de algoritmos de aprendizaje automático a imágenes satelitales.
+
+\item Revisar el fichero \texttt{bibliography.bib} del proyecto. Contiene todas las referencias bibliográficas en formato BibTex.
+Ver en ese fichero diferentes tipos de referencias: libros, artículos, proceedings de congresos, etc.
+El fichero .bib del proyecto puede contener muchas entradas, pero solo se utilizan aquellas que se citan en el código latex.
+
+\item La bibliografía debería incluirse en el formato especificado y para cada uno de los ítems de la bibliografía debería haber una cita a ese item en el texto del documento: no puede haber una referencia a la que no se mencione en el texto. Si se pone una referencia, habrá que buscar una razón para que figure en la bibliografía.
+
+\item Las ''claves' para las referencias bibliográficas deben tener (en el fichero \texttt{.bib} del proyecto) un formato similar al siguiente: \texttt{Smythe:2022:GMS}
+Donde Smythe es el apellido del primer autor, 2022 es el año de la publicación y GMS son las iniciales de las tres primeras palabras significativas del título (en este caso es \textit{Geographic microtargeting of social assistance with high-resolution poverty maps}, y de ahí GMS.
+
+\item En la Bibliografía debe figurar ineludiblemente una referencia \cite{URL::TFG} al repositorio de código del trabajo. Ese repositorio debería hacerse público y hay que recordar entregarlo a todos los miembros del tribunal, junto con la memoria.
+
+\item Las referencias que no sean muy importantes y que sean URLs que se hayan consultado, o correspondientes a productos o tecnologías no publicados en artículos o revistas, es preferible incluirlos como notas a pie de página. Va un ejemplo: 
+
+The labor cost is calculated at \textbf{20.00€/hour}, based on the average salary of a junior deep learning developer in Spain (35,000€-37,000€ annually), sourced from PayScale\footnote{https://www.payscale.com/research/ES/Job=Machine\_Learning\_Engineer/Salary}, Glassdoor España\footnote{https://www.glassdoor.es/Sueldos/machine-learning-engineer-sueldo-SRCH\_KO0,25.htm}, and specialized tech salary reports from Manfred\footnote{https://www.getmanfred.com/en/blog/guia-salarial-2024-salarios-en-tecnologia-espana-manfred}.
+
+\item Las palabras \textit{Figura}, \textit{Tabla} y \textit{Listado} se escribirán siempre con mayúscula inicial.
+
+\item Se intentará que los listados de código (Listings) no se corten entre dos páginas. 
+Ese formateo es aconsejable dejarlo para el final de la redacción, puesto que los elementos (figuras, tablas, etc.) se mueven de su posición conforme se añade o elimina texto.
+
+\item Se intentará que en los listados de código (Listings) haya referencias al repositorio de código en el que el lector pueda ver el código completo que se expone (a veces de forma resumida) en el listado.
+
+\item Una vez que se introduzca un acrónimo (ULL, por ejemplo) utilizarlo siempre de ahí en adelante, salvo que se pretenda dar un énfasis concreto a la frase, en cuyo caso volveremos a usar el texto correspondiente al acrónmio (Universidad de La Laguna).
+
+\item Aparce el Listing X pero no hay mención alguna a lo que se expone en el mismo. Eso no debería ocurrir para ningún Listing, Figura o Tabla
+
+\item En Latex NO puedes confiar en que un listado esté en una determinada posición del texto: los listings, figuras y tablas "flotan" por el texto. Por eso te tienes que referir a ellos por su número y tienes que explicar lo que quiera que sea haciendo referencia a ellos.
+
+\item Todos los captions de los Listings han de tener un hipervínculo al correspondiente código que el lector podrá ver en el repo GitHub del proyecto. 
+
+\item Cada vez que se incluye una figura (Listing, Tabla, etc.) en el texto, HAY QUE DECIR algo sobre ella, comentarla.
+No puede ser que uno de estos elementos aparezca en el texto y no se comente.
+
+A modo de ejemplo:
+
+Figure \ref{fig:efficiency_analysis_quadro} presents the efficiency analysis executed on a Quadro M4000 GPU, revealing bla, bla. The left panel shows bla bla, while the right panel analyzes bla bla.
+
+\item Listing \ref{listing:hpl-saxpy-embedded} displays how to perform a SAXPY (single precision A X plus Y) operation using the HPL embedded language.
+
+Obsérvese que el listado incluye un hipervínculo a un repositorio donde el lector puede ver el código completo.
+
+\item The training configuration is structured in three main components as shown in Listing \ref{listing:training_config}.
+Comments in the Listing \ref{listing:training_config} code explain the meaning of some of these parameters.
+
+Este ejemplo es una alternativa para incluir listados de código pero es preferible el anterior: separar los listados en ficheros independientes separados del código latex de la memoria.
+
+\item Table \ref{tab:sentinel2_bands_detailed} presents an example of Table to use in the text.
+
+\item Al finalizar la redacción del documento, buscar en toda el PDF generado la cadena \texttt{?}. 
+Corresponde con referencias (a capítulos, tablas, etc.) que por alguna razón no se han renderizado bien al compilar el Latex.
+
+\item También al finalizar la redacción, identificar todos los listados de cópdigo (Listing), Tablas y Figuras y asegurar de que los listados de código no quedan partidos entre páginas y que tablas y figuras no generan espacio adicional en el PDF una vez renderizado.
+
+\item La memoria del TFG se entrega a través de un procedimiento en sede electrónica de la ULL a través del cual se solicita la firma del tutor del TFG.
+\end{enumerate}
+
+
+
+
+%% ===================================================
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{Memoria/images/efficiency_analysis_quadro.png}
+    \caption{Ejemplo de inclusión de una figura}
+    \label{fig:efficiency_analysis_quadro}
+\end{figure}
+%% ===================================================
+
+\subsubsection{Energy Efficiency Analysis}
+For deployment scenarios, energy efficiency becomes a critical factor. Figure \ref{fig:energy_training} presents power consumption analysis for one training.
+
+%% ===================================================
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{Memoria/images/energy_consumption_training.png}
+\caption{Otro ejemplo de figura. Total energy consumption for training in Joules (J) across GPU architectures.}
+\label{fig:energy_training}
+\end{figure}
+%% ===================================================
+
+%% ===================================================
+\lstinputlisting[language=C++,style=cppstyle,caption={Ejemplo de listado de código. SAXPY on HPL (HPL embedded language). \href{{https://github.com/fraguela/hpl?tab=readme-ov-file}}{\textit{Original source}}.},label={listing:hpl-saxpy-embedded}]{listings/hpl_saxpy_embedded.cc}
+%% ===================================================
+
+%% ===================================================
+\begin{lstlisting}[style=yamlstyle,
+   caption={Este fichero NO está en un fichero separado del latex. \href{https://github.com/fsande/TFG-Alvaro-Fontenla/blob/main/Código/sentinel_paper/config_sentinel2.yaml}{\textit{See on GitHub}}.},label={listing:training_config}]
+# Core Training Parameters
+training:
+  epochs: 300
+  batch_size: 4
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  num_workers: 2             # Number of workers for data loading (CPU threads)
+# Class Balancing Strategy
+class_weights:
+  road_weight: 8.0           # Addresses severe class imbalance in road segmentation
+# Sentinel-2 Specific Configuration
+sentinel2:
+  target_resolution: 10      # meters
+  osm_buffer_meters: 5       # buffer for road extraction
+  min_road_pixels: 10        # minimum road pixels per crop
+  crop_size: 512             # spatial dimensions
+  max_crops_per_scene: 50    # prevents overfitting by limiting the number of crops per scene
+\end{lstlisting}
+%% ===================================================
+
+
+
+
+%% ===================================================
+\begin{table}[H]
+\centering
+\caption{Detailed characteristics of the Sentinel-2 bands used in this study.}
+\label{tab:sentinel2_bands_detailed}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|l|c|c|p{5.5cm}|}
+\hline
+\textbf{Band} & \textbf{Name} & \textbf{Wavelength} & \textbf{Resolution} & \textbf{Primary} \\
+             &               & \textbf{(nm)}       & \textbf{(m)}        & \textbf{Applications} \\
+\hline
+B02 & Blue         & 490  & 10 & RGB visualization, atmospheric correction. \\
+\hline
+B03 & Green        & 560  & 10 & RGB visualization, vegetation health assessment. \\
+\hline
+B04 & Red          & 665  & 10 & RGB visualization, chlorophyll absorption. \\
+\hline
+B05 & Red Edge 1   & 705  & 20 & Vegetation stress detection. \\
+\hline
+B06 & Red Edge 2   & 740  & 20 & Leaf area index estimation. \\
+\hline
+B07 & Red Edge 3   & 783  & 20 & Vegetation classification. \\
+\hline
+B08 & NIR          & 842  & 10 & Biomass estimation, water body detection. \\
+\hline
+B8A & NIR Narrow   & 865  & 20 & Precise vegetation analysis. \\
+\hline
+B11 & SWIR 1       & 1610 & 20 & Moisture content, cloud detection. \\
+\hline
+B12 & SWIR 2       & 2190 & 20 & Geological mapping, cloud screening. \\
+\hline
+\end{tabular}
+\end{table}
+%% ===================================================
