@@ -1,0 +1,475 @@
+% ---------------------------------------------------
+% Trabajo Fin de Grado
+% Author: Eric Ríos Hamilton <alu0101549835@ull.edu.es>
+% Chapter: Preface 
+% ----------------------------------------------------
+ 
+\documentclass[english,a4paper,12pt,oneside]{extreport}
+%\documentclass[a4paper, twoside, 12pt]{book}
+\usepackage{listingsutf8}
+\usepackage{listings}
+\usepackage[scale=0.82]{FiraMono}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper]{geometry}
+\usepackage[spanish, main=english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,textcomp}  % For € symbol
+\usepackage{pdflscape}
+\usepackage{amsmath}
+\usepackage{array}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage{ccicons}
+\usepackage{float}
+\floatstyle{ruled}
+\newfloat{Code}{htbp}{lop}
+\floatname{Code}{Listing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Next 3+3 lines select PDF or PS output (comment as apropriate)
+% To switch from PDF and PS comment/uncomment here and change Makefile
+\usepackage[pdftex]{xcolor}
+\usepackage[pdftex]{graphicx}
+\graphicspath{{images/}}
+%\usepackage[dvips]{color}
+%\usepackage[dvips]{graphicx}
+\usepackage{epsfig}
+%\graphicspath{{images/eps/}}
+\usepackage{floatrow}
+\usepackage{tabu}
+\usepackage{tabularx}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{algorithmic}
+%\usepackage[pdftex=true,colorlinks=false,urlcolor=blue,plainpages=false,pagebackref=true,citecolor=red]{hyperref} %hiperenlaces y backcites
+\usepackage[colorlinks=true,urlcolor=blue,plainpages=false,pagebackref=true,citecolor=black]{hyperref} %hiperenlaces y backcites
+\hypersetup{breaklinks=true}
+% Redefinir el comando \url para cambiar el tamaño del texto de los enlaces
+% \let\oldurl\url
+% \renewcommand{\url}[1]{{\scriptsize{\oldurl{#1}}}}
+
+\usepackage{url}
+\usepackage{subcaption}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Comandos para escribir "siempre igual"
+\newcommand{\TitleTopic}{\texttt{Automatic Procedural Terrain Generation for Games}}
+
+
+%%% Traducimos el pseudocodigo
+\renewcommand{\algorithmicwhile}{\textbf{mientras}}
+
+%%%%%%%%%%%%%%%%% Se crea un entorno para listar código fuente %%%%%%%%%%%%%%%
+\newenvironment{sourcecode}
+{\begin{list}{}{\setlength{\leftmargin}{1em}}\item\scriptsize\bfseries}
+{\end{list}}
+
+\newenvironment{littlesourcecode}
+{\begin{list}{}{\setlength{\leftmargin}{1em}}\item\tiny\bfseries}
+{\end{list}}
+
+\newenvironment{summary}
+{\par\noindent\begin{center}\textbf{Abstract}\end{center}\begin{itshape}\par\noindent}
+{\end{itshape}}
+
+\newenvironment{keywords}
+{\begin{list}{}{\setlength{\leftmargin}{1em}}\item[\hskip\labelsep \bfseries Keywords:]}
+{\end{list}}
+
+\newenvironment{palabrasClave}
+{\begin{list}{}{\setlength{\leftmargin}{1em}}\item[\hskip\labelsep \bfseries Palabras clave:]}
+{\end{list}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\definecolor{marron}       {rgb}{0.496, 0.203, 0.152}
+\definecolor{verde-claro}  {rgb}{0.625, 0.734, 0.199}
+\definecolor{oscuro}       {rgb}{0.187, 0.141, 0.285}
+\definecolor{gris}     	   {rgb}{0.500, 0.500, 0.500}
+\definecolor{bgd-listings} {rgb}{0.999, 0.999, 0.900}
+\definecolor{gray97}{gray}{.97}
+\definecolor{gray75}{gray}{.75}
+\definecolor{gray45}{gray}{.45}
+\definecolor{gray}{gray}{.45}
+\definecolor{Brown}{cmyk}{0,0.81,1,0.60}
+\definecolor{OliveGreen}{cmyk}{0.64,0,0.95,0.40}
+\definecolor{CadetBlue}{cmyk}{0.62,0.57,0.23,0}
+\definecolor{lightlightgray}{gray}{0.9}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Evitar partir palabras al final de la línea
+\hyphenpenalty=10000
+\tolerance=1000
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Para listados de código
+\usepackage{listings}
+% \lstloadlanguages{C,C++}
+%\lstloadlanguages{python,C}
+
+% Definiendo colores para los listados de código fuente - Univ. Deusto
+\definecolor{violet}{rgb}{0.5,0,0.5}
+\definecolor{lightgray}{rgb}{.9,.9,.9}
+\definecolor{darkgray}{rgb}{.4,.4,.4}
+\definecolor{purple}{rgb}{0.65, 0.12, 0.82}
+\definecolor{navy}{rgb}{0,0,0.5}
+\definecolor{hellgelb}{rgb}{1,1,0.8}
+\definecolor{colKeys}{rgb}{0,0,1}
+\definecolor{colIdentifier}{rgb}{0,0,0}
+\definecolor{colComments}{rgb}{1,0,0}
+\definecolor{colString}{rgb}{0,0.5,0}
+\definecolor{main-color}{rgb}{0,0,0}
+\definecolor{back-color}{rgb}{0.1686, 0.1686, 0.1686}
+\definecolor{string-color}{HTML}{953800}
+\definecolor{key-color}{HTML}{8250DF}
+\definecolor{comment-color}{HTML}{008000}
+\definecolor{sycl-color}{HTML}{CF222E}
+\definecolor{highlight-color}{HTML}{953800}
+
+%\lstset{morekeywords={pragma copy\_in copy\_out copy omp parallel private reduction shared hicuda loop\_partition over\_tblock over\_thread}}
+\lstdefinelanguage{C++}{
+  keywords={new, true, false, catch, try, return, null, switch, const, if, in, while, do, else, case, break},
+  ndkeywords={class, throw, this},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]"
+}
+
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    basicstyle = {\ttfamily\color{main-color}\footnotesize},
+    backgroundcolor = {\color{back-color}},
+    stringstyle = {\color{string-color}},
+    keywordstyle = {\color{key-color}},
+    keywordstyle = [2]{\color{gray}},
+    keywordstyle = [3]{\color{sycl-color}},
+    keywordstyle = [4]{\color{highlight-color}},
+    keywordstyle = [5]{\color{black}},
+    commentstyle = {\color{comment-color}},
+    otherkeywords = {++,--,<<,>>,<<<,>>>,+,-,\{,\},\[,\],*,\&,sycl,std},
+    morekeywords = [2]{++,--,<<,>>},
+    morekeywords = [3]{sycl},
+    morekeywords = [4]{std,+,-,{,},[,],*,\&},
+    morekeywords = [5]{<<<,>>>},
+    columns=flexible,
+    tabsize=2,
+    frame=single,
+    extendedchars=true,
+    showspaces=false,
+    showstringspaces=false,
+    numbers=left,
+    numberstyle=\tiny,
+    breaklines=true,
+    backgroundcolor=\color{white},
+    breakautoindent=true,
+    captionpos=b
+}
+
+\lstdefinelanguage{YAML}{
+  morekeywords={true,false,null,y,n},
+  sensitive=false,
+  morecomment=[l]{\#},
+  morestring=[b]",
+  morestring=[b]'
+}
+
+\lstdefinestyle{yamlstyle}{
+    language=YAML,
+    basicstyle = {\ttfamily\color{main-color}\footnotesize},
+    backgroundcolor = {\color{lightgray}},
+    stringstyle = {\color{string-color}},
+    keywordstyle = {\color{key-color}},
+    commentstyle = {\color{comment-color}},
+    otherkeywords = {:, -},  % YAML punctuation
+    columns=flexible,
+    tabsize=2,
+    frame=single,
+    extendedchars=true,
+    showspaces=false,
+    showstringspaces=false,
+    numbers=left,
+    numberstyle=\tiny,
+    breaklines=true,
+    breakautoindent=true,
+    captionpos=b
+}
+
+\lstdefinelanguage{PythonCustom}{
+  morekeywords={
+    def, class, return, if, else, elif, try, except, raise, while, for, in, import, from, as, pass, break, continue, True, False, None, with, lambda, yield, global, nonlocal
+  },
+  sensitive=true,
+  morecomment=[l]{\#},
+  morestring=[b]',
+  morestring=[b]"
+}
+
+\lstdefinestyle{pythonstyle}{
+    language=PythonCustom,
+    basicstyle = {\ttfamily\color{main-color}\footnotesize},
+    backgroundcolor = {\color{lightgray}},
+    stringstyle = {\color{string-color}},
+    keywordstyle = {\color{key-color}},
+    commentstyle = {\color{comment-color}},
+    otherkeywords = {:, (, ), [, ], \{, \}, =, +, -, *, /, <, >},
+    columns=flexible,
+    tabsize=2,
+    frame=single,
+    extendedchars=true,
+    showspaces=false,
+    showstringspaces=false,
+    numbers=left,
+    numberstyle=\tiny,
+    breaklines=true,
+    breakautoindent=true,
+    captionpos=b
+}
+
+\lstset{literate=%
+   *{0}{{{\color{darkgray}0}}}1
+    {1}{{{\color{darkgray}1}}}1
+    {2}{{{\color{darkgray}2}}}1
+    {3}{{{\color{darkgray}3}}}1
+    {4}{{{\color{darkgray}4}}}1
+    {5}{{{\color{darkgray}5}}}1
+    {6}{{{\color{darkgray}6}}}1
+    {7}{{{\color{darkgray}7}}}1
+    {8}{{{\color{darkgray}8}}}1
+    {9}{{{\color{darkgray}9}}}1
+} 
+
+\lstdefinelanguage{log}{
+  keywords={},
+  sensitive=false
+}
+
+\lstdefinestyle{logstyle}{
+    language=log,
+    basicstyle = {\ttfamily\color{main-color}\scriptsize},
+    backgroundcolor = {\color{back-color}},
+    columns=flexible,
+    tabsize=2,
+    frame=single,
+    extendedchars=true,
+    showspaces=false,
+    showstringspaces=false,
+    numbers=left,
+    numberstyle=\tiny,
+    breaklines=true,
+    backgroundcolor=\color{white},
+    breakautoindent=true,
+    captionpos=b
+}
+
+% Otro formato más bonito para código fuente
+\newcommand{\codigofuente}[3]{%
+  \lstlisting[language=#1,caption={#2}]{#3}%
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+%% Para los metadatos del fichero PDF que se genera:
+\hypersetup{
+    pdftitle={Automatic Procedural Terrain Generation for Games},
+    pdfauthor={Eric Ríos Hamilton},
+    pdfkeywords={Terrain Generation},
+    pdfsubject={Final Degree Project on Procedural Terrain Generation for Games}
+}
+
+\renewcommand{\lstlistingname}{Listing}% Listing -> Listado de código
+
+\pagestyle{empty}
+\newcommand{\HRule}{\rule{\linewidth}{0.3mm}}
+{
+    \setlength{\parindent}{0mm}
+    \setlength{\parskip}{0mm}
+    
+    \vspace*{1.20cm}
+    \includegraphics[width=9.81cm]{Memoria/images/escuela-ingenieria-tecnologia-original}
+    \vspace*{\stretch{0.9}}
+    
+    {\centering
+    \fontsize{32pt}{32pt}\selectfont Trabajo de Fin de Grado\\[10pt]
+    \fontsize{20pt}{20pt}\selectfont Grado en Ingeniería Informática\par}
+    \HRule\vspace*{-2mm}
+    \begin{flushright}
+        {\fontsize{32pt}{32pt}\selectfont Automatic Procedural Terrain Generation for Games\par
+        \vspace*{3mm}
+        \fontsize{18pt}{18pt}\selectfont \textit{Generación procedural automatizada de terreno para juegos}\par
+        \vspace*{11mm}
+        \fontsize{16pt}{16pt}\selectfont Eric Ríos Hamilton
+        }\vspace*{12mm}
+    \end{flushright}
+    \HRule
+    
+    \vspace*{\stretch{1}}
+    \begin{center}
+        \fontsize{18pt}{18pt}\selectfont La Laguna, \today
+    \end{center}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Signature page (add the official stamp)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+%\cleardoublepage
+\thispagestyle{empty}
+
+D. {\bf Francisco de Sande González}, profesor Titular de Universidad adscrito al Departamento de Ingeniería Informática y de Sistemas de la Universidad de La Laguna, en calidad de tutor 
+
+\bigskip
+
+\bigskip
+\bigskip
+{\bf C E R T I F I C A}
+
+\bigskip
+\bigskip
+\bigskip
+Que el presente trabajo de Fin de Grado titulado:
+
+\bigskip
+``{\it \TitleTopic{}}''
+
+\bigskip
+\bigskip
+\bigskip
+%Cambiar
+\noindent ha sido realizado bajo su dirección por D. {\bf Eric Ríos Hamilton}.
+
+\bigskip
+\bigskip
+
+Y para que así conste, en cumplimiento de la legislación vigente y a los efectos
+oportunos firman la presente memoria del Trabajo en La Laguna a {\selectlanguage{spanish}\today}.
+
+%\cleardoublepage
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\thispagestyle{empty}
+
+{ \flushright
+
+\begin{LARGE}
+Agradecimientos
+\end{LARGE}
+
+\hspace{3mm}
+
+\begin{large}
+
+
+\hspace{3mm}
+
+\hspace{3mm}
+Agradecimientos 
+
+Este trabajo ha sido financiado por el Ministerio de Ciencia e Innovación a través de los proyectos 
+PID2023-151073NB-I00, 
+TED2021-131019B-I00 y
+PDC2022-134013-I00 
+\end{large}
+
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+
+\begin{huge}
+Licencia
+\end{huge}
+
+\bigskip
+%* Si quiere permitir que se compartan las adaptaciones de tu obra mientras se comparta de la misma manera
+%y NO quieres permitir usos comerciales de tu obra indica:
+
+\begin{center}
+  \includegraphics[height=20mm]{images/by-nc-sa.eu} \\[1ex]
+  {\large © Esta obra está bajo una licencia de Creative Commons Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional.}
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage  %\cleardoublepage
+\selectlanguage{spanish}
+\begin{abstract}
+{\em
+El objetivo de este trabajo ha sido ...
+}
+
+\begin{palabrasClave}
+Aprendizaje Profundo, Imágenes Multiespectrales, Sentinel-2, Segmentación Semántica, Detección de Carreteras, Redes Neuronales Convolucionales, OpenStreetMap, Teledetección.
+\end{palabrasClave}
+\end{abstract}
+\selectlanguage{english}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage  %\cleardoublepage
+\begin{abstract}
+{\em
+The objective of this work has been ...
+}
+
+\begin{keywords}
+ Deep Learning, Multispectral Images, Sentinel-2, Semantic Segmentation, Road Detection, Convolutional Neural Networks, OpenStreetMap, Remote Sensing.
+\end{keywords}
+
+\end{abstract}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage{\pagestyle{empty}}
+\thispagestyle{empty}
+
+
+\pagestyle{myheadings} %my head defined by markboth or markright
+% No funciona bien \markboth sin "twoside" en \documentclass, pero al
+% ponerlo se dan un montón de errores de underfull \vbox, con lo que no se
+% ha puesto.
+\markboth{Eric Ríos Hamilton}{ULL}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Numeracion en romanos
+\renewcommand{\thepage}{\roman{page}}
+\setcounter{page}{1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+{
+\hypersetup{linkcolor=black}
+\tableofcontents
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage{\pagestyle{empty}}
+{
+\hypersetup{linkcolor=black}
+\listoffigures
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage{\pagestyle{empty}}
+{
+\hypersetup{linkcolor=black}
+\listoftables
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage{\pagestyle{empty}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Numeracion a partir del capitulo I
+\renewcommand{\thepage}{\arabic{page}}
+\setcounter{page}{1}
+% ==========================================================
+% --------               Capítulos                ----------
+% --------    Estan en el directorio capitulos/   ----------
+% ==========================================================
+% Comentar la siguiente línea en la versión final
+\include{capitulos/Cap0_Instrucciones}
+\include{capitulos/Cap1_Preface}
+\include{capitulos/Cap2_Goals}
+\include{capitulos/Cap3_Introduction}
+\include{capitulos/Cap4_Related_Work}
+\include{capitulos/Cap5_Results}
+\include{capitulos/Cap6_Conclusiones_y_Lineas_de_Trabajo_Futuras}
+\include{capitulos/Cap7_Conclusions_and_Future_Lines_of_Work}
+\include{capitulos/Cap8_Budget}
+
+\addcontentsline{toc}{chapter}{Bibliography}
+% \bibliographystyle{plain}
+\bibliographystyle{ieeetr}
+% \bibliographystyle{bmc_article} 
+\renewcommand{\bibname}{Bibliography}   %  Para que no aparezca Índice de figuras
+\bibliography{bibliography}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+\end{document}

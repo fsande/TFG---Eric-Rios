@@ -1,0 +1,55 @@
+% ---------------------------------------------------
+% Trabajo Final de Grado
+% Author: Eric Ríos Hamilton <alu0101549835@ull.edu.es>
+% Chapter: Introduction 
+% ----------------------------------------------------
+
+\cleardoublepage
+\chapter{Introduction} \label{chap:Introduction}
+% Introducción al lector en el problema que se propone resolver.
+% Procedural Content Generation \cite{Maleki:2024:PCG} (PCG) is defined as the automatic creation of game content using algorithms. 
+% PCG has a long history in both the game industry and the academic world. 
+% It can increase player engagement and ease the work of game designers. 
+% While recent advances in deep learning approaches in PCG have enabled researchers and practitioners to create more sophisticated content, it is the arrival of Large Language Models (LLMs) that truly disrupted the trajectory of PCG advancement. 
+
+The virtual worlds explorable in video games are at the core of the player experience, interacting with and influencing every other characteristic of the work. 
+From gameplay mechanics to graphics, and everything in between, each element of a video game must work in consonance with its virtual representation of space.
+As games grow more ambitious, a need of huge, organic worlds for the player to explore and get lost in arises.
+However, as the size their worlds increases, so does the effort and man-power required to hand-craft them.
+To avoid impossible workloads and streamline development processes many studios have adopted procedural generation to algorithmically generate their game worlds.
+
+\section{Tools \& Technologies}
+\begin{itemize}
+    \item{\textbf{Engine}} 
+    Godot\footnote{https://godotengine.org/} will be used as a graphics and physics engine.
+    It is a free, open source, lightweight engine that can easily be modified to suit various purposes and supports a wide array of programming languages.
+    Its ease of use and extensibility makes it ideal for this kind of project.
+    \item{\textbf{Languages}} 
+    \begin{itemize}
+        %C# - Lenguaje con el que más familiarizado estoy. Suficientemente eficiente, muchísimo más cómodo y rápido para desarrollar que C++.
+        \item{\textbf{GDScript}}\footnote{https://gdscript.com/} 
+        is an interpreted scripting, object-oriented language designed for the ground up for the Godot engine.
+        It is great for quick prototyping and iteration, although it not always sports the best performance. 
+        In situations where the best performance is critical, other languages will be taken into account.
+        \item{\textbf{C++}}\footnote{https://isocpp.org/} 
+        is a proven multiparadigm language.
+        It will mainly be used for its performance benefits over GDScript, especially in parallelization.
+        \item{\textbf{The OpenGL Shading Language (GLSL)}}\footnote{https://registry.khronos.org/OpenGL/index\_gl.php}
+        is a high-level shading language with a syntax similar to that of C.
+        It provides relatively simple access to the GPU, allowing for the execution of complex algorithms in it.
+        This language will be used to design compute shaders when the extreme parallelization capabilities of the GPU suit a solution to a problem.
+        \item{\textbf{Godot Shading Language (GDSL)}} 
+        is a shading language designed for the Godot engine.
+        It is based on GLSL, but provides some useful features for integration within the engine.
+        It will be used for visual shaders.
+        \end{itemize}
+    \item{\textbf{Integrated development environment (IDE)}}
+    JetBrains Rider \footnote{https://www.jetbrains.com/rider/} is a .NET and game development centered IDE.
+    Although originally .NET focused, its widespread use in game development has driven it to adopt other game development related technologies, such as Godot integration.
+    It is free of use for non-commercial projects and possesses ample capabilities, such as integrated debugging and dynamic program analysis.
+    \item{\textbf{Version control}} GitHub \footnote{https://github.com/} is a development platform that provides Git\footnote{https://git-scm.com/}-based distributed version control.
+    It will be used to host the repository worked on in this project.
+    \item{\textbf{Programming assistance}}
+    GitHub Copilot \footnote{https://github.com/features/copilot} is an AI assistant integrated into the IDE. 
+    It will be used for coding assistance during development.
+\end{itemize}
