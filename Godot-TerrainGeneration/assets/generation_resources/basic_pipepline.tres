@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="MeshModifierPipeline" load_steps=8 format=3 uid="uid://c4oh16yvru20i"]
+
+[ext_resource type="Script" uid="uid://c30u4l1lvs1rk" path="res://terrain_generation/mesh_modifiers/core/mesh_modifier_pipeline.gd" id="1_mk2fn"]
+[ext_resource type="Script" uid="uid://dsitrlg6fgjtv" path="res://terrain_generation/mesh_modifiers/core/pipeline_stage.gd" id="2_itl6m"]
+[ext_resource type="Script" uid="uid://juath38kv8lj" path="res://terrain_generation/mesh_modifiers/core/mesh_modifier_agent.gd" id="3_fx7b1"]
+[ext_resource type="Script" uid="uid://cfjtrhijm13c7" path="res://terrain_generation/mesh_modifiers/agents/terrain_raise_agent.gd" id="5_y4s3v"]
+[ext_resource type="Script" uid="uid://tm8qaa70kx72" path="res://terrain_generation/mesh_modifiers/core/sequential_stage.gd" id="6_rt36s"]
+
+[sub_resource type="Resource" id="Resource_quac4"]
+script = ExtResource("5_y4s3v")
+radius = 15.0
+height = 20.0
+falloff = 0.75
+agent_name = "Terrain Raise Agent"
+metadata/_custom_type_script = "uid://cfjtrhijm13c7"
+
+[sub_resource type="Resource" id="Resource_vivmo"]
+script = ExtResource("6_rt36s")
+agents = Array[ExtResource("3_fx7b1")]([SubResource("Resource_quac4")])
+metadata/_custom_type_script = "uid://tm8qaa70kx72"
+
+[resource]
+script = ExtResource("1_mk2fn")
+stages = Array[ExtResource("2_itl6m")]([SubResource("Resource_vivmo")])
+metadata/_custom_type_script = "uid://c30u4l1lvs1rk"

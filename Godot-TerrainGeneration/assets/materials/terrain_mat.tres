@@ -1,0 +1,20 @@
+[gd_resource type="ShaderMaterial" load_steps=9 format=3 uid="uid://bg4p6ysy07sj1"]
+
+[ext_resource type="Shader" uid="uid://cjwrjqieaf6o2" path="res://assets/shaders/advanced_terrain_shader.gdshader" id="1_bpjjn"]
+[ext_resource type="Texture2D" uid="uid://b66diegyl5j0g" path="res://terrain_generation/materials/grassy_rocks/rocky_terrain_02_diff_4k.jpg" id="2_y76w6"]
+[ext_resource type="Texture2D" uid="uid://bieua0uq86ggn" path="res://terrain_generation/materials/rocks/rocky-rugged-terrain_1_albedo.png" id="3_6hgoj"]
+[ext_resource type="Texture2D" uid="uid://d0qsh72dn16op" path="res://terrain_generation/materials/rock_snow/rock-snow-ice1-2k_Base_Color.png" id="4_g5pnf"]
+[ext_resource type="Texture2D" uid="uid://02y6hws8a42i" path="res://terrain_generation/materials/rock_snow/rock-snow-ice1-2k_Normal-ogl.png" id="5_6qrvd"]
+[ext_resource type="Texture2D" uid="uid://3g2k0c4l1iy5" path="res://terrain_generation/materials/rocks/rocky-rugged-terrain_1_normal-dx.png" id="6_7fndy"]
+[ext_resource type="Texture2D" uid="uid://d220yubmkq4nb" path="res://terrain_generation/materials/rocks/rocky-rugged-terrain_1_roughness.png" id="7_bcps2"]
+[ext_resource type="Texture2D" uid="uid://bwt2nfdl2qecn" path="res://terrain_generation/materials/rock_snow/rock-snow-ice1-2k_Roughness.png" id="8_7pos2"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_bpjjn")
+shader_parameter/height = 32.0
+shader_parameter/albedo_textures = Array[Texture2D]([ExtResource("2_y76w6"), ExtResource("3_6hgoj"), ExtResource("4_g5pnf")])
+shader_parameter/normal_textures = Array[Texture2D]([ExtResource("5_6qrvd"), ExtResource("6_7fndy"), ExtResource("5_6qrvd")])
+shader_parameter/roughness_textures = Array[Texture2D]([ExtResource("7_bcps2"), ExtResource("7_bcps2"), ExtResource("8_7pos2")])
+shader_parameter/blend_heights = PackedFloat32Array(0.3, 0.6)
+shader_parameter/uv_scale = Vector2(15, 15)
