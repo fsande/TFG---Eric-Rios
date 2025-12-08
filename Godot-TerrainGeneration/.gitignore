@@ -1,0 +1,82 @@
+
+# ==== Operating system files ====
+# macOS
+.DS_Store
+# Windows
+Thumbs.db
+desktop.ini
+
+# ==== IDEs / Editors ====
+.vscode/
+.vs/
+.idea/
+*.sublime-workspace
+
+# Visual Studio files
+*.suo
+*.user
+*.userosscache
+*.sln.DotSettings.user
+*.VC.db
+*.VC.opendb
+*.csproj.user
+
+# Rider / JetBrains
+.idea/
+*.DotSettings
+
+# ==== Build outputs & packages ====
+/bin/
+/obj/
+/packages/
+*.nupkg
+
+# C# / Mono
+*.dll
+*.exe
+*.pdb
+*.mdb
+*.opendb
+*.log
+
+# NuGet
+# Uncomment if you want to ignore the packages folder from NuGet
+# /packages/
+
+# ==== Godot-specific ====
+# Godot import folder (generated)
+.import/
+*.import
+
+# Godot editor and mono artifacts
+.godot/
+.mono/
+
+# Exported builds and temporary export folder
+.export/
+export_presets.cfg
+
+# Godot-generated UID files (optional)
+*.uid
+
+# Ignore per-platform export metadata and caches
+*.converted
+*.stex
+
+# ==== Project files that are commonly user-specific ====
+# Temporary files, caches, local settings
+*.tmp
+*.temp
+
+# ==== Misc ====
+# Package manager / lock files (if you want to ignore these uncomment)
+# package-lock.json
+# yarn.lock
+
+# Thumbnails and previews
+*.preview.png
+
+# Logs
+*.log
+
+# End of file
