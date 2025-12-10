@@ -73,7 +73,6 @@ func generate_mesh(mesh_array: Array, heightmap: Image, context: ProcessingConte
 		for x in range(slope_as_red.get_width()):
 			var slope_value := result.slope_normal_map.get_pixel(x, y).a
 			slope_as_red.set_pixel(x, y, Color(slope_value, slope_value, slope_value))
-	DebugImageExporter.export_image(slope_as_red, "res://slope_red_map_gpu.png")
 	return result
 
 ## Executes a compute shader pass for the specified operation type.
