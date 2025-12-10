@@ -106,6 +106,9 @@ func find_nearest_vertex(world_pos: Vector2) -> int:
 			best_index = index
 	return best_index
 
+func get_nearest_grid_vertex_uv(uv: Vector2) -> int:
+	return _grid.get_nearest_grid_vertex_uv(uv)
+
 ## Get neighbors within Chebyshev distance (square region).
 func get_neighbours_chebyshev(vertex_index: int, distance: int) -> PackedInt32Array:
 	return _grid.get_neighbours_chebyshev(vertex_index, distance)
@@ -252,12 +255,8 @@ func get_slope_at_position(world_pos: Vector2) -> SlopeData:
 	return _mesh.get_slope_at_world_position(world_pos)
 
 ## Sample random valid cliff positions using image-based filtering. 
-## min_slope_angle: Minimum slope angle in degrees (e.g., 45.0)
-## min_height: Minimum height threshold in world units
-## sample_count: Number of random samples to return
-## seed_value: Random seed (0 = use generation seed)
-func sample_cliff_positions(min_slope_angle: float, min_height: float, sample_count: int, seed_value: int = 0) -> Array[Dictionary]:
-	var results: Array[Dictionary] = []
+func sample_cliff_positions(min_slope_angle: float, min_height: float, sample_count: int, seed_value: int = 0) -> Array[TunnelEntryPoint]:
+	var results: Array[TunnelEntryPoint] = []
 	var slope_map := get_slope_normal_map()
 	var heightmap := get_heightmap()
 	if not slope_map or not heightmap:
@@ -291,14 +290,10 @@ func sample_cliff_positions(min_slope_angle: float, min_height: float, sample_co
 				valid_pixel_count += 1
 			else:
 				mask.set_pixel(x, y, Color.BLACK)
-	DebugImageExporter.export_image(slope_mask, "cliff_slope_mask.png")
-	DebugImageExporter.export_image(height_mask, "cliff_heigh_mask.png")
-	DebugImageExporter.export_image(mask, "cliff_sampling_mask.png")
 	if valid_pixel_count == 0:
 		return results	
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value if seed_value != 0 else get_generation_seed()
-	
 	var attempts := 0
 	var max_attempts := sample_count * 10
 	while results.size() < sample_count and attempts < max_attempts:
@@ -308,19 +303,17 @@ func sample_cliff_positions(min_slope_angle: float, min_height: float, sample_co
 		if mask.get_pixel(x, y).r < 1:
 			continue
 		var uv := Vector2(float(x) / (mask.get_width() - 1), float(y) / (mask.get_height() - 1))
-		var slope_data := get_slope_at_uv(uv)
+		var vertex_index := get_nearest_grid_vertex_uv(uv)
+		var vertex_normal := _mesh.get_normal_at_vertex(vertex_index)
 		var terrain_sz := terrain_size()
 		var world_x := (uv.x - 0.5) * terrain_sz.x
 		var world_z := (uv.y - 0.5) * terrain_sz.y
 		var height_pixel := heightmap.get_pixel(x, y)
 		var world_height := height_pixel.r * height_scale		
 		var world_pos := Vector3(world_x, world_height, world_z)
-		results.append({
-			"position": world_pos,
-			"normal": slope_data.normal,
-			"uv": uv,
-			"pixel_x": x,
-			"pixel_y": y,
-			"slope_angle": slope_data.angle
-		})
+		var slope_pixel := slope_map.get_pixel(x, y)
+		var slope_angle := slope_pixel.a
+		var entry_point := TunnelEntryPoint.new(world_pos, vertex_normal, slope_angle, uv, x, y)
+		results.append(entry_point)
+	
 	return results

@@ -73,6 +73,12 @@ func get_normals() -> PackedVector3Array:
 		_normals_dirty = false
 	return mesh_data.cached_normals
 
+func get_normal_at_vertex(vertex_index: int) -> Vector3:
+	var normals := get_normals()
+	if vertex_index >= 0 and vertex_index < normals.size():
+		return normals[vertex_index]
+	return Vector3.UP
+
 ## Get tangents (calculates on first call, then returns cached).
 func get_tangents() -> PackedVector4Array:
 	if _tangents_dirty:

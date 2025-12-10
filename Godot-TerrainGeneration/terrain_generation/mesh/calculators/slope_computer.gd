@@ -15,11 +15,9 @@ static func compute_slope_normal_map(mesh_result: MeshGenerationResult, context:
 	if not mesh_result:
 		push_error("SlopeComputer: mesh_result is null")
 		return null
-	
 	if mesh_result.width == 0 or mesh_result.height == 0:
 		push_error("SlopeComputer: mesh_result has invalid dimensions (%sx%s)" % [str(mesh_result.width), str(mesh_result.height)])
 		return null
-	
 	if context.use_gpu():
 		return _compute_gpu(mesh_result, context)
 	else:
@@ -28,88 +26,64 @@ static func compute_slope_normal_map(mesh_result: MeshGenerationResult, context:
 ## CPU implementation: Iterate all vertices and calculate slope from neighbors.
 static func _compute_cpu(mesh_result: MeshGenerationResult) -> Image:
 	var start_time := Time.get_ticks_usec()
-	
 	var width := mesh_result.width
 	var height := mesh_result.height
 	var vertices := mesh_result.vertices
-	
-	# Create image for slope data
 	var img := Image.create(width, height, false, Image.FORMAT_RGBAF)
-	
-	# Calculate slope for each vertex
 	for row in range(height):
 		for col in range(width):
 			var vertex_idx := row * width + col
-			
 			if vertex_idx >= vertices.size():
-				# Out of bounds, use default
 				img.set_pixel(col, row, Color(0.0, 1.0, 0.0, 0.0))  # Up normal, 0 slope
 				continue
-			
-			# Calculate normal from Moore neighbors
 			var normal := _compute_vertex_normal(vertex_idx, col, row, width, height, vertices)
-			
-			# Calculate slope angle from normal
 			var slope_angle := _compute_slope_angle(normal)
-			
-			# Store in image (RGB=normal, A=slope_angle)
 			img.set_pixel(col, row, Color(normal.x, normal.y, normal.z, slope_angle))
-	
 	var elapsed_time := Time.get_ticks_usec() - start_time
 	print("SlopeComputer (CPU): Computed %sx%s slope map in %.2f ms" % [str(width), str(height), elapsed_time * 0.001])
-	
 	return img
 
 ## GPU implementation: Use compute shader to calculate slope in parallel.
 static func _compute_gpu(mesh_result: MeshGenerationResult, context: ProcessingContext) -> Image:
 	var start_time := Time.get_ticks_usec()
-	
 	var rd := context.get_rendering_device()
 	if not rd:
 		push_warning("SlopeComputer: No RenderingDevice available, falling back to CPU")
 		return _compute_cpu(mesh_result)
-	
 	var shader := context.get_or_create_shader(SHADER_PATH)
 	if not shader.is_valid():
 		push_warning("SlopeComputer: GPU shader not available, falling back to CPU")
 		return _compute_cpu(mesh_result)
-	
 	var pipeline := rd.compute_pipeline_create(shader)
 	var width := mesh_result.width
 	var height := mesh_result.height
 	var vertices := mesh_result.vertices
-	
 	var vertex_data := PackedFloat32Array()
 	for vertex_position in vertices:
 		vertex_data.append(vertex_position.x)
 		vertex_data.append(vertex_position.y)
 		vertex_data.append(vertex_position.z)
 	var vertex_buffer := rd.storage_buffer_create(vertex_data.size() * 4, vertex_data.to_byte_array())
-	
 	var texture_format := RDTextureFormat.new()
 	texture_format.width = width
 	texture_format.height = height
 	texture_format.format = RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT
 	texture_format.usage_bits = RenderingDevice.TEXTURE_USAGE_STORAGE_BIT | RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT
 	var output_texture := rd.texture_create(texture_format, RDTextureView.new(), [])
-	
 	var params := PackedByteArray()
 	params.resize(16)
 	params.encode_s32(0, width)
 	params.encode_s32(4, height)
 	params.encode_s32(8, vertices.size())
 	var params_buffer := rd.storage_buffer_create(params.size(), params)
-	
 	var uniforms := [
 		GpuResourceHelper.create_storage_buffer_uniform(0, vertex_buffer),
 		GpuResourceHelper.create_image_uniform(1, output_texture),
 		GpuResourceHelper.create_storage_buffer_uniform(2, params_buffer),
 	]
 	var uniform_set := rd.uniform_set_create(uniforms, shader, 0)
-	
 	var workgroups_x := ceili(float(width) / 8.0)
 	var workgroups_y := ceili(float(height) / 8.0)
-	
 	var compute_list := rd.compute_list_begin()
 	rd.compute_list_bind_compute_pipeline(compute_list, pipeline)
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
