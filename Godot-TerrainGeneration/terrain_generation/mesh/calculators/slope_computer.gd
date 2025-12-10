@@ -102,69 +102,42 @@ static func _compute_gpu(mesh_result: MeshGenerationResult, context: ProcessingC
 static func _compute_vertex_normal(vertex_idx: int, col: int, row: int, width: int, height: int, vertices: PackedVector3Array) -> Vector3:
 	var center := vertices[vertex_idx]
 	var accumulated_normal := Vector3.ZERO
-	var neighbor_count := 0
-	for dy in range(-1, 2):
-		for dx in range(-1, 2):
-			if dx == 0 and dy == 0:
-				continue
-			var neighbor_col := col + dx
-			var neighbor_row := row + dy
-			if neighbor_col < 0 or neighbor_col >= width or neighbor_row < 0 or neighbor_row >= height:
-				continue
-			var neighbor_idx := neighbor_row * width + neighbor_col
-			if neighbor_idx >= vertices.size():
-				continue
-			var neighbor := vertices[neighbor_idx]
-			var edge := neighbor - center
-			accumulated_normal += edge
-			neighbor_count += 1
-	if neighbor_count == 0:
-		return Vector3.UP  # Default to up if no neighbors
-	accumulated_normal /= float(neighbor_count)
-	var surface_normal := Vector3.ZERO
-	var cross_count := 0
-	# Should refactor this into a function
-	for dy in range(-1, 2):
-		for dx in range(-1, 2):
-			if dx == 0 and dy == 0:
-				continue
-			var nx := col + dx
-			var ny := row + dy
-			if nx < 0 or nx >= width or ny < 0 or ny >= height:
-				continue
-			var nidx := ny * width + nx
-			if nidx >= vertices.size():
-				continue
-			var dx2 := dx + 1 if dx >= 0 else dx - 1
-			var dy2 := dy
-			var nx2 := col + dx2
-			var ny2 := row + dy2
-			if nx2 < 0 or nx2 >= width or ny2 < 0 or ny2 >= height:
-				dx2 = dx
-				dy2 = dy + 1 if dy >= 0 else dy - 1
-				nx2 = col + dx2
-				ny2 = row + dy2
-				if nx2 < 0 or nx2 >= width or ny2 < 0 or ny2 >= height:
-					continue
-			var nidx2 := ny2 * width + nx2
-			if nidx2 >= vertices.size():
-				continue
-			var v1 := vertices[nidx] - center
-			var v2 := vertices[nidx2] - center
-			var face_normal := v1.cross(v2)
-			if face_normal.length_squared() > 0.0001:
-				surface_normal += face_normal.normalized()
-				cross_count += 1
-	if cross_count > 0:
-		surface_normal /= float(cross_count)
-		return surface_normal.normalized()
-	if accumulated_normal.length_squared() > 0.0001:
-		var horizontal := Vector2(accumulated_normal.x, accumulated_normal.z)
-		if horizontal.length_squared() > 0.0001:
-			var perpendicular := Vector3(-horizontal.y, 0, horizontal.x).normalized()
-			var up_component := Vector3.UP
-			return (perpendicular + up_component).normalized()
-	return Vector3.UP
+	var face_count := 0
+	var neighbor_offsets := [
+		Vector2i(1, 0),   
+		Vector2i(1, -1), 
+		Vector2i(0, -1),  
+		Vector2i(-1, -1),
+		Vector2i(-1, 0),  
+		Vector2i(-1, 1),  
+		Vector2i(0, 1),   
+		Vector2i(1, 1),   
+	]
+	for i in range(8):
+		var next_i: int = (i + 1) % 8
+		var offset1: Vector2i = neighbor_offsets[i]
+		var offset2: Vector2i = neighbor_offsets[next_i]
+		var n1_col: int = col + offset1.x
+		var n1_row: int = row + offset1.y
+		var n2_col: int = col + offset2.x
+		var n2_row: int = row + offset2.y
+		if n1_col < 0 or n1_col >= width or n1_row < 0 or n1_row >= height:
+			continue
+		if n2_col < 0 or n2_col >= width or n2_row < 0 or n2_row >= height:
+			continue
+		var n1_idx: int = n1_row * width + n1_col
+		var n2_idx: int = n2_row * width + n2_col
+		if n1_idx >= vertices.size() or n2_idx >= vertices.size():
+			continue
+		var v1 := vertices[n1_idx] - center
+		var v2 := vertices[n2_idx] - center
+		var face_normal := v1.cross(v2)
+		if face_normal.length_squared() > 0.0001:
+			accumulated_normal += face_normal.normalized()
+			face_count += 1
+	if face_count > 0:
+		return accumulated_normal.normalized()
+	return Vector3.UP 
 
 ## Calculate slope angle from normal vector.
 ## Returns angle in radians (0 = flat, PI/2 = vertical).

@@ -32,64 +32,45 @@ vec3 get_vertex(int idx) {
 // Compute surface normal from Moore neighborhood (8-connected neighbors)
 vec3 compute_vertex_normal(int vertex_idx, int col, int row) {
     vec3 center = get_vertex(vertex_idx);
-    vec3 surface_normal = vec3(0.0, 0.0, 0.0);
-    int cross_count = 0;
-    
-    // Sample neighbors and compute face normals using cross products
-    for (int dy = -1; dy <= 1; dy++) {
-        for (int dx = -1; dx <= 1; dx++) {
-            if (dx == 0 && dy == 0) continue;
-            
-            int nx = col + dx;
-            int ny = row + dy;
-            
-            // Check bounds
-            if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
-            
-            int nidx = ny * width + nx;
-            if (nidx >= vertex_count) continue;
-            
-            vec3 neighbor1 = get_vertex(nidx);
-            
-            // Get second neighbor for cross product
-            int dx2 = (dx >= 0) ? dx + 1 : dx - 1;
-            int dy2 = dy;
-            int nx2 = col + dx2;
-            int ny2 = row + dy2;
-            
-            // If out of bounds, try vertical neighbor
-            if (nx2 < 0 || nx2 >= width || ny2 < 0 || ny2 >= height) {
-                dx2 = dx;
-                dy2 = (dy >= 0) ? dy + 1 : dy - 1;
-                nx2 = col + dx2;
-                ny2 = row + dy2;
-                
-                if (nx2 < 0 || nx2 >= width || ny2 < 0 || ny2 >= height) continue;
-            }
-            
-            int nidx2 = ny2 * width + nx2;
-            if (nidx2 >= vertex_count) continue;
-            
-            vec3 neighbor2 = get_vertex(nidx2);
-            
-            // Compute face normal via cross product
-            vec3 v1 = neighbor1 - center;
-            vec3 v2 = neighbor2 - center;
-            vec3 face_normal = cross(v1, v2);
-            
-            float len_sq = dot(face_normal, face_normal);
-            if (len_sq > 0.0001) {
-                surface_normal += normalize(face_normal);
-                cross_count++;
-            }
+    vec3 accumulated_normal = vec3(0.0, 0.0, 0.0);
+    int face_count = 0;
+    ivec2 neighbor_offsets[8];
+    neighbor_offsets[0] = ivec2(1, 0);  
+    neighbor_offsets[1] = ivec2(1, -1); 
+    neighbor_offsets[2] = ivec2(0, -1); 
+    neighbor_offsets[3] = ivec2(-1, -1);  
+    neighbor_offsets[4] = ivec2(-1, 0);  
+    neighbor_offsets[5] = ivec2(-1, 1);  
+    neighbor_offsets[6] = ivec2(0, 1);  
+    neighbor_offsets[7] = ivec2(1, 1);    
+    for (int i = 0; i < 8; i++) {
+        int next_i = (i + 1) % 8;
+        ivec2 offset1 = neighbor_offsets[i];
+        ivec2 offset2 = neighbor_offsets[next_i];
+        int n1_col = col + offset1.x;
+        int n1_row = row + offset1.y;
+        int n2_col = col + offset2.x;
+        int n2_row = row + offset2.y;
+        if (n1_col < 0 || n1_col >= width || n1_row < 0 || n1_row >= height) continue;
+        if (n2_col < 0 || n2_col >= width || n2_row < 0 || n2_row >= height) continue;
+        int n1_idx = n1_row * width + n1_col;
+        int n2_idx = n2_row * width + n2_col;
+        if (n1_idx >= vertex_count || n2_idx >= vertex_count) continue;
+        vec3 neighbor1 = get_vertex(n1_idx);
+        vec3 neighbor2 = get_vertex(n2_idx);
+        vec3 v1 = neighbor1 - center;
+        vec3 v2 = neighbor2 - center;
+        vec3 face_normal = cross(v1, v2);
+        float len_sq = dot(face_normal, face_normal);
+        if (len_sq > 0.0001) {
+            accumulated_normal += normalize(face_normal);
+            face_count++;
         }
     }
-    
-    if (cross_count > 0) {
-        surface_normal /= float(cross_count);
-        return normalize(surface_normal);
+    if (face_count > 0) {
+        return normalize(accumulated_normal);
     }
-    return vec3(0.0, 1.0, 0.0);
+    return vec3(0.0, 1.0, 0.0);  // Default to up if no valid triangles
 }
 
 // Compute slope angle from normal (angle between normal and up vector)
@@ -104,21 +85,14 @@ float compute_slope_angle(vec3 normal) {
 
 void main() {
     ivec2 pixel_coord = ivec2(gl_GlobalInvocationID.xy);
-    
-    // Check bounds
     if (pixel_coord.x >= width || pixel_coord.y >= height) {
         return;
     }
-    
     int col = pixel_coord.x;
     int row = pixel_coord.y;
     int vertex_idx = row * width + col;
-    
-    // Compute normal and slope
     vec3 normal = compute_vertex_normal(vertex_idx, col, row);
     float slope_angle = compute_slope_angle(normal);
-    
-    // Store result (RGB=normal, A=slope_angle in radians)
     vec4 result = vec4(normal.x, normal.y, normal.z, slope_angle);
     imageStore(output_image, pixel_coord, result);
 }
