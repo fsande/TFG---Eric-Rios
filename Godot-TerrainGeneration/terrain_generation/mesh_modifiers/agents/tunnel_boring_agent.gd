@@ -185,32 +185,21 @@ func _debug_draw_entry_points(entry_points: Array[Dictionary], root: Node3D) -> 
 ## Create a tunnel at the specified entry point.
 func _create_tunnel_at(entry: Dictionary, context: MeshModifierContext) -> bool:
 	var entry_pos: Vector3 = entry.position
-	var tunnel_direction: Vector3 = entry.tunnel_normal  # Use precomputed direction
-	
-	# STEP 1: Remove terrain triangles inside the tunnel volume
+	var tunnel_direction: Vector3 = entry.tunnel_normal
 	var removed_tris := _remove_terrain_triangles_in_tunnel(entry_pos, tunnel_direction, context)
 	print("  Tunnel: Removed %d triangles" % removed_tris)
-	
-	# STEP 2: Displace nearby vertices to the tunnel wall (smooth transition)
 	var displaced_vertices := _displace_vertices_to_tunnel_wall(entry_pos, tunnel_direction, context)
 	print("  Tunnel: Displaced %d vertices" % displaced_vertices.size())
-	
-	# STEP 3: Generate tunnel geometry
 	var tunnel_geom := _generate_tunnel_geometry(entry_pos, tunnel_direction)
-	
 	var base_vertex_idx := context.add_vertices(tunnel_geom.positions, tunnel_geom.uvs)
 	if base_vertex_idx < 0:
 		return false
-	
 	var offset_indices := PackedInt32Array()
 	offset_indices.resize(tunnel_geom.indices.size())
 	for i in range(tunnel_geom.indices.size()):
 		offset_indices[i] = tunnel_geom.indices[i] + base_vertex_idx
-	
 	context.add_triangles(offset_indices)
-	
-#	_create_entrance_portal(entry, base_vertex_idx, displaced_vertices, context)
-	
+	_create_entrance_portal(entry, base_vertex_idx, displaced_vertices, context)
 	return true
 
 

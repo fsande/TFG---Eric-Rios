@@ -1,8 +1,8 @@
-[gd_scene load_steps=24 format=3 uid="uid://b5f0uf728r68g"]
+[gd_scene load_steps=27 format=3 uid="uid://b5f0uf728r68g"]
 
 [ext_resource type="PackedScene" uid="uid://baa7kovw3ralm" path="res://player/BasicPlayer.tscn" id="3_avahw"]
 [ext_resource type="PackedScene" uid="uid://bdf3hehjq3yeb" path="res://scenes/terrain.tscn" id="4_1bvp3"]
-[ext_resource type="Resource" uid="uid://wr2k3r0ty8xg" path="res://assets/generation_resources/españita_guay.tres" id="5_5vw27"]
+[ext_resource type="Script" uid="uid://ortj27h5j03e" path="res://terrain_generation/heightmap/sources/texture_heightmap_source.gd" id="5_85g3d"]
 [ext_resource type="PackedScene" uid="uid://k5n4e67sj3xd" path="res://scenes/water_plane.tscn" id="5_lquwl"]
 [ext_resource type="Script" uid="uid://bevx624h4vgcs" path="res://terrain_generation/configuration/mesh_generator_parameters.gd" id="6_dg77c"]
 [ext_resource type="Shader" uid="uid://cxiaximdnswg" path="res://assets/shaders/water.gdshader" id="7_272bh"]
@@ -67,6 +67,18 @@ shader_parameter/wave_direction2 = Vector2(0, 1)
 shader_parameter/time_scale = 0.01499999966472
 shader_parameter/uv_scale = 100.0
 
+[sub_resource type="Gradient" id="Gradient_choun"]
+interpolation_mode = 2
+offsets = PackedFloat32Array(0, 0.5970149)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_ya4ey"]
+gradient = SubResource("Gradient_choun")
+
+[sub_resource type="Resource" id="Resource_eb6dy"]
+script = ExtResource("5_85g3d")
+heightmap_texture = SubResource("GradientTexture1D_ya4ey")
+metadata/_custom_type_script = "uid://ortj27h5j03e"
+
 [sub_resource type="Resource" id="Resource_w48qg"]
 script = ExtResource("6_dg77c")
 subdivisions = 512
@@ -74,11 +86,10 @@ metadata/_custom_type_script = "uid://bevx624h4vgcs"
 
 [sub_resource type="Resource" id="Resource_5vw27"]
 script = ExtResource("8_dg77c")
-heightmap_source = ExtResource("5_5vw27")
+heightmap_source = SubResource("Resource_eb6dy")
 terrain_size = 256.0
 mesh_modification_pipeline = ExtResource("7_kek77")
 mesh_generator_parameters = SubResource("Resource_w48qg")
-snow_line = 16.0
 terrain_material = ExtResource("13_ycdy4")
 generate_collision = false
 mesh_modifier_type = 1
