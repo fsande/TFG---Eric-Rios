@@ -28,6 +28,8 @@ class_name TerrainPresenter extends Node3D
 @export var show_generation_time: bool = false
 ## Editor tool button that triggers terrain regeneration.
 @export_tool_button("Regenerate Terrain") var regenerate_action := regenerate
+## Editor tool button to apply visual changes without regenerating.
+@export_tool_button("Update Visuals") var update_visuals_action := _update_visuals
 
 var _mesh_instance: MeshInstance3D
 var _collision_body: StaticBody3D
@@ -105,7 +107,21 @@ func regenerate() -> void:
 func _update_presentation() -> void:
 	if not _current_terrain_data:
 		return
-	# Update mesh
+	_update_visuals()
+	_update_collision()
+	_update_agent_nodes()
+
+## Update collision shape from the current TerrainData.
+func _update_collision() -> void:
+	if _collision_shape and configuration.generate_collision and _current_terrain_data:
+		_collision_shape.shape = _current_terrain_data.collision_shape
+		_collision_body.collision_layer = configuration.collision_layers
+		_collision_body.visible = configuration.generate_collision
+	else:
+		_collision_body.visible = false
+
+## Update mesh and material from the current TerrainData.
+func _update_visuals() -> void:
 	if _mesh_instance:
 		_mesh_instance.mesh = _current_terrain_data.get_mesh()
 		if configuration.terrain_material:
@@ -115,16 +131,6 @@ func _update_presentation() -> void:
 			if shader_mat.get_shader_parameter("height") != null:
 				shader_mat.set_shader_parameter("height", configuration.snow_line)
 
-	# Update collision
-	if _collision_shape and configuration.generate_collision:
-		_collision_shape.shape = _current_terrain_data.collision_shape
-		_collision_body.collision_layer = configuration.collision_layers
-		_collision_body.visible = configuration.generate_collision
-	else:
-		_collision_body.visible = false
-	
-	# Update agent-generated scene nodes
-	_update_agent_nodes()
 
 func _on_config_changed() -> void:
 	# TODO: Mark dirty mesh and dirty heightmap separately
