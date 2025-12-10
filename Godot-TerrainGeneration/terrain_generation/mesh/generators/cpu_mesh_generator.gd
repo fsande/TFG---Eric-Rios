@@ -38,7 +38,6 @@ func generate_mesh(mesh_array: Array, heightmap: Image, context: ProcessingConte
 	print("CPUMeshGenerator: subdivisions=%d, grid=%dx%d, actual vertices=%d, mesh_size=%s" % [
 		subdivisions, result.width, result.height, vertices.size(), mesh_size
 	])
-	
 	result.slope_normal_map = SlopeComputer.compute_slope_normal_map(result, context)
 	return result
 

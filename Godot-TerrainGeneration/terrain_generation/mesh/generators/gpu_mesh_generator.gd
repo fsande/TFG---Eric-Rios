@@ -68,6 +68,12 @@ func generate_mesh(mesh_array: Array, heightmap: Image, context: ProcessingConte
 		str(subdivisions), str(result.width), str(result.height), str(modified_vertices.size()), str(mesh_size)
 	])
 	result.slope_normal_map = SlopeComputer.compute_slope_normal_map(result, context)
+	var slope_as_red := Image.create(result.slope_normal_map.get_width(), result.slope_normal_map.get_height(), false, Image.FORMAT_RGB8)
+	for y in range(slope_as_red.get_height()):
+		for x in range(slope_as_red.get_width()):
+			var slope_value := result.slope_normal_map.get_pixel(x, y).a
+			slope_as_red.set_pixel(x, y, Color(slope_value, slope_value, slope_value))
+	DebugImageExporter.export_image(slope_as_red, "res://slope_red_map_gpu.png")
 	return result
 
 ## Executes a compute shader pass for the specified operation type.

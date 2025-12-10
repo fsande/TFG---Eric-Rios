@@ -107,6 +107,14 @@ func get_neighbours_chebyshev(vertex_index: int, distance: int) -> PackedInt32Ar
 ## SPATIAL LOOKUP
 ## ===========================
 
+## Get nearest grid vertex to UV coordinates (0-1 range).
+func get_nearest_grid_vertex_uv(uv: Vector2) -> int:
+	var clamped_u: float = clamp(uv.x, 0.0, 1.0)
+	var clamped_v: float = clamp(uv.y, 0.0, 1.0)
+	var col := int(clamp(clamped_u * width, 0.0, float(max(0, width - 1))))
+	var row := int(clamp(clamped_v * height, 0.0, float(max(0, height - 1))))
+	return _get_vertex_at(col, row)
+
 ## Get nearest grid vertex to world position (XZ plane).
 ## Assumes (0, 0) is center of mesh, mesh_size is total world dimensions.
 ## Returns vertex index or -1 if grid is empty.
@@ -115,14 +123,10 @@ func get_nearest_grid_vertex(world_pos: Vector2, mesh_size: Vector2) -> int:
 	var half_h := mesh_size.y * 0.5
 	var clamped_x: float = clamp(world_pos.x, -half_w, half_w)
 	var clamped_y: float = clamp(world_pos.y, -half_h, half_h)
-	
-	# Normalize to [0,1]
 	var normalized_x := (clamped_x / mesh_size.x) + 0.5
 	var normalized_y := (clamped_y / mesh_size.y) + 0.5
-	
 	var col := int(clamp(normalized_x * width, 0.0, float(max(0, width - 1))))
 	var row := int(clamp(normalized_y * height, 0.0, float(max(0, height - 1))))
-	
 	return _get_vertex_at(col, row)
 
 
