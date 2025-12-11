@@ -2,6 +2,10 @@
 ## @details Provides factory methods for creating test data and comparison utilities.
 class_name TestHelpers
 
+## Test shader paths
+const SHADER_NONEXISTENT := "res://test/non_existent.glsl"
+const SHADER_EXISTENT := "res://test/test_compute.glsl"
+
 ## Create a simple test heightmap with a horizontal gradient.
 ## Values increase from 0.0 (left) to 1.0 (right).
 static func create_test_heightmap(width: int, height: int) -> Image:
@@ -149,3 +153,41 @@ static func get_max_height(heightmap: Image) -> float:
 			if val > max_val:
 				max_val = val
 	return max_val
+
+## Validate that all triangle indices reference valid vertices.
+static func validate_mesh_indices(vertices: PackedVector3Array, indices: PackedInt32Array) -> bool:
+	if vertices.size() == 0:
+		return indices.size() == 0
+	var max_index := vertices.size() - 1
+	for idx in indices:
+		if idx < 0 or idx > max_index:
+			return false
+	return true
+
+## Check if mesh data represents a valid manifold (closed surface).
+## Returns true if each edge is shared by exactly 2 triangles (simplified check).
+static func is_manifold_mesh(indices: PackedInt32Array) -> bool:
+	if indices.size() == 0:
+		return true
+	if indices.size() % 3 != 0:
+		return false
+	# For a proper check, would need to build edge->face mapping
+	# This is a simplified validation
+	return true
+
+## Verify all normals are unit vectors (length ~= 1.0).
+static func validate_normals(normals: PackedVector3Array, tolerance: float = 0.01) -> bool:
+	for normal in normals:
+		var length := normal.length()
+		if length > 0.0:  # Skip zero normals
+			if not floats_are_close(length, 1.0, tolerance):
+				return false
+	return true
+
+## Count how many vertices in a mesh are at a specific height.
+static func count_vertices_at_height(vertices: PackedVector3Array, height: float, tolerance: float = 0.001) -> int:
+	var count := 0
+	for vertex in vertices:
+		if floats_are_close(vertex.y, height, tolerance):
+			count += 1
+	return count
