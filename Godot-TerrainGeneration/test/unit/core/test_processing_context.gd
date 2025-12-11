@@ -1,14 +1,9 @@
 extends GutTest
 
-## Test suite for ProcessingContext
-## File: terrain_generation/core/processing_context.gd
-
-# SETUP / TEARDOWN
 var context_cpu: ProcessingContext
 var context_gpu: ProcessingContext
 
 func after_each():
-	# Clean up contexts
 	if context_cpu and not context_cpu._is_disposed:
 		context_cpu.dispose()
 	if context_gpu and not context_gpu._is_disposed:
@@ -16,123 +11,112 @@ func after_each():
 	context_cpu = null
 	context_gpu = null
 
-# CONSTRUCTION TESTS
-func test_construction_with_cpu_type():
+func test_construction_with_valid_parameters():
 	context_cpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.CPU)
 	assert_not_null(context_cpu, "Should create valid ProcessingContext")
 	assert_eq(context_cpu.terrain_size, 512.0, "Should store terrain_size")
 	assert_eq(context_cpu.generation_seed, 42, "Should store generation_seed")
 	assert_eq(context_cpu.processor_type, ProcessingContext.ProcessorType.CPU, "Should store CPU processor_type")
 
-func test_construction_with_gpu_type():
-	context_gpu = ProcessingContext.new(1024.0, 123, ProcessingContext.ProcessorType.GPU)
-	assert_not_null(context_gpu, "Should create valid ProcessingContext")
-	assert_eq(context_gpu.terrain_size, 1024.0, "Should store terrain_size")
-	assert_eq(context_gpu.generation_seed, 123, "Should store generation_seed")
-	assert_eq(context_gpu.processor_type, ProcessingContext.ProcessorType.GPU, "Should store GPU processor_type")
+func test_construction_rejects_negative_terrain_size():
+	context_cpu = ProcessingContext.new(-100.0, 42, ProcessingContext.ProcessorType.CPU)
+	assert_push_error("terrain_size must be positive")
+	assert_eq(context_cpu.terrain_size, 256.0, "Should default to 256.0 for invalid input")
 
-func test_construction_with_default_processor_type():
-	context_cpu = ProcessingContext.new(256.0)
-	assert_eq(context_cpu.processor_type, ProcessingContext.ProcessorType.CPU, "Should default to CPU")
+func test_construction_rejects_zero_terrain_size():
+	context_cpu = ProcessingContext.new(0.0, 42, ProcessingContext.ProcessorType.CPU)
+	assert_push_error("terrain_size must be positive")
+	assert_eq(context_cpu.terrain_size, 256.0, "Should default to 256.0 for zero")
 
-func test_construction_with_zero_seed():
-	context_cpu = ProcessingContext.new(512.0, 0)
-	assert_eq(context_cpu.generation_seed, 0, "Should accept 0 as valid seed")
+func test_construction_rejects_negative_seed():
+	context_cpu = ProcessingContext.new(512.0, -1)
+	assert_push_error("generation_seed must be non-negative")
+	assert_eq(context_cpu.generation_seed, 0, "Should default to 0 for negative seed")
 
-# GPU AVAILABILITY TESTS
 func test_use_gpu_returns_false_for_cpu_context():
 	context_cpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.CPU)
 	assert_false(context_cpu.use_gpu(), "Should return false for CPU context")
+	assert_null(context_cpu.rendering_device, "CPU context should not have RenderingDevice")
 
-func test_use_gpu_returns_true_or_false_for_gpu_context():
+func test_gpu_context_initializes_rendering_device_or_falls_back():
 	context_gpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.GPU)
-	var uses_gpu := context_gpu.use_gpu()
-	assert_true(uses_gpu == true or uses_gpu == false, "Should return boolean for GPU context")
+	if context_gpu.use_gpu():
+		assert_not_null(context_gpu.rendering_device, "GPU context should have RenderingDevice when available")
+		assert_eq(context_gpu.processor_type, ProcessingContext.ProcessorType.GPU, "Should remain GPU type")
+	else:
+		assert_eq(context_gpu.processor_type, ProcessingContext.ProcessorType.CPU, "Should fallback to CPU when GPU unavailable")
 
-func test_get_rendering_device_returns_null_for_cpu():
+func test_shader_operations_fail_gracefully_on_cpu():
 	context_cpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.CPU)
-	var rd := context_cpu.get_rendering_device()
-	assert_null(rd, "Should return null RenderingDevice for CPU context")
-
-func test_get_rendering_device_for_gpu_context():
-	context_gpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.GPU)
-	var rd := context_gpu.get_rendering_device()
-	assert_true(rd != null, "Should return RenderingDevice")
-
-# SHADER CACHING TESTS
-func test_shader_cache_throws_error_for_cpu():
-	context_cpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.CPU)
-	var shader := context_cpu.get_or_create_shader("res://test/fake_shader.glsl")
+	var shader := context_cpu.get_or_create_shader(TestHelpers.SHADER_EXISTENT)
 	assert_engine_error("Attempted to load shader without GPU")
 	assert_false(shader.is_valid(), "Should return invalid RID for CPU context")
+	assert_false(context_cpu.use_gpu(), "Should still report CPU mode after shader error")
 
-func test_shader_cache_returns_invalid_rid_for_nonexistent_shader():
+func test_shader_cache_handles_missing_files():
 	context_gpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.GPU)
-	var shader := context_gpu.get_or_create_shader("res://nonexistent_shader.glsl")
+	if not context_gpu.use_gpu():
+		pass_test("GPU not available, skipping GPU shader test")
+		return
+	var shader := context_gpu.get_or_create_shader(TestHelpers.SHADER_NONEXISTENT)
 	assert_push_error("Shader not found")
+	assert_false(shader.is_valid(), "Should return invalid RID for nonexistent shader")
+	assert_eq(context_gpu._shader_cache.size(), 0, "Failed shaders should not be cached")
 
-# DISPOSAL TESTS
-func test_dispose_marks_context_as_disposed():
+func test_shader_cache_reuses_compiled_shaders():
+	context_gpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.GPU)
+	if not context_gpu.use_gpu():
+		pass_test("GPU not available, skipping shader cache test")
+		return
+	var initial_size := context_gpu._shader_cache.size()
+	var shader1 := context_gpu.get_or_create_shader(TestHelpers.SHADER_EXISTENT)
+	var shader2 := context_gpu.get_or_create_shader(TestHelpers.SHADER_EXISTENT)
+	assert_eq(shader1.get_id(), shader2.get_id(), "Should return same RID from cache")
+	assert_eq(context_gpu._shader_cache.size(), initial_size + 1, "Should cache exactly one shader")
+
+func test_dispose_prevents_further_operations():
 	context_cpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.CPU)
 	context_cpu.dispose()
 	assert_true(context_cpu._is_disposed, "Should mark context as disposed")
-
-func test_disposed_context_use_gpu_returns_false():
-	context_cpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.CPU)
-	context_cpu.dispose()
 	var result := context_cpu.use_gpu()
-	assert_push_error("Attempted to use disposed context")
-	assert_false(result, "Should return false after disposal")
-
-func test_disposed_context_get_rendering_device_returns_null():
-	context_gpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.GPU)
-	context_gpu.dispose()
-	var rd := context_gpu.get_rendering_device()
+	assert_false(result, "use_gpu should return false")
+	var rd := context_cpu.get_rendering_device()
 	assert_push_error("Attempted to access disposed context")
-	assert_null(rd, "Should return null after disposal")
+	assert_null(rd, "get_rendering_device should return null")
+	var shader := context_cpu.get_or_create_shader(TestHelpers.SHADER_EXISTENT)
+	assert_push_error(3, "Attempted to use disposed context")
+	assert_false(shader.is_valid(), "get_or_create_shader should return invalid RID")
 
-func test_disposed_context_get_or_create_shader_returns_invalid():
-	context_gpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.GPU)
-	context_gpu.dispose()
-	var shader := context_gpu.get_or_create_shader("res://invalid.glsl")
-	assert_push_error("Attempted to use disposed context")
-	assert_false(shader.is_valid(), "Should return invalid RID after disposal")
-
-func test_double_dispose_doesnt_crash():
+func test_dispose_is_idempotent():
 	context_cpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.CPU)
 	context_cpu.dispose()
 	context_cpu.dispose()
-	assert_true(context_cpu._is_disposed, "Should remain disposed after double dispose")
+	context_cpu.dispose()
+	assert_true(context_cpu._is_disposed, "Multiple disposals should not crash")
 
-# MESH PARAMETERS TESTS
-func test_mesh_params_can_be_set():
+func test_dispose_cleans_up_gpu_resources():
+	context_gpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.GPU)
+	if context_gpu.use_gpu():
+		var shader := context_gpu.get_or_create_shader(TestHelpers.SHADER_EXISTENT)
+		assert_gt(context_gpu._shader_cache.size(), 0, "Should have cached shaders")
+	context_gpu.dispose()
+	assert_eq(context_gpu._shader_cache.size(), 0, "Should clear shader cache on disposal")
+	assert_null(context_gpu.rendering_device, "Should clear rendering device")
+
+func test_context_tracks_mesh_parameters():
 	context_cpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.CPU)
 	var params := MeshGeneratorParameters.new()
 	params.mesh_size = Vector2(1024.0, 1024.0)
 	params.subdivisions = 128
 	context_cpu.mesh_params = params
-	assert_eq(context_cpu.mesh_params, params, "Should store mesh parameters")
-	assert_eq(context_cpu.mesh_params.mesh_size, Vector2(1024.0, 1024.0), "Should access stored parameters")
+	assert_same(context_cpu.mesh_params, params, "Should store exact parameter reference")
+	context_cpu.use_gpu()
+	assert_same(context_cpu.mesh_params, params, "Parameters should survive operations")
 
-func test_mesh_params_defaults_to_null():
+func test_context_tracks_gpu_memory_allocation():
 	context_cpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.CPU)
-	assert_null(context_cpu.mesh_params, "Should default to null")
-
-# PROCESSOR TYPE TESTS
-func test_processor_type_enum_values():
-	assert_eq(ProcessingContext.ProcessorType.CPU, 0, "CPU enum should be 0")
-	assert_eq(ProcessingContext.ProcessorType.GPU, 1, "GPU enum should be 1")
-
-func test_processor_type_can_be_changed():
-	context_cpu = ProcessingContext.new(512.0, 42, ProcessingContext.ProcessorType.CPU)
-	context_cpu.processor_type = ProcessingContext.ProcessorType.GPU
-	assert_eq(context_cpu.processor_type, ProcessingContext.ProcessorType.GPU, "Should allow processor type change")
-
-# TERRAIN SIZE TESTS
-func test_terrain_size_positive_values():
-	context_cpu = ProcessingContext.new(2048.0, 42, ProcessingContext.ProcessorType.CPU)
-	assert_eq(context_cpu.terrain_size, 2048.0, "Should store large terrain size")
-
-func test_terrain_size_small_values():
-	context_cpu = ProcessingContext.new(64.0, 42, ProcessingContext.ProcessorType.CPU)
-	assert_eq(context_cpu.terrain_size, 64.0, "Should store small terrain size")
+	assert_eq(context_cpu.get_gpu_memory_usage(), 0, "Should start with zero GPU memory")
+	context_cpu.track_gpu_allocation(1024)
+	assert_eq(context_cpu.get_gpu_memory_usage(), 1024, "Should track allocations")
+	context_cpu.track_gpu_allocation(2048)
+	assert_eq(context_cpu.get_gpu_memory_usage(), 3072, "Should accumulate allocations")

@@ -37,6 +37,12 @@ var _is_disposed: bool = false
 
 ## Construct context with terrain configuration.
 func _init(p_terrain_size: float, p_seed: int = 0, p_processor_type: ProcessorType = ProcessorType.CPU):
+	if p_terrain_size <= 0.0:
+		push_error("ProcessingContext: terrain_size must be positive, got %f" % p_terrain_size)
+		p_terrain_size = 256.0
+	if p_seed < 0:
+		push_error("ProcessingContext: generation_seed must be non-negative, got %d" % p_seed)
+		p_seed = 0
 	terrain_size = p_terrain_size
 	generation_seed = p_seed
 	processor_type = p_processor_type

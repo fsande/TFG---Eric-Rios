@@ -22,6 +22,9 @@ signal configuration_changed()
 ## Size in world units of the terrain to generate (square).
 @export var terrain_size: float = 512.0:
 	set(value):
+		if value <= 0.0:
+			push_error("TerrainConfiguration: terrain_size must be positive, got %f" % value)
+			return
 		terrain_size = value
 		if mesh_generator_parameters == null:
 			mesh_generator_parameters = MeshGeneratorParameters.new()
