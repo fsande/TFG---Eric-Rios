@@ -1,4 +1,4 @@
-﻿## @brief Strategy for calculating mesh tangents.
+## @brief Strategy for calculating mesh tangents.
 ##
 ## @details Implements tangent calculation algorithms using normals, UVs, and vertex data.
 ## Separated from data storage following Strategy Pattern and SRP.
@@ -87,4 +87,3 @@ static func calculate_and_cache(mesh_data: MeshData) -> void:
 		MeshNormalCalculator.calculate_and_cache(mesh_data)
 	
 	mesh_data.cached_tangents = calculate_tangents(mesh_data, mesh_data.cached_normals)
-

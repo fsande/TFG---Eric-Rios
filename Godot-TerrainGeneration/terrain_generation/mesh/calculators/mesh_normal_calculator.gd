@@ -1,4 +1,4 @@
-﻿## @brief Strategy for calculating mesh normals.
+## @brief Strategy for calculating mesh normals.
 ##
 ## @details Implements normal calculation algorithms.
 @tool
@@ -38,4 +38,3 @@ static func calculate_normals(mesh_data: MeshData) -> PackedVector3Array:
 ## Calculate normals and cache them in the mesh data.
 static func calculate_and_cache(mesh_data: MeshData) -> void:
 	mesh_data.cached_normals = calculate_normals(mesh_data)
-
