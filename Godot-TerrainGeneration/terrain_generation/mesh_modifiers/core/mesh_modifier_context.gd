@@ -140,10 +140,6 @@ func add_triangles(triangle_indices: PackedInt32Array) -> void:
 func is_surface_vertex(index: int) -> bool:
 	return _grid.is_grid_vertex(index)
 
-## Set vertex position by index.
-func set_vertex_position(index: int, position: Vector3) -> void:
-	_mesh.set_vertex(index, position)
-
 ## Remove triangles that pass the filter function.
 ## filter_func: Callable that takes (v0: Vector3, v1: Vector3, v2: Vector3) -> bool
 ## Returns true to REMOVE the triangle, false to keep it.

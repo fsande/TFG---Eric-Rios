@@ -7,15 +7,12 @@ class_name ArrayMeshBuilder extends RefCounted
 ## Build an ArrayMesh from mesh data.
 ## Calculates normals and tangents if not already cached.
 static func build_mesh(mesh_data: MeshData) -> ArrayMesh:
-	# Ensure normals are calculated
+	if mesh_data.vertices.is_empty():
+		return ArrayMesh.new()
 	if mesh_data.cached_normals.is_empty():
 		MeshNormalCalculator.calculate_and_cache(mesh_data)
-	
-	# Ensure tangents are calculated
 	if mesh_data.cached_tangents.is_empty():
 		MeshTangentCalculator.calculate_and_cache(mesh_data)
-	
-	# Build arrays for Godot mesh
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = mesh_data.vertices
@@ -23,7 +20,6 @@ static func build_mesh(mesh_data: MeshData) -> ArrayMesh:
 	arrays[Mesh.ARRAY_TANGENT] = _tangents_to_packed_float32(mesh_data.cached_tangents)
 	arrays[Mesh.ARRAY_TEX_UV] = mesh_data.uvs
 	arrays[Mesh.ARRAY_INDEX] = mesh_data.indices
-	
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return mesh
