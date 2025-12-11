@@ -51,16 +51,12 @@ func _init(p_terrain_size: float, p_seed: int = 0, p_processor_type: ProcessorTy
 func _initialize_gpu() -> bool:
 	if _gpu_initialized:
 		return rendering_device != null
-	
 	_gpu_initialized = true
 	rendering_device = RenderingServer.create_local_rendering_device()
-	
 	if not rendering_device:
 		push_warning("ProcessingContext: Failed to create RenderingDevice, falling back to CPU")
 		processor_type = ProcessorType.CPU
 		return false
-	
-	print("ProcessingContext: GPU initialized successfully")
 	return true
 
 ## Check if GPU is available and ready.
@@ -87,28 +83,21 @@ func get_or_create_shader(shader_path: String) -> RID:
 	if _is_disposed:
 		push_error("ProcessingContext: Attempted to use disposed context")
 		return RID()
-	
 	if _shader_cache.has(shader_path):
 		return _shader_cache[shader_path]
-	
 	if not use_gpu():
 		push_warning("ProcessingContext: Attempted to load shader without GPU")
 		return RID()
-	
 	if not ResourceLoader.exists(shader_path):
 		push_error("ProcessingContext: Shader not found: %s" % shader_path)
 		return RID()
-	
 	var shader_file := load(shader_path)
 	if not shader_file:
 		push_error("ProcessingContext: Failed to load shader: %s" % shader_path)
 		return RID()
-	
 	var spirv: RDShaderSPIRV = shader_file.get_spirv()
 	var shader_rid := rendering_device.shader_create_from_spirv(spirv)
 	_shader_cache[shader_path] = shader_rid
-	
-	print("ProcessingContext: Cached shader: %s" % shader_path)
 	return shader_rid
 
 ## Clean up GPU resources. Must be called at end of generation.

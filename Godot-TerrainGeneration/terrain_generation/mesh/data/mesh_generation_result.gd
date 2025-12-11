@@ -95,20 +95,6 @@ func mark_dirty() -> void:
 func get_vertex(index: int) -> Vector3:
 	return mesh_data.get_vertex(index)
 
-## Set vertex position by index.
-func set_vertex(index: int, position: Vector3) -> void:
-	if mesh_data.set_vertex(index, position):
-		mark_dirty()
-
-## Get vertex height (Y component).
-func get_height(index: int) -> float:
-	return mesh_data.get_height(index)
-
-## Set vertex height (Y component).
-func set_height(index: int, new_height: float) -> void:
-	if mesh_data.set_height(index, new_height):
-		mark_dirty()
-
 ## Check if index is valid.
 func is_valid_index(index: int) -> bool:
 	return mesh_data.is_valid_index(index)

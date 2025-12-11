@@ -57,24 +57,8 @@ func get_vertex(index: int) -> Vector3:
 		return Vector3.ZERO
 	return vertices[index]
 
-## Set vertex position by index.
-func set_vertex(index: int, position: Vector3) -> bool:
-	if not is_valid_index(index):
-		push_warning("MeshData: Invalid vertex index %d" % index)
-		return false
-	vertices[index] = position
-	return true
-
 ## Get vertex height (Y component).
 func get_height(index: int) -> float:
 	if not is_valid_index(index):
 		return 0.0
 	return vertices[index].y
-
-## Set vertex height (Y component).
-func set_height(index: int, new_height: float) -> bool:
-	if not is_valid_index(index):
-		return false
-	vertices[index].y = new_height
-	return true
-
