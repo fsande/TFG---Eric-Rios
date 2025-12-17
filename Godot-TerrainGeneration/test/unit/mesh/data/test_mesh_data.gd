@@ -165,13 +165,12 @@ func test_cached_tangents_can_be_set():
 	assert_eq(test_mesh_data.cached_tangents.size(), 1, "Should store cached_tangents")
 
 func test_mismatched_vertex_uv_count_is_handled():
-	# This is a potential bug - UVs and vertices should match
 	var vertices := PackedVector3Array([Vector3.ZERO, Vector3.ONE])
-	var uvs := PackedVector2Array([Vector2.ZERO])  # Only 1 UV for 2 vertices!
+	var uvs := PackedVector2Array([Vector2.ZERO])
 	var indices := PackedInt32Array([0, 1, 0])
 	test_mesh_data = MeshData.new(vertices, indices, uvs)
 	assert_ne(test_mesh_data.vertices.size(), test_mesh_data.uvs.size(), "Mismatch should be detectable")
-	# This configuration may cause rendering issues
+	assert_engine_error("MeshData: Vertex count (2) does not match UV count (1)")
 
 func test_indices_reference_valid_vertices():
 	test_mesh_data = MeshData.new(test_vertices, test_indices, test_uvs)

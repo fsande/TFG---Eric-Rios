@@ -28,8 +28,7 @@ func test_construction_with_all_parameters():
 		collision,
 		test_metadata,
 		123.45
-	)
-	
+	)	
 	assert_not_null(terrain_data, "Should create valid TerrainData")
 	assert_eq(terrain_data.heightmap, test_heightmap, "Should store heightmap")
 	assert_eq(terrain_data.mesh_result, test_mesh_result, "Should store mesh_result")
@@ -43,8 +42,7 @@ func test_construction_with_minimal_parameters():
 		test_heightmap,
 		test_mesh_result,
 		test_terrain_size
-	)
-	
+	)	
 	assert_not_null(terrain_data, "Should create valid TerrainData")
 	assert_null(terrain_data.collision_shape, "Should have null collision by default")
 	assert_eq(terrain_data.metadata.size(), 0, "Should have empty metadata by default")
@@ -55,8 +53,7 @@ func test_construction_with_null_heightmap():
 		null,
 		test_mesh_result,
 		test_terrain_size
-	)
-	
+	)	
 	assert_not_null(terrain_data, "Should create TerrainData even with null heightmap")
 	assert_null(terrain_data.heightmap, "Should store null heightmap")
 
@@ -65,8 +62,7 @@ func test_construction_with_null_mesh_result():
 		test_heightmap,
 		null,
 		test_terrain_size
-	)
-	
+	)	
 	assert_not_null(terrain_data, "Should create TerrainData even with null mesh_result")
 	assert_null(terrain_data.mesh_result, "Should store null mesh_result")
 
@@ -75,8 +71,7 @@ func test_get_mesh_builds_valid_renderable_mesh():
 		test_heightmap,
 		test_mesh_result,
 		test_terrain_size
-	)
-	
+	)	
 	var mesh := terrain_data.get_mesh()
 	assert_not_null(mesh, "Should build ArrayMesh")
 	assert_true(mesh is ArrayMesh, "Should be ArrayMesh type")
@@ -89,13 +84,10 @@ func test_mesh_caching_improves_performance():
 		test_heightmap,
 		test_mesh_result,
 		test_terrain_size
-	)
-	
+	)	
 	assert_null(terrain_data._cached_mesh, "Cache starts empty")
-	
 	var mesh1 := terrain_data.get_mesh()
 	assert_not_null(terrain_data._cached_mesh, "First call populates cache")
-	
 	var mesh2 := terrain_data.get_mesh()
 	assert_same(mesh1, mesh2, "Second call returns exact same instance")
 
@@ -105,7 +97,6 @@ func test_get_mesh_handles_missing_mesh_result():
 		null,
 		test_terrain_size
 	)
-	
 	var mesh := terrain_data.get_mesh()
 	assert_null(mesh, "Should gracefully return null for missing mesh_result")
 
@@ -117,7 +108,6 @@ func test_has_collision_returns_true_when_collision_present():
 		test_terrain_size,
 		collision
 	)
-	
 	assert_true(terrain_data.has_collision(), "Should return true when collision shape exists")
 
 func test_has_collision_returns_false_when_no_collision():
@@ -127,7 +117,6 @@ func test_has_collision_returns_false_when_no_collision():
 		test_terrain_size,
 		null
 	)
-	
 	assert_false(terrain_data.has_collision(), "Should return false when no collision shape")
 
 func test_get_vertex_count_returns_correct_value():
@@ -136,9 +125,7 @@ func test_get_vertex_count_returns_correct_value():
 		test_mesh_result,
 		test_terrain_size
 	)
-	
 	var count := terrain_data.get_vertex_count()
-	
 	assert_eq(count, 100, "Should return vertex count from mesh_result (10x10 grid)")
 
 func test_get_vertex_count_returns_zero_for_null_mesh_result():
@@ -147,9 +134,7 @@ func test_get_vertex_count_returns_zero_for_null_mesh_result():
 		null,
 		test_terrain_size
 	)
-	
 	var count := terrain_data.get_vertex_count()
-	
 	assert_eq(count, 0, "Should return 0 when mesh_result is null")
 
 func test_get_triangle_count_is_calculated_from_indices():
@@ -170,9 +155,7 @@ func test_get_triangle_count_returns_zero_for_null_mesh_result():
 		null,
 		test_terrain_size
 	)
-	
 	var count := terrain_data.get_triangle_count()
-	
 	assert_eq(count, 0, "Should return 0 when mesh_result is null")
 
 func test_metadata_stores_generation_provenance():
@@ -201,17 +184,8 @@ func test_metadata_can_be_modified_post_creation():
 	)
 	terrain_data.metadata["render_distance"] = 500.0
 	terrain_data.metadata["lod_level"] = 2
-	
 	assert_eq(terrain_data.metadata["render_distance"], 500.0, "Should add new keys")
 	assert_eq(terrain_data.metadata.size(), 2, "Should track added keys")
-
-# ============================================================================
-# TERRAIN SIZE TESTS
-# ============================================================================
-
-# ============================================================================
-# TERRAIN SIZE & DIMENSIONS TESTS
-# ============================================================================
 
 func test_terrain_size_supports_rectangular_terrains():
 	var size := Vector2(1024.0, 2048.0)
