@@ -190,14 +190,12 @@ func test_height_values_are_correctly_extracted():
 		Vector3(3, 0.0, 3)     # Height = 0.0 (sea level)
 	])
 	test_mesh_data = MeshData.new(vertices_with_heights, PackedInt32Array(), PackedVector2Array())
-	
 	assert_almost_eq(test_mesh_data.get_height(0), 10.5, 0.001, "Positive height")
 	assert_almost_eq(test_mesh_data.get_height(1), 25.3, 0.001, "Higher terrain")
 	assert_almost_eq(test_mesh_data.get_height(2), -5.7, 0.001, "Below sea level")
 	assert_eq(test_mesh_data.get_height(3), 0.0, "Sea level")
 
 func test_triangle_data_is_complete():
-	# Every triangle needs exactly 3 indices
 	test_mesh_data = MeshData.new(test_vertices, test_indices, test_uvs)
 	assert_eq(test_indices.size() % 3, 0, "Indices should form complete triangles")
 	var triangle_count := test_indices.size() / 3

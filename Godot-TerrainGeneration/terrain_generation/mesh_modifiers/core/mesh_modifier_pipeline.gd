@@ -73,8 +73,6 @@ func execute(terrain_data: TerrainData, processing_context: ProcessingContext, s
 	
 	if mesh_result.mesh_size == Vector2.ZERO:
 		mesh_result.mesh_size = parameters.mesh_size
-	
-	# Create context
 	_execution_context = MeshModifierContext.new(terrain_data, processing_context, scene_root, parameters)
 	
 	# Execute stages

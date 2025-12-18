@@ -28,7 +28,7 @@ func test_construction_with_all_parameters():
 		collision,
 		test_metadata,
 		123.45
-	)	
+	)
 	assert_not_null(terrain_data, "Should create valid TerrainData")
 	assert_eq(terrain_data.heightmap, test_heightmap, "Should store heightmap")
 	assert_eq(terrain_data.mesh_result, test_mesh_result, "Should store mesh_result")

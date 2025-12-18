@@ -184,7 +184,6 @@ func get_terrain_size() -> float:
 func get_generation_seed() -> int:
 	return processing_context.generation_seed
 
-
 ## ===========================
 ## PIPELINE INTEGRATION
 ## ===========================

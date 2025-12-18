@@ -9,6 +9,8 @@ var mesh_builder: TerrainMeshBuilder
 ## Simple in-memory cache mapping configuration keys to TerrainData.
 var _cache: Dictionary = {}
 
+var last_mesh_modifier_context: MeshModifierContext = null
+
 func _init():
 	mesh_builder = TerrainMeshBuilder.new()
 
@@ -54,11 +56,10 @@ func generate(config: TerrainConfiguration) -> TerrainData:
 			scene_root,
 			processing_context.mesh_params
 		)
-		
 		if modifier_context:
+			last_mesh_modifier_context = modifier_context
 			mesh_result = modifier_context.get_mesh_data()
-			scene_root = modifier_context.scene_root
-			
+			scene_root = modifier_context.scene_root			
 			var pipeline_time := Time.get_ticks_msec() - pipeline_start
 			print("TerrainGenerationService: Mesh modification complete in %d ms" % pipeline_time)
 		else:

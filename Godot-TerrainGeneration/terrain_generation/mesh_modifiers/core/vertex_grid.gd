@@ -84,18 +84,14 @@ func get_neighbours_chebyshev(vertex_index: int, distance: int) -> PackedInt32Ar
 	var grid_pos := _get_grid_position(vertex_index)
 	if grid_pos.x < 0:
 		return PackedInt32Array()
-	
 	var neighbours := PackedInt32Array()
-	
 	for dy in range(-distance, distance + 1):
 		for dx in range(-distance, distance + 1):
 			if dx == 0 and dy == 0:
 				continue
-			
 			var neighbour_col := grid_pos.x + dx
 			var neighbour_row := grid_pos.y + dy
 			var neighbour_index := _get_vertex_at(neighbour_col, neighbour_row)
-			
 			if neighbour_index >= 0:
 				neighbours.append(neighbour_index)
 	
@@ -123,8 +119,8 @@ func get_nearest_grid_vertex(world_pos: Vector2, mesh_size: Vector2) -> int:
 	var half_h := mesh_size.y * 0.5
 	var clamped_x: float = clamp(world_pos.x, -half_w, half_w)
 	var clamped_y: float = clamp(world_pos.y, -half_h, half_h)
-	var normalized_x := (clamped_x / mesh_size.x) + 0.5
-	var normalized_y := (clamped_y / mesh_size.y) + 0.5
+	var normalized_x := (-clamped_x / mesh_size.x) + 0.5
+	var normalized_y := (-clamped_y / mesh_size.y) + 0.5
 	var col := int(clamp(normalized_x * width, 0.0, float(max(0, width - 1))))
 	var row := int(clamp(normalized_y * height, 0.0, float(max(0, height - 1))))
 	return _get_vertex_at(col, row)
