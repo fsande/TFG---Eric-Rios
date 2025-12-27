@@ -2,12 +2,12 @@
 
 [ext_resource type="PackedScene" uid="uid://baa7kovw3ralm" path="res://player/BasicPlayer.tscn" id="3_avahw"]
 [ext_resource type="PackedScene" uid="uid://bdf3hehjq3yeb" path="res://scenes/terrain.tscn" id="4_1bvp3"]
-[ext_resource type="Script" uid="uid://ortj27h5j03e" path="res://terrain_generation/heightmap/sources/texture_heightmap_source.gd" id="5_85g3d"]
+[ext_resource type="Script" uid="uid://byh53w6k375jl" path="res://terrain_generation/heightmap/sources/texture_heightmap_source.gd" id="5_85g3d"]
 [ext_resource type="PackedScene" uid="uid://k5n4e67sj3xd" path="res://scenes/water_plane.tscn" id="5_lquwl"]
-[ext_resource type="Script" uid="uid://bevx624h4vgcs" path="res://terrain_generation/configuration/mesh_generator_parameters.gd" id="6_dg77c"]
-[ext_resource type="Shader" uid="uid://cxiaximdnswg" path="res://assets/shaders/water.gdshader" id="7_272bh"]
+[ext_resource type="Script" uid="uid://cng2l66yyegrm" path="res://terrain_generation/configuration/mesh_generator_parameters.gd" id="6_dg77c"]
+[ext_resource type="Shader" uid="uid://cxx0puljrol3k" path="res://assets/shaders/water.gdshader" id="7_272bh"]
 [ext_resource type="Resource" uid="uid://c4oh16yvru20i" path="res://assets/generation_resources/basic_pipepline.tres" id="7_kek77"]
-[ext_resource type="Script" uid="uid://duhioimjv5je5" path="res://terrain_generation/configuration/terrain_configuration.gd" id="8_dg77c"]
+[ext_resource type="Script" uid="uid://b6bp6j1f4vnm1" path="res://terrain_generation/configuration/terrain_configuration.gd" id="8_dg77c"]
 [ext_resource type="Material" uid="uid://bg4p6ysy07sj1" path="res://assets/materials/terrain_mat.tres" id="13_ycdy4"]
 
 [sub_resource type="Gradient" id="Gradient_m2sqd"]
