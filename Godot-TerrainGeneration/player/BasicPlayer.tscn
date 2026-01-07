@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://baa7kovw3ralm"]
 
-[ext_resource type="Script" uid="uid://cruskuuviimxu" path="res://player/player.gd" id="1_65q4t"]
-[ext_resource type="Script" uid="uid://sekf2xjwsgk1" path="res://player/look_controller.gd" id="2_0wtre"]
+[ext_resource type="Script" uid="uid://clhi8a1fnr0fl" path="res://player/player.gd" id="1_65q4t"]
+[ext_resource type="Script" uid="uid://b8axhb40otwhw" path="res://player/look_controller.gd" id="2_0wtre"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_65q4t"]
 height = 1.8
