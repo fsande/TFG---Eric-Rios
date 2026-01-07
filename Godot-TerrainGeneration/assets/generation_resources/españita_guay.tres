@@ -1,11 +1,11 @@
 [gd_resource type="Resource" script_class="HeightmapProcessorDecorator" load_steps=15 format=4 uid="uid://wr2k3r0ty8xg"]
 
-[ext_resource type="Script" uid="uid://dk2sbp22dpfkj" path="res://terrain_generation/heightmap/processors/mask_processor.gd" id="1_ks3ey"]
-[ext_resource type="Script" uid="uid://wy41761qe0mu" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="2_mrnbj"]
-[ext_resource type="Script" uid="uid://bwv425wfhjywe" path="res://terrain_generation/heightmap/combiners/multiplication_combiner.gd" id="3_35u3o"]
-[ext_resource type="Script" uid="uid://cm0re3pghxn7h" path="res://terrain_generation/heightmap/sources/composite_heightmap_source.gd" id="4_2mqmk"]
-[ext_resource type="Script" uid="uid://58wx33pwfdk5" path="res://terrain_generation/heightmap/sources/heightmap_source.gd" id="5_aa5gr"]
-[ext_resource type="Script" uid="uid://dtbhsoo2ruv07" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="6_dvx1n"]
+[ext_resource type="Script" uid="uid://4rfuwutrf78o" path="res://terrain_generation/heightmap/processors/mask_processor.gd" id="1_ks3ey"]
+[ext_resource type="Script" uid="uid://x7gc7eg20w0b" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="2_mrnbj"]
+[ext_resource type="Script" uid="uid://o0lhahullfck" path="res://terrain_generation/heightmap/combiners/multiplication_combiner.gd" id="3_35u3o"]
+[ext_resource type="Script" uid="uid://bex5sqputtgkm" path="res://terrain_generation/heightmap/sources/composite_heightmap_source.gd" id="4_2mqmk"]
+[ext_resource type="Script" uid="uid://0igih326n7n3" path="res://terrain_generation/heightmap/sources/heightmap_source.gd" id="5_aa5gr"]
+[ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="6_dvx1n"]
 
 [sub_resource type="Image" id="Image_5d10y"]
 data = {

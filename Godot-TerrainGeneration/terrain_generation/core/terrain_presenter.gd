@@ -7,7 +7,7 @@
 class_name TerrainPresenter extends Node3D
 
 ## Terrain configuration resource driving generation (heightmap, mesh params, etc.).
-@export var configuration: TerrainConfiguration:
+@export var configuration: TerrainConfiguration = TerrainConfiguration.new():
 	set(value):
 		if configuration and configuration.configuration_changed.is_connected(_on_config_changed):
 			configuration.configuration_changed.disconnect(_on_config_changed)
@@ -42,9 +42,7 @@ var _is_dirty: bool = true
 func _ready() -> void:
 	_generation_service = TerrainGenerationService.new()
 	_setup_scene_nodes()
-	
-	# if auto_generate and configuration:
-	if configuration:
+	if configuration and auto_generate:
 		regenerate()
 
 func _setup_scene_nodes() -> void:
@@ -56,7 +54,6 @@ func _setup_scene_nodes() -> void:
 			add_child(_mesh_instance)
 			if Engine.is_editor_hint():
 				_mesh_instance.owner = get_tree().edited_scene_root
-
 	if not _collision_body:
 		_collision_body = get_node_or_null("TerrainCollision")
 		if not _collision_body:
@@ -65,7 +62,6 @@ func _setup_scene_nodes() -> void:
 			add_child(_collision_body)
 			if Engine.is_editor_hint():
 				_collision_body.owner = get_tree().edited_scene_root
-
 	if not _collision_shape:
 		_collision_shape = _collision_body.get_node_or_null("CollisionShape")
 		if not _collision_shape:
@@ -74,7 +70,6 @@ func _setup_scene_nodes() -> void:
 			_collision_body.add_child(_collision_shape)
 			if Engine.is_editor_hint():
 				_collision_shape.owner = get_tree().edited_scene_root
-	
 	if not _agent_nodes_container:
 		var agent_objects_name := "AgentObjects"
 		_agent_nodes_container = get_node_or_null(agent_objects_name)
@@ -147,23 +142,17 @@ func _mark_dirty() -> void:
 func _update_agent_nodes() -> void:
 	if not _agent_nodes_container:
 		return
-	
-	# Clear existing agent nodes
 	for child in _agent_nodes_container.get_children():
 		_agent_nodes_container.remove_child(child)
 		child.queue_free()
-	
-	# Add new agent nodes if present in metadata
 	if _current_terrain_data and _current_terrain_data.metadata.has("scene_root"):
 		var scene_root = _current_terrain_data.metadata.get("scene_root")
 		if scene_root and scene_root is Node3D:
-			# Reparent all children from the pipeline's scene_root to our container
 			for child in scene_root.get_children():
 				scene_root.remove_child(child)
 				_agent_nodes_container.add_child(child)
 				if Engine.is_editor_hint():
 					child.owner = get_tree().edited_scene_root
-			
 			print("TerrainPresenter: Added %d agent-generated objects" % _agent_nodes_container.get_child_count())
 
 ## Return the currently displayed TerrainData or null if none.

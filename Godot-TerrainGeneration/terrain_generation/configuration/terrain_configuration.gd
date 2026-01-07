@@ -10,7 +10,7 @@ signal configuration_changed()
 
 @export_group("Heightmap Generation")
 ## Heightmap source resource used to produce heightmaps.
-@export var heightmap_source: HeightmapSource:
+@export var heightmap_source: HeightmapSource = NoiseHeightmapSource.new():
 	set(value):
 		if heightmap_source and heightmap_source.heightmap_changed.is_connected(_on_heightmap_changed):
 			heightmap_source.heightmap_changed.disconnect(_on_heightmap_changed)
@@ -44,7 +44,7 @@ signal configuration_changed()
 
 @export_group("Mesh Generation")
 ## Number of subdivisions for the generated plane mesh.
-@export var mesh_generator_parameters: MeshGeneratorParameters:
+@export var mesh_generator_parameters: MeshGeneratorParameters = MeshGeneratorParameters.new():
 	set(value):
 		mesh_generator_parameters = value
 		configuration_changed.emit()

@@ -15,7 +15,7 @@ class_name NoiseHeightmapSource extends HeightmapSource
 		heightmap_changed.emit()
 
 ## The FastNoiseLite instance used to generate the heightmap.
-@export var noise: FastNoiseLite:
+@export var noise: FastNoiseLite = FastNoiseLite.new():
 	set(value):
 		noise = value
 		if noise:

@@ -116,7 +116,7 @@ func _elevate_wedge(context: MeshModifierContext, position: Vector2, direction: 
 	var perpendicular := Vector2(-direction.y, direction.x)
 	var center_vertex_index := context.find_nearest_vertex(position)
 	if center_vertex_index < 0:
-		print("  ERROR: find_nearest_vertex returned -1 for position (%0.2f, %0.2f)" % [position.x, position.y])
+		print("ERROR: find_nearest_vertex returned -1 for position (%0.2f, %0.2f)" % [position.x, position.y])
 		return 0
 	var vertices := context.get_vertex_array()
 	var search_radius: float = max(wedge_width, wedge_length) * 1.5
