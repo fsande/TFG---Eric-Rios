@@ -18,10 +18,10 @@ static func compute_slope_normal_map(mesh_result: MeshGenerationResult, context:
 	if mesh_result.width == 0 or mesh_result.height == 0:
 		push_error("SlopeComputer: mesh_result has invalid dimensions (%sx%s)" % [str(mesh_result.width), str(mesh_result.height)])
 		return null
-	if context.use_gpu():
-		return _compute_gpu(mesh_result, context)
-	else:
-		return _compute_cpu(mesh_result)
+#	if context.use_gpu():
+#		return _compute_gpu(mesh_result, context)
+#	else:
+	return _compute_cpu(mesh_result)
 
 ## CPU implementation: Iterate all vertices and calculate slope from neighbors.
 static func _compute_cpu(mesh_result: MeshGenerationResult) -> Image:

@@ -55,7 +55,6 @@ func generate_mesh(mesh_array: Array, heightmap: Image, context: ProcessingConte
 	_execute_pass(rd, pipeline, shader, vertex_buffer, index_buffer, uv_buffer, normal_buffer, tangent_buffer,
 		tan1_buffer, tan2_buffer, heightmap_texture, sampler,
 		height_scale, mesh_size, vertex_count, index_count, 2)
-	
 	var modified_vertices := GpuResourceHelper.read_vector3_buffer(rd, vertex_buffer, vertex_count)
 	var rids: Array[RID] = [vertex_buffer, index_buffer, uv_buffer, normal_buffer, tangent_buffer, tan1_buffer, tan2_buffer, heightmap_texture, sampler, pipeline]
 	GpuResourceHelper.free_rids(rd, rids)
@@ -68,11 +67,12 @@ func generate_mesh(mesh_array: Array, heightmap: Image, context: ProcessingConte
 		str(subdivisions), str(result.width), str(result.height), str(modified_vertices.size()), str(mesh_size)
 	])
 	result.slope_normal_map = SlopeComputer.compute_slope_normal_map(result, context)
-	var slope_as_red := Image.create(result.slope_normal_map.get_width(), result.slope_normal_map.get_height(), false, Image.FORMAT_RGB8)
-	for y in range(slope_as_red.get_height()):
-		for x in range(slope_as_red.get_width()):
-			var slope_value := result.slope_normal_map.get_pixel(x, y).a
-			slope_as_red.set_pixel(x, y, Color(slope_value, slope_value, slope_value))
+#	var slope_as_red := Image.create(result.slope_normal_map.get_width(), result.slope_normal_map.get_height(), false, Image.FORMAT_RGB8)
+#	for y in range(slope_as_red.get_height()):
+#		for x in range(slope_as_red.get_width()):
+#			var slope_value := result.slope_normal_map.get_pixel(x, y).a
+#			slope_as_red.set_pixel(x, y, Color(slope_value, slope_value, slope_value))		
+	DebugImageExporter.export_image(result.slope_normal_map, "res://slope_map_gpu.png")
 	return result
 
 ## Executes a compute shader pass for the specified operation type.

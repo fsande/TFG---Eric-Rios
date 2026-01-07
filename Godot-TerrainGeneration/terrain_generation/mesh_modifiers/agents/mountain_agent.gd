@@ -28,6 +28,19 @@ class_name MountainAgent extends MeshModifierAgent
 ## Falloff strength for wedge elevation (higher = sharper).
 @export_range(0.1, 5.0, 0.1) var elevation_falloff: float = 1.0
 
+@export_group("Randomization")
+## Height variation per wedge (0.0 = no variation, 1.0 = can vary from 0 to 2x height).
+@export_range(0.0, 1.0, 0.05) var wedge_height_variation: float = 0.3
+
+## Width variation per wedge (0.0 = no variation, 1.0 = can vary from 0.5x to 1.5x width).
+@export_range(0.0, 1.0, 0.05) var wedge_width_variation: float = 0.2
+
+## Noise strength for vertex elevation (0.0 = no noise, 1.0 = significant noise).
+@export_range(0.0, 1.0, 0.05) var noise_strength: float = 0.15
+
+## Noise generator for terrain variation (configure type, frequency, seed, etc. in inspector).
+@export var noise: FastNoiseLite = null
+
 @export_group("Smoothing")
 ## Smoothing radius around each location.
 @export var smooth_radius: float = 15.0
@@ -42,7 +55,7 @@ class_name MountainAgent extends MeshModifierAgent
 ## Angle change in degrees (+/- this value from original direction).
 @export_range(0.0, 90.0, 5.0) var direction_change_angle: float = 45.0
 
-## Random seed for direction changes (0 = random).
+## Random seed for direction changes (0 = use generation seed).
 @export var direction_seed: int = 0
 
 func _init() -> void:
@@ -85,7 +98,7 @@ func execute(context: MeshModifierContext) -> MeshModifierResult:
 	for token in range(tokens):
 		if token % 10 == 0:
 			progress_updated.emit(float(token) / tokens, "Processing token %d/%d" % [token + 1, tokens])
-		var wedge_affected := _elevate_wedge(context, current_position, current_direction)
+		var wedge_affected := _elevate_wedge(context, current_position, current_direction, rng, noise)
 		print("Token %d - Position: (%0.2f, %0.2f), Affected: %d vertices" % [token + 1, current_position.x, current_position.y, wedge_affected])
 		total_affected_vertices += wedge_affected
 		_smooth_area(context, current_position)
@@ -112,14 +125,18 @@ func execute(context: MeshModifierContext) -> MeshModifierResult:
 	)
 
 ## Elevate a wedge-shaped area perpendicular to the direction.
-func _elevate_wedge(context: MeshModifierContext, position: Vector2, direction: Vector2) -> int:
+func _elevate_wedge(context: MeshModifierContext, position: Vector2, direction: Vector2, rng: RandomNumberGenerator, noise_gen: FastNoiseLite) -> int:
 	var perpendicular := Vector2(-direction.y, direction.x)
 	var center_vertex_index := context.find_nearest_vertex(position)
 	if center_vertex_index < 0:
 		print("ERROR: find_nearest_vertex returned -1 for position (%0.2f, %0.2f)" % [position.x, position.y])
 		return 0
+	var height_multiplier := 1.0 + rng.randf_range(-wedge_height_variation, wedge_height_variation)
+	var width_multiplier := 1.0 + rng.randf_range(-wedge_width_variation * 0.5, wedge_width_variation * 0.5)
+	var actual_wedge_width := wedge_width * width_multiplier
+	var actual_elevation := elevation_height * height_multiplier
 	var vertices := context.get_vertex_array()
-	var search_radius: float = max(wedge_width, wedge_length) * 1.5
+	var search_radius: float = max(actual_wedge_width, wedge_length) * 1.5
 	var scaled_search_radius := context.scale_to_grid(search_radius)
 	var candidates := context.get_neighbours_chebyshev(center_vertex_index, scaled_search_radius)
 	candidates.append(center_vertex_index)
@@ -132,13 +149,17 @@ func _elevate_wedge(context: MeshModifierContext, position: Vector2, direction: 
 		var perpendicular_distance := offset.dot(perpendicular)
 		if abs(along_direction) > wedge_length * 0.5:
 			continue
-		if abs(perpendicular_distance) > wedge_width * 0.5:
+		if abs(perpendicular_distance) > actual_wedge_width * 0.5:
 			continue
 		var distance_from_center := offset.length()
-		var falloff_factor: float = 1.0 - (distance_from_center / (max(wedge_width, wedge_length) * 0.5))
+		var falloff_factor: float = 1.0 - (distance_from_center / (max(actual_wedge_width, wedge_length) * 0.5))
 		falloff_factor = clamp(falloff_factor, 0.0, 1.0)
 		falloff_factor = pow(falloff_factor, elevation_falloff)
-		vertices[vertex_index].y += elevation_height * falloff_factor
+		var noise_multiplier := 1.0
+		if noise_gen != null and noise_strength > 0.0:
+			var noise_value := noise_gen.get_noise_2d(vertex.x, vertex.z) 
+			noise_multiplier = 1.0 + (noise_value * noise_strength)
+		vertices[vertex_index].y += actual_elevation * falloff_factor * noise_multiplier
 		affected_count += 1
 	return affected_count
 

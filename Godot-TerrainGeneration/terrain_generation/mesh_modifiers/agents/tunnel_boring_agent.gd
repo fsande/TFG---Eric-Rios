@@ -27,7 +27,7 @@ class_name TunnelBoringAgent extends MeshModifierAgent
 @export var min_cliff_height: float = 15.0
 
 ## Minimum slope angle (degrees) for cliff detection.
-@export_range(30.0, 80.0, 5.0) var min_cliff_angle: float = 45.0
+@export_range(10.0, 80.0, 5.0) var min_cliff_angle: float = 45.0
 
 ## Number of tunnels to create.
 @export_range(1, 10, 1) var tunnel_count: int = 1
@@ -57,7 +57,6 @@ func validate(context: MeshModifierContext) -> bool:
 	if tunnel_radius <= 0 or tunnel_length <= 0:
 		push_error("TunnelBoringAgent: Invalid tunnel dimensions")
 		return false
-	
 	return true
 
 func execute(context: MeshModifierContext) -> MeshModifierResult:

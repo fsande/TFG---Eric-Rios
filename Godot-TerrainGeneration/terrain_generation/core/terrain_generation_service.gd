@@ -95,7 +95,7 @@ func _generate_heightmap(config: TerrainConfiguration, processing_context: Proce
 	return config.heightmap_source.generate(processing_context)
 
 func _execute_mesh_modification_pipeline(config: TerrainConfiguration, processing_context: ProcessingContext, heightmap: Image, mesh_result: MeshGenerationResult) -> void:
-	var scene_root: Node3D = null
+	var scene_root: Node3D = Node3D.new()
 	if config.mesh_modification_pipeline:
 		var initial_terrain_data := TerrainData.new(heightmap, mesh_result, Vector2(config.terrain_size, config.terrain_size), null, {}, 0)
 		var modifier_context := config.mesh_modification_pipeline.execute(
@@ -107,7 +107,6 @@ func _execute_mesh_modification_pipeline(config: TerrainConfiguration, processin
 		if modifier_context:
 			last_mesh_modifier_context = modifier_context
 			mesh_result = modifier_context.get_mesh_data()
-			scene_root = modifier_context.scene_root			
 		else:
 			push_warning("TerrainGenerationService: Mesh modification pipeline failed")
 

@@ -32,8 +32,8 @@ var processor_type: String = ""
 
 ## Construct mesh data with essential geometry.
 func _init(p_vertices: PackedVector3Array = PackedVector3Array(), 
-           p_indices: PackedInt32Array = PackedInt32Array(), 
-           p_uvs: PackedVector2Array = PackedVector2Array()) -> void:
+			p_indices: PackedInt32Array = PackedInt32Array(), 
+			p_uvs: PackedVector2Array = PackedVector2Array()) -> void:
 	if p_vertices.size() != p_uvs.size():
 		push_warning("MeshData: Vertex count (%d) does not match UV count (%d)" % [p_vertices.size(), p_uvs.size()])
 	vertices = p_vertices

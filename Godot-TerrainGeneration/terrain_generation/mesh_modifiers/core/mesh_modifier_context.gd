@@ -286,7 +286,7 @@ func sample_cliff_positions(min_slope_angle: float, min_height: float, sample_co
 			else:
 				mask.set_pixel(x, y, Color.BLACK)
 	if valid_pixel_count == 0:
-		return results	
+		return results
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value if seed_value != 0 else get_generation_seed()
 	var attempts := 0
