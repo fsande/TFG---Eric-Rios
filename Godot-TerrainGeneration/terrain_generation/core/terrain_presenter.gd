@@ -6,6 +6,13 @@
 @tool
 class_name TerrainPresenter extends Node3D
 
+## Emitted when async generation starts.
+signal generation_started()
+## Emitted when async generation completes successfully.
+signal generation_completed(terrain_data: TerrainData)
+## Emitted when async generation fails.
+signal generation_failed(error_message: String)
+
 ## Terrain configuration resource driving generation (heightmap, mesh params, etc.).
 @export var configuration: TerrainConfiguration = TerrainConfiguration.new():
 	set(value):
@@ -23,6 +30,9 @@ class_name TerrainPresenter extends Node3D
 		if auto_generate:
 			_mark_dirty()
 
+## When true, runs generation on a worker thread to prevent editor hangs.
+@export var use_async_generation: bool = true
+
 @export_group("Debug")
 ## Whether to print generation timings after generation.
 @export var show_generation_time: bool = false
@@ -38,6 +48,9 @@ var _agent_nodes_container: Node3D
 var _generation_service: TerrainGenerationService
 var _current_terrain_data: TerrainData
 var _is_dirty: bool = true
+
+## Async generation state
+var _is_generating: bool = false
 
 func _ready() -> void:
 	_generation_service = TerrainGenerationService.new()
@@ -81,6 +94,7 @@ func _setup_scene_nodes() -> void:
 				_agent_nodes_container.owner = get_tree().edited_scene_root
 
 ## Regenerate terrain from the current `configuration` and update the scene.
+## Uses async generation if use_async_generation is enabled, otherwise runs synchronously.
 func regenerate() -> void:
 	if not configuration:
 		push_warning("TerrainPresenter: No configuration assigned")
@@ -88,6 +102,13 @@ func regenerate() -> void:
 	if not configuration.is_valid():
 		push_error("TerrainPresenter: Invalid configuration")
 		return
+	if use_async_generation:
+		regenerate_async()
+	else:
+		_regenerate_sync()
+
+## Synchronous terrain generation (blocks the main thread).
+func _regenerate_sync() -> void:
 	_generation_service.set_mesh_modifier_type(configuration.mesh_modifier_type)
 	_current_terrain_data = _generation_service.generate(configuration)
 	if not _current_terrain_data:
@@ -98,9 +119,49 @@ func regenerate() -> void:
 	if show_generation_time:
 		print("TerrainPresenter: Terrain displayed (generated in %.1f ms)" % _current_terrain_data.generation_time_ms)
 
+## Asynchronous terrain generation (runs on worker thread).
+func regenerate_async() -> void:
+	if _is_generating:
+		push_warning("TerrainPresenter: Generation already in progress, ignoring request")
+		return
+	_is_generating = true
+	generation_started.emit()
+	print("TerrainPresenter: Starting async terrain generation...")
+	var config_copy := configuration
+	WorkerThreadPool.add_task(_generate_on_worker_thread.bind(config_copy))
+
+## Worker thread function - generates terrain data without touching scene nodes.
+func _generate_on_worker_thread(config: TerrainConfiguration) -> void:
+	print("TerrainPresenter: Generation running on worker thread...")
+	_generation_service.set_mesh_modifier_type(config.mesh_modifier_type)
+	var terrain_data := _generation_service.generate(config)
+	_on_generation_complete_from_thread.call_deferred(terrain_data)
+
+## Called on main thread when worker thread completes.
+func _on_generation_complete_from_thread(terrain_data: TerrainData) -> void:
+	_is_generating = false
+	if not terrain_data:
+		var error_msg := "Failed to generate terrain"
+		push_error("TerrainPresenter: " + error_msg)
+		generation_failed.emit(error_msg)
+		return
+	_apply_generated_terrain(terrain_data)
+	if show_generation_time:
+		print("TerrainPresenter: Async generation completed in %.1f ms" % terrain_data.generation_time_ms)
+
+## Apply generated terrain to scene (must be called on main thread).
+func _apply_generated_terrain(terrain_data: TerrainData) -> void:
+	_current_terrain_data = terrain_data
+	_update_presentation()
+	_is_dirty = false
+	generation_completed.emit(terrain_data)
+	print("TerrainPresenter: Terrain applied to scene")
+
 ## Update scene nodes (mesh, material, collision) from the current TerrainData.
 func _update_presentation() -> void:
+	print("TerrainPresenter: Updating presentation from generated terrain data...")
 	if not _current_terrain_data:
+		print("TerrainPresenter: No terrain data to present")
 		return
 	_update_visuals()
 	_update_collision()
@@ -154,6 +215,10 @@ func _update_agent_nodes() -> void:
 				if Engine.is_editor_hint():
 					child.owner = get_tree().edited_scene_root
 			print("TerrainPresenter: Added %d agent-generated objects" % _agent_nodes_container.get_child_count())
+
+## Check if terrain generation is currently in progress.
+func is_generating() -> bool:
+	return _is_generating
 
 ## Return the currently displayed TerrainData or null if none.
 func get_terrain_data() -> TerrainData:

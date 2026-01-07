@@ -8,6 +8,8 @@ class_name TerrainGenerationService extends RefCounted
 var mesh_builder: TerrainMeshBuilder
 ## Simple in-memory cache mapping configuration keys to TerrainData.
 var _cache: Dictionary = {}
+## Mutex to protect cache access from multiple threads.
+var _cache_mutex: Mutex = Mutex.new()
 
 var last_mesh_modifier_context: MeshModifierContext = null
 
@@ -19,14 +21,34 @@ func _init():
 func generate(config: TerrainConfiguration) -> TerrainData:
 	return _generate(config)
 
+
+## Set mesh modifier based on configuration enum type.
+func set_mesh_modifier_type(type: TerrainConfiguration.MeshModifierType) -> void:
+	match type:
+		TerrainConfiguration.MeshModifierType.CPU:
+			mesh_builder.set_mesh_modifier(CPUMeshGenerator.new())
+		TerrainConfiguration.MeshModifierType.GPU:
+			mesh_builder.set_mesh_modifier(GpuMeshGenerator.new())
+
+## Clear the internal generation cache.
+func clear_cache() -> void:
+	_cache.clear()
+
+## Invalidate a specific cached entry derived from `config`.
+func invalidate_cache(config: TerrainConfiguration) -> void:
+	var key := _get_cache_key(config)
+	_cache.erase(key)
+
 func _generate(config: TerrainConfiguration) -> TerrainData:
 	if not config or not config.is_valid():
 		push_error("TerrainGenerationService: Invalid configuration")
 		return null
 	var cache_key := _get_cache_key(config)
-	if config.enable_caching and _cache.has(cache_key):
-		print("TerrainGenerationService: Using cached terrain")
-		return _cache[cache_key]
+	if config.enable_caching:
+		var cached_data := _get_from_cache(cache_key)
+		if cached_data:
+			print("TerrainGenerationService: Using cached terrain")
+			return cached_data
 	var start_time := Time.get_ticks_msec()
 	var processing_context := _generate_processing_context(config)
 	var heightmap := _generate_heightmap(config, processing_context)
@@ -50,23 +72,6 @@ func _generate(config: TerrainConfiguration) -> TerrainData:
 		str(terrain_data.get_vertex_count())
 	])
 	return terrain_data
-
-## Set mesh modifier based on configuration enum type.
-func set_mesh_modifier_type(type: TerrainConfiguration.MeshModifierType) -> void:
-	match type:
-		TerrainConfiguration.MeshModifierType.CPU:
-			mesh_builder.set_mesh_modifier(CPUMeshGenerator.new())
-		TerrainConfiguration.MeshModifierType.GPU:
-			mesh_builder.set_mesh_modifier(GpuMeshGenerator.new())
-
-## Clear the internal generation cache.
-func clear_cache() -> void:
-	_cache.clear()
-
-## Invalidate a specific cached entry derived from `config`.
-func invalidate_cache(config: TerrainConfiguration) -> void:
-	var key := _get_cache_key(config)
-	_cache.erase(key)
 
 func _get_cache_key(config: TerrainConfiguration) -> String:
 	var key_parts := [
@@ -125,8 +130,17 @@ func _create_terrain_data(config: TerrainConfiguration, heightmap: Image, mesh_r
 	return TerrainData.new(heightmap, mesh_result, Vector2(config.terrain_size, config.terrain_size), collision, metadata, total_time)
 
 func _set_cache(config: TerrainConfiguration, terrain_data: TerrainData) -> void:
-	var cache_key := _get_cache_key(config)
 	if config.enable_caching:
+		var cache_key := _get_cache_key(config)
+		_cache_mutex.lock()
 		_cache[cache_key] = terrain_data
+		_cache_mutex.unlock()
+
+## Thread-safe cache getter.
+func _get_from_cache(cache_key: String) -> TerrainData:
+	_cache_mutex.lock()
+	var result: TerrainData = _cache.get(cache_key)
+	_cache_mutex.unlock()
+	return result
 
 
