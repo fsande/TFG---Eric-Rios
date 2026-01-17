@@ -19,16 +19,10 @@ func _init():
 ## Generate complete terrain data from a `TerrainConfiguration`.
 ## Returns a `TerrainData` object or null on failure.
 func generate(config: TerrainConfiguration) -> TerrainData:
-	return _generate(config)
+	return _generate_terrain(config)
 
 
-## Set mesh modifier based on configuration enum type.
-func set_mesh_modifier_type(type: TerrainConfiguration.MeshModifierType) -> void:
-	match type:
-		TerrainConfiguration.MeshModifierType.CPU:
-			mesh_builder.set_mesh_modifier(CPUMeshGenerator.new())
-		TerrainConfiguration.MeshModifierType.GPU:
-			mesh_builder.set_mesh_modifier(GpuMeshGenerator.new())
+## Set mesh generator based on configuration enum type.
 
 ## Clear the internal generation cache.
 func clear_cache() -> void:
@@ -39,10 +33,11 @@ func invalidate_cache(config: TerrainConfiguration) -> void:
 	var key := _get_cache_key(config)
 	_cache.erase(key)
 
-func _generate(config: TerrainConfiguration) -> TerrainData:
+func _generate_terrain(config: TerrainConfiguration) -> TerrainData:
 	if not config or not config.is_valid():
 		push_error("TerrainGenerationService: Invalid configuration")
 		return null
+	_set_mesh_generator_type(config.mesh_generator_type)
 	var cache_key := _get_cache_key(config)
 	if config.enable_caching:
 		var cached_data := _get_from_cache(cache_key)
@@ -72,6 +67,13 @@ func _generate(config: TerrainConfiguration) -> TerrainData:
 		str(terrain_data.get_vertex_count())
 	])
 	return terrain_data
+
+func _set_mesh_generator_type(type: TerrainConfiguration.MeshGeneratorType) -> void:
+	match type:
+		TerrainConfiguration.MeshGeneratorType.CPU:
+			mesh_builder.set_mesh_modifier(CPUMeshGenerator.new())
+		TerrainConfiguration.MeshGeneratorType.GPU:
+			mesh_builder.set_mesh_modifier(GpuMeshGenerator.new())
 
 func _get_cache_key(config: TerrainConfiguration) -> String:
 	var key_parts := [

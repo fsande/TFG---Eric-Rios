@@ -207,6 +207,7 @@
     <Content Include="player\player.gd" />
     <Content Include="player\player.gd.uid" />
     <Content Include="terrain_generation\core\processing_context.gd" />
+    <Content Include="terrain_generation\core\terrain_collision.gd" />
     <Content Include="terrain_generation\core\terrain_data.gd" />
     <Content Include="terrain_generation\core\terrain_generation_service.gd" />
     <Content Include="terrain_generation\core\terrain_mesh_builder.gd" />
@@ -268,8 +269,6 @@
     <Content Include="terrain_generation\mesh_modifiers\agents\tunnel_boring_agent.gd.uid" />
     <Content Include="terrain_generation\mesh_modifiers\conditions\agent_condition.gd" />
     <Content Include="terrain_generation\mesh_modifiers\conditions\agent_condition.gd.uid" />
-    <Content Include="terrain_generation\mesh_modifiers\conditions\data_exists_condition.gd" />
-    <Content Include="terrain_generation\mesh_modifiers\conditions\data_exists_condition.gd.uid" />
     <Content Include="terrain_generation\mesh_modifiers\core\conditional_stage.gd" />
     <Content Include="terrain_generation\mesh_modifiers\core\execution_stat.gd" />
     <Content Include="terrain_generation\mesh_modifiers\core\mesh_modifier_agent.gd" />
@@ -277,7 +276,6 @@
     <Content Include="terrain_generation\mesh_modifiers\core\mesh_modifier_pipeline.gd" />
     <Content Include="terrain_generation\mesh_modifiers\core\mesh_modifier_result.gd" />
     <Content Include="terrain_generation\mesh_modifiers\core\parallel_stage.gd" />
-    <Content Include="terrain_generation\mesh_modifiers\core\pipeline_parameters.gd" />
     <Content Include="terrain_generation\mesh_modifiers\core\pipeline_stage.gd" />
     <Content Include="terrain_generation\mesh_modifiers\core\sequential_stage.gd" />
     <Content Include="terrain_generation\mesh_modifiers\core\vertex_grid.gd" />

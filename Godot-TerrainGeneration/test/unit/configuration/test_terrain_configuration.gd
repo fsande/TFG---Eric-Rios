@@ -63,9 +63,9 @@ func test_get_effective_processor_type_with_explicit_settings():
 
 func test_get_effective_processor_type_matches_mesh_modifier():
 	test_config.heightmap_processor_type = TerrainConfiguration.HeightmapProcessorType.MATCH_MESH
-	test_config.mesh_modifier_type = TerrainConfiguration.MeshModifierType.CPU
+	test_config.mesh_modifier_type = TerrainConfiguration.MeshGeneratorType.CPU
 	assert_eq(test_config.get_effective_processor_type(), ProcessingContext.ProcessorType.CPU, "Should match CPU mesh")
-	test_config.mesh_modifier_type = TerrainConfiguration.MeshModifierType.GPU
+	test_config.mesh_modifier_type = TerrainConfiguration.MeshGeneratorType.GPU
 	assert_eq(test_config.get_effective_processor_type(), ProcessingContext.ProcessorType.GPU, "Should match GPU mesh")
 
 func test_get_mesh_parameters_returns_correct_dictionary():

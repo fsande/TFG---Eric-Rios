@@ -14,14 +14,15 @@ signal generation_completed(terrain_data: TerrainData)
 signal generation_failed(error_message: String)
 
 ## Terrain configuration resource driving generation (heightmap, mesh params, etc.).
-@export var configuration: TerrainConfiguration = TerrainConfiguration.new():
+@export var terrain_configuration: TerrainConfiguration = TerrainConfiguration.new():
 	set(value):
-		if configuration and configuration.configuration_changed.is_connected(_on_config_changed):
-			configuration.configuration_changed.disconnect(_on_config_changed)
-		configuration = value
-		if configuration:
-			configuration.configuration_changed.connect(_on_config_changed)
+		if terrain_configuration and terrain_configuration.configuration_changed.is_connected(_on_config_changed):
+			terrain_configuration.configuration_changed.disconnect(_on_config_changed)
+		terrain_configuration = value
+		if terrain_configuration:
+			terrain_configuration.configuration_changed.connect(_on_config_changed)
 		_mark_dirty()
+
 
 ## When true, automatically regenerate terrain when configuration changes.
 @export var auto_generate: bool = true:
@@ -42,8 +43,8 @@ signal generation_failed(error_message: String)
 @export_tool_button("Update Visuals") var update_visuals_action := _update_visuals
 
 var _mesh_instance: MeshInstance3D
-var _collision_body: StaticBody3D
-var _collision_shape: CollisionShape3D
+var _terrain_collision: TerrainCollision
+## TODO: Refactor agent node handling into separate component
 var _agent_nodes_container: Node3D
 var _generation_service: TerrainGenerationService
 var _current_terrain_data: TerrainData
@@ -55,62 +56,34 @@ var _is_generating: bool = false
 func _ready() -> void:
 	_generation_service = TerrainGenerationService.new()
 	_setup_scene_nodes()
-	if configuration and auto_generate:
+	_setup_collision()
+	if terrain_configuration and auto_generate:
 		regenerate()
 
 func _setup_scene_nodes() -> void:
-	if not _mesh_instance:
-		_mesh_instance = get_node_or_null("TerrainMesh")
-		if not _mesh_instance:
-			_mesh_instance = MeshInstance3D.new()
-			_mesh_instance.name = "TerrainMesh"
-			add_child(_mesh_instance)
-			if Engine.is_editor_hint():
-				_mesh_instance.owner = get_tree().edited_scene_root
-	if not _collision_body:
-		_collision_body = get_node_or_null("TerrainCollision")
-		if not _collision_body:
-			_collision_body = StaticBody3D.new()
-			_collision_body.name = "TerrainCollision"
-			add_child(_collision_body)
-			if Engine.is_editor_hint():
-				_collision_body.owner = get_tree().edited_scene_root
-	if not _collision_shape:
-		_collision_shape = _collision_body.get_node_or_null("CollisionShape")
-		if not _collision_shape:
-			_collision_shape = CollisionShape3D.new()
-			_collision_shape.name = "CollisionShape"
-			_collision_body.add_child(_collision_shape)
-			if Engine.is_editor_hint():
-				_collision_shape.owner = get_tree().edited_scene_root
-	if not _agent_nodes_container:
-		var agent_objects_name := "AgentObjects"
-		_agent_nodes_container = get_node_or_null(agent_objects_name)
-		if not _agent_nodes_container:
-			_agent_nodes_container = Node3D.new()
-			_agent_nodes_container.name = agent_objects_name
-			add_child(_agent_nodes_container)
-			if Engine.is_editor_hint():
-				_agent_nodes_container.owner = get_tree().edited_scene_root
+	_mesh_instance = NodeCreationHelper.get_or_create_node(self, "TerrainMesh", MeshInstance3D) as MeshInstance3D
+	_agent_nodes_container = NodeCreationHelper.get_or_create_node(self, "AgentGeneratedNodes", Node3D) as Node3D
+
+func _setup_collision() -> void:
+	_terrain_collision = TerrainCollision.new(self)
 
 ## Regenerate terrain from the current `configuration` and update the scene.
 ## Uses async generation if use_async_generation is enabled, otherwise runs synchronously.
 func regenerate() -> void:
-	if not configuration:
+	if not terrain_configuration:
 		push_warning("TerrainPresenter: No configuration assigned")
 		return
-	if not configuration.is_valid():
+	if not terrain_configuration.is_valid():
 		push_error("TerrainPresenter: Invalid configuration")
 		return
 	if use_async_generation:
-		regenerate_async()
+		_regenerate_async()
 	else:
 		_regenerate_sync()
 
 ## Synchronous terrain generation (blocks the main thread).
 func _regenerate_sync() -> void:
-	_generation_service.set_mesh_modifier_type(configuration.mesh_modifier_type)
-	_current_terrain_data = _generation_service.generate(configuration)
+	_current_terrain_data = _generation_service.generate(terrain_configuration)
 	if not _current_terrain_data:
 		push_error("TerrainPresenter: Failed to generate terrain")
 		return
@@ -120,20 +93,19 @@ func _regenerate_sync() -> void:
 		print("TerrainPresenter: Terrain displayed (generated in %.1f ms)" % _current_terrain_data.generation_time_ms)
 
 ## Asynchronous terrain generation (runs on worker thread).
-func regenerate_async() -> void:
+func _regenerate_async() -> void:
 	if _is_generating:
 		push_warning("TerrainPresenter: Generation already in progress, ignoring request")
 		return
 	_is_generating = true
 	generation_started.emit()
 	print("TerrainPresenter: Starting async terrain generation...")
-	var config_copy := configuration
+	var config_copy := terrain_configuration
 	WorkerThreadPool.add_task(_generate_on_worker_thread.bind(config_copy))
 
 ## Worker thread function - generates terrain data without touching scene nodes.
 func _generate_on_worker_thread(config: TerrainConfiguration) -> void:
 	print("TerrainPresenter: Generation running on worker thread...")
-	_generation_service.set_mesh_modifier_type(config.mesh_modifier_type)
 	var terrain_data := _generation_service.generate(config)
 	_on_generation_complete_from_thread.call_deferred(terrain_data)
 
@@ -159,34 +131,24 @@ func _apply_generated_terrain(terrain_data: TerrainData) -> void:
 
 ## Update scene nodes (mesh, material, collision) from the current TerrainData.
 func _update_presentation() -> void:
-	print("TerrainPresenter: Updating presentation from generated terrain data...")
 	if not _current_terrain_data:
 		print("TerrainPresenter: No terrain data to present")
 		return
 	_update_visuals()
-	_update_collision()
+	if terrain_configuration.generate_collision: 
+		_terrain_collision.update_collision(_current_terrain_data, terrain_configuration.collision_layers)
 	_update_agent_nodes()
-
-## Update collision shape from the current TerrainData.
-func _update_collision() -> void:
-	if _collision_shape and configuration.generate_collision and _current_terrain_data:
-		_collision_shape.shape = _current_terrain_data.collision_shape
-		_collision_body.collision_layer = configuration.collision_layers
-		_collision_body.visible = configuration.generate_collision
-	else:
-		_collision_body.visible = false
 
 ## Update mesh and material from the current TerrainData.
 func _update_visuals() -> void:
 	if _mesh_instance:
 		_mesh_instance.mesh = _current_terrain_data.get_mesh()
-		if configuration.terrain_material:
-			_mesh_instance.material_override = configuration.terrain_material
-		if configuration.terrain_material and configuration.terrain_material is ShaderMaterial:
-			var shader_mat := configuration.terrain_material as ShaderMaterial
+		if terrain_configuration.terrain_material:
+			_mesh_instance.material_override = terrain_configuration.terrain_material
+		if terrain_configuration.terrain_material and terrain_configuration.terrain_material is ShaderMaterial:
+			var shader_mat := terrain_configuration.terrain_material as ShaderMaterial
 			if shader_mat.get_shader_parameter("height") != null:
-				shader_mat.set_shader_parameter("height", configuration.snow_line)
-
+				shader_mat.set_shader_parameter("height", terrain_configuration.snow_line)
 
 func _on_config_changed() -> void:
 	# TODO: Mark dirty mesh and dirty heightmap separately
@@ -196,8 +158,8 @@ func _on_config_changed() -> void:
 
 func _mark_dirty() -> void:
 	_is_dirty = true
-	if configuration and _generation_service:
-		_generation_service.invalidate_cache(configuration)
+	if terrain_configuration and _generation_service:
+		_generation_service.invalidate_cache(terrain_configuration)
 
 ## Update agent-generated scene nodes from terrain metadata.
 func _update_agent_nodes() -> void:
@@ -215,19 +177,3 @@ func _update_agent_nodes() -> void:
 				if Engine.is_editor_hint():
 					child.owner = get_tree().edited_scene_root
 			print("TerrainPresenter: Added %d agent-generated objects" % _agent_nodes_container.get_child_count())
-
-## Check if terrain generation is currently in progress.
-func is_generating() -> bool:
-	return _is_generating
-
-## Return the currently displayed TerrainData or null if none.
-func get_terrain_data() -> TerrainData:
-	return _current_terrain_data
-
-## Return the currently displayed heightmap image or null.
-func get_heightmap() -> Image:
-	return _current_terrain_data.heightmap if _current_terrain_data else null
-
-## Clear the generation service cache.
-func clear_cache() -> void:
-	_generation_service.clear_cache()
