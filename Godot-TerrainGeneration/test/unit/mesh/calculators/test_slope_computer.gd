@@ -122,7 +122,7 @@ func test_different_mesh_sizes_produce_correctly_sized_outputs():
 		assert_eq(result.get_height(), size[1], "Height should match for %dx%d" % [size[0], size[1]])
 
 func test_cpu_and_gpu_produce_similar_results():
-	if not test_context_gpu.use_gpu():
+	if not test_context_gpu.heightmap_use_gpu():
 		pass_test("GPU not available, skipping GPU comparison")
 		return
 	test_mesh_result = TestHelpers.create_test_mesh_generation_result(10, 10)

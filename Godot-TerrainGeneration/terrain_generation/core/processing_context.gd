@@ -18,14 +18,15 @@ enum ProcessorType {
 ## Core configuration
 var terrain_size: float
 var generation_seed: int
-var processor_type: ProcessorType = ProcessorType.CPU
+var heightmap_processor_type: ProcessorType = ProcessorType.CPU
+var mesh_generator_type: ProcessorType = ProcessorType.CPU
 
 ## GPU resources (shared across all stages)
 var rendering_device: RenderingDevice = null
 var _gpu_initialized: bool = false
 
 ## Stage-specific parameters
-var mesh_params: MeshGeneratorParameters
+var mesh_parameters: MeshGeneratorParameters
 
 ## Resource tracking (for debugging/profiling)
 var _gpu_memory_allocated: int = 0
@@ -36,24 +37,26 @@ var _creation_time_ms: int = 0
 var _is_disposed: bool = false
 
 ## Construct context with terrain configuration.
-func _init(p_terrain_size: float, p_seed: int = 0, p_processor_type: ProcessorType = ProcessorType.CPU):
+func _init(p_terrain_size: float, p_heightmap_processor: ProcessorType, p_mesh_processor: ProcessorType, p_seed: int = 0):
 	if p_terrain_size <= 0.0:
 		push_error("ProcessingContext: terrain_size must be positive, got %f" % p_terrain_size)
 		p_terrain_size = 256.0
+	terrain_size = p_terrain_size
+	generation_seed = p_seed
+	heightmap_processor_type = p_heightmap_processor
+	_creation_time_ms = Time.get_ticks_msec()
+	if heightmap_processor_type == ProcessorType.GPU:
+		_initialize_gpu()
+	mesh_generator_type = p_mesh_processor
+	if mesh_generator_type == ProcessorType.GPU and not _gpu_initialized:
+		_initialize_gpu()
 	if p_seed < 0:
 		push_error("ProcessingContext: generation_seed must be non-negative, got %d" % p_seed)
 		p_seed = 0
-	terrain_size = p_terrain_size
-	generation_seed = p_seed
-	processor_type = p_processor_type
-	_creation_time_ms = Time.get_ticks_msec()
-	
-	# Initialize GPU if requested
-	if processor_type == ProcessorType.GPU:
-		_initialize_gpu()
 
 ## Initialize GPU resources once.
 ## Returns true if successful, false if GPU unavailable.
+## Falls back to CPU automatically if GPU initialization fails.
 func _initialize_gpu() -> bool:
 	if _gpu_initialized:
 		return rendering_device != null
@@ -61,26 +64,30 @@ func _initialize_gpu() -> bool:
 	rendering_device = RenderingServer.create_local_rendering_device()
 	if not rendering_device:
 		push_warning("ProcessingContext: Failed to create RenderingDevice, falling back to CPU")
-		processor_type = ProcessorType.CPU
+		heightmap_processor_type = ProcessorType.CPU
 		return false
 	return true
 
 ## Check if GPU is available and ready.
-func use_gpu() -> bool:
+func heightmap_use_gpu() -> bool:
 	if _is_disposed:
 		push_error("ProcessingContext: Attempted to use disposed context")
 		return false
-	return processor_type == ProcessorType.GPU and rendering_device != null
+	return heightmap_processor_type == ProcessorType.GPU and rendering_device != null
+	
+func mesh_generator_use_gpu() -> bool:
+	if _is_disposed:
+		push_error("ProcessingContext: Attempted to use disposed context")
+		return false
+	return mesh_generator_type == ProcessorType.GPU and rendering_device != null
 
 ## Get rendering device (lazy initialization).
 func get_rendering_device() -> RenderingDevice:
 	if _is_disposed:
 		push_error("ProcessingContext: Attempted to access disposed context")
 		return null
-	
-	if processor_type == ProcessorType.GPU and not _gpu_initialized:
+	if heightmap_processor_type == ProcessorType.GPU and not _gpu_initialized:
 		_initialize_gpu()
-	
 	return rendering_device
 
 ## Get or create a cached shader for reuse across stages.
@@ -91,7 +98,7 @@ func get_or_create_shader(shader_path: String) -> RID:
 		return RID()
 	if _shader_cache.has(shader_path):
 		return _shader_cache[shader_path]
-	if not use_gpu():
+	if not heightmap_use_gpu() and not mesh_generator_use_gpu():
 		push_warning("ProcessingContext: Attempted to load shader without GPU")
 		return RID()
 	if not ResourceLoader.exists(shader_path):
@@ -119,11 +126,7 @@ func dispose() -> void:
 	_shader_cache.clear()
 	rendering_device = null
 	var lifetime_ms := Time.get_ticks_msec() - _creation_time_ms
-	print("ProcessingContext: Disposed after %s ms (GPU memory used: %s bytes)" % [str(lifetime_ms), str(_gpu_memory_allocated)])
-
-## Get mesh generation parameters.
-func mesh_parameters() -> MeshGeneratorParameters:
-	return mesh_params
+	print("ProcessingContext: Disposed after %s ms" % [str(lifetime_ms)])
 
 ## Track GPU memory allocation for profiling.
 func track_gpu_allocation(bytes: int) -> void:

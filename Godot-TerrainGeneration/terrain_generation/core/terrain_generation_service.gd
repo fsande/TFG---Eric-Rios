@@ -6,10 +6,6 @@ class_name TerrainGenerationService extends RefCounted
 
 ## Mesh builder used to convert heightmaps into meshes.
 var mesh_builder: TerrainMeshBuilder
-## Simple in-memory cache mapping configuration keys to TerrainData.
-var _cache: Dictionary = {}
-## Mutex to protect cache access from multiple threads.
-var _cache_mutex: Mutex = Mutex.new()
 
 var last_mesh_modifier_context: MeshModifierContext = null
 
@@ -21,79 +17,45 @@ func _init():
 func generate(config: TerrainConfiguration) -> TerrainData:
 	return _generate_terrain(config)
 
-
-## Set mesh generator based on configuration enum type.
-
-## Clear the internal generation cache.
-func clear_cache() -> void:
-	_cache.clear()
-
-## Invalidate a specific cached entry derived from `config`.
-func invalidate_cache(config: TerrainConfiguration) -> void:
-	var key := _get_cache_key(config)
-	_cache.erase(key)
-
 func _generate_terrain(config: TerrainConfiguration) -> TerrainData:
 	if not config or not config.is_valid():
 		push_error("TerrainGenerationService: Invalid configuration")
 		return null
-	_set_mesh_generator_type(config.mesh_generator_type)
-	var cache_key := _get_cache_key(config)
-	if config.enable_caching:
-		var cached_data := _get_from_cache(cache_key)
-		if cached_data:
-			print("TerrainGenerationService: Using cached terrain")
-			return cached_data
 	var start_time := Time.get_ticks_msec()
 	var processing_context := _generate_processing_context(config)
 	var heightmap := _generate_heightmap(config, processing_context)
 	if not heightmap:
-		processing_context.dispose()
-		push_error("TerrainGenerationService: Failed to generate heightmap")
-		return null
+		return _fail_generation("Failed to generate heightmap", processing_context)
 	var mesh_result := mesh_builder.build_mesh(heightmap, processing_context)
 	if not mesh_result:
-		processing_context.dispose()
-		push_error("TerrainGenerationService: Failed to build mesh")
-		return null
+		return _fail_generation("Failed to generate mesh", processing_context)
 	_execute_mesh_modification_pipeline(config, processing_context, heightmap, mesh_result)
 	processing_context.dispose()
 	var collision := _generate_collision_shape(config, mesh_result)
 	var total_time := Time.get_ticks_msec() - start_time
 	var terrain_data := _create_terrain_data(config, heightmap, mesh_result, collision, total_time)
-	_set_cache(config, terrain_data)
 	print("TerrainGenerationService: Generated terrain in %s ms (%s vertices)" % [
 		str(total_time),
 		str(terrain_data.get_vertex_count())
 	])
 	return terrain_data
-
-func _set_mesh_generator_type(type: TerrainConfiguration.MeshGeneratorType) -> void:
-	match type:
-		TerrainConfiguration.MeshGeneratorType.CPU:
-			mesh_builder.set_mesh_modifier(CPUMeshGenerator.new())
-		TerrainConfiguration.MeshGeneratorType.GPU:
-			mesh_builder.set_mesh_modifier(GpuMeshGenerator.new())
-
-func _get_cache_key(config: TerrainConfiguration) -> String:
-	var key_parts := [
-		str(config.get_mesh_parameters()),
-		str(config.heightmap_source.get_metadata())
-	]
-	if config.mesh_modification_pipeline:
-		key_parts.append(str(config.mesh_modification_pipeline.get_instance_id()))
-	return str(hash("".join(key_parts)))
+	
+func _fail_generation(message: String, processing_context: ProcessingContext) -> TerrainData:
+	if processing_context:
+		processing_context.dispose()
+	push_error("TerrainGenerationService: %s" % message)
+	return null
 
 func _generate_processing_context(config: TerrainConfiguration) -> ProcessingContext:
-	var processor_type := config.get_effective_processor_type()
 	return ProcessingContext.new(
 		config.terrain_size,
-		config.generation_seed,
-		processor_type
+		config.heightmap_processor_type,
+		config.mesh_generator_type,
+		config.generation_seed
 	)
 
 func _generate_heightmap(config: TerrainConfiguration, processing_context: ProcessingContext) -> Image:
-	processing_context.mesh_params = config.mesh_generator_parameters
+	processing_context.mesh_parameters = config.mesh_generator_parameters
 	return config.heightmap_source.generate(processing_context)
 
 func _execute_mesh_modification_pipeline(config: TerrainConfiguration, processing_context: ProcessingContext, heightmap: Image, mesh_result: MeshGenerationResult) -> void:
@@ -104,7 +66,7 @@ func _execute_mesh_modification_pipeline(config: TerrainConfiguration, processin
 			initial_terrain_data,
 			processing_context,
 			scene_root,
-			processing_context.mesh_params
+			processing_context.mesh_parameters
 		)
 		if modifier_context:
 			last_mesh_modifier_context = modifier_context
@@ -129,19 +91,3 @@ func _create_terrain_data(config: TerrainConfiguration, heightmap: Image, mesh_r
 		"mesh_modification_enabled": config.mesh_modification_pipeline != null,
 	}
 	return TerrainData.new(heightmap, mesh_result, Vector2(config.terrain_size, config.terrain_size), collision, metadata, total_time)
-
-func _set_cache(config: TerrainConfiguration, terrain_data: TerrainData) -> void:
-	if config.enable_caching:
-		var cache_key := _get_cache_key(config)
-		_cache_mutex.lock()
-		_cache[cache_key] = terrain_data
-		_cache_mutex.unlock()
-
-## Thread-safe cache getter.
-func _get_from_cache(cache_key: String) -> TerrainData:
-	_cache_mutex.lock()
-	var result: TerrainData = _cache.get(cache_key)
-	_cache_mutex.unlock()
-	return result
-
-

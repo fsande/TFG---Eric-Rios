@@ -56,17 +56,10 @@ func test_is_valid_requires_heightmap_source():
 	assert_false(test_config.is_valid(), "Should become invalid when source removed")
 
 func test_get_effective_processor_type_with_explicit_settings():
-	test_config.heightmap_processor_type = TerrainConfiguration.HeightmapProcessorType.CPU
+	test_config.heightmap_processor_type = ProcessingContext.ProcessorType.CPU
 	assert_eq(test_config.get_effective_processor_type(), ProcessingContext.ProcessorType.CPU, "Explicit CPU")
-	test_config.heightmap_processor_type = TerrainConfiguration.HeightmapProcessorType.GPU
+	test_config.heightmap_processor_type = ProcessingContext.ProcessorType.GPU
 	assert_eq(test_config.get_effective_processor_type(), ProcessingContext.ProcessorType.GPU, "Explicit GPU")
-
-func test_get_effective_processor_type_matches_mesh_modifier():
-	test_config.heightmap_processor_type = TerrainConfiguration.HeightmapProcessorType.MATCH_MESH
-	test_config.mesh_modifier_type = TerrainConfiguration.MeshGeneratorType.CPU
-	assert_eq(test_config.get_effective_processor_type(), ProcessingContext.ProcessorType.CPU, "Should match CPU mesh")
-	test_config.mesh_modifier_type = TerrainConfiguration.MeshGeneratorType.GPU
-	assert_eq(test_config.get_effective_processor_type(), ProcessingContext.ProcessorType.GPU, "Should match GPU mesh")
 
 func test_get_mesh_parameters_returns_correct_dictionary():
 	var params := MeshGeneratorParameters.new()

@@ -44,8 +44,6 @@ terrain_configuration = SubResource("Resource_4h6kj")
 material_override = ExtResource("4_hivrg")
 mesh = SubResource("ArrayMesh_tw12r")
 
-[node name="AgentObjects" type="Node3D" parent="."]
-
 [node name="AgentGeneratedNodes" type="Node3D" parent="."]
 
 [node name="TerrainCollision" type="StaticBody3D" parent="."]

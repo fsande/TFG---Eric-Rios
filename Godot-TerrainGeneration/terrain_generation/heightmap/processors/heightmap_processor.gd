@@ -5,7 +5,7 @@ class_name HeightmapProcessor extends Resource
 
 ## Process the input heightmap image based on the provided context.
 func process(input: Image, context: ProcessingContext) -> Image:
-	if context.use_gpu():
+	if context.heightmap_use_gpu():
 		return process_gpu(input, context)
 	else:
 		return process_cpu(input, context)

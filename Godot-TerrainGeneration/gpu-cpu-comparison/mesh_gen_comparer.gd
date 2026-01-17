@@ -11,11 +11,11 @@ class_name MeshGenComparer extends Control
 @onready var gpu_time_label: Label = $CenterContainer/VBoxContainer/PanelContainer2/VBoxContainer/HBoxContainer/GPUTimeValue
 
 var base_mesh: ArrayMesh
-var cpu_modifier: CPUMeshGenerator
+var cpu_modifier: CpuMeshGenerator
 var gpu_mesh_generator: GpuMeshGenerator
 
 func _ready() -> void:
-	cpu_modifier = CPUMeshGenerator.new()
+	cpu_modifier = CpuMeshGenerator.new()
 	gpu_mesh_generator = GpuMeshGenerator.new()
 	cpu_modifier.modification_completed.connect(_on_cpu_modification_completed)
 	gpu_mesh_generator.modification_completed.connect(_on_gpu_modification_completed)
@@ -73,7 +73,7 @@ func _on_generate_cpu_button_pressed() -> void:
 
 func _generate_cpu_mesh() -> void:
 	var base_arrays: Array = base_mesh.surface_get_arrays(0)
-	var processing_context := ProcessingContext.new(mesh_size.x, 0, ProcessingContext.ProcessorType.CPU)
+	var processing_context := ProcessingContext.new(mesh_size.x, ProcessingContext.ProcessorType.CPU, ProcessingContext.ProcessorType.CPU)
 	var result := cpu_modifier.generate_mesh(base_arrays, heightmap, processing_context)
 	_display_mesh_in_viewport(cpu_viewport, result.modified_mesh)
 	cpu_time_label.text = "%s ms" % str(result.elapsed_time_ms).pad_decimals(1)
@@ -87,7 +87,7 @@ func _on_generate_gpu_button_pressed() -> void:
 
 func _generate_gpu_mesh() -> void:
 	var base_arrays: Array = base_mesh.surface_get_arrays(0)
-	var processing_context := ProcessingContext.new(mesh_size.x, 0, ProcessingContext.ProcessorType.GPU)
+	var processing_context := ProcessingContext.new(mesh_size.x, ProcessingContext.ProcessorType.GPU, ProcessingContext.ProcessorType.GPU)
 	var result := gpu_mesh_generator.generate_mesh(base_arrays, heightmap, processing_context)
 	_display_mesh_in_viewport(gpu_viewport, result.modified_mesh)
 	gpu_time_label.text = "%s ms" % str(result.elapsed_time_ms).pad_decimals(1)

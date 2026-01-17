@@ -26,7 +26,7 @@ func generate_mesh(mesh_array: Array, heightmap: Image, context: ProcessingConte
 	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
 	var vertex_count := vertices.size()
 	var index_count := indices.size()
-	var mesh_params := context.mesh_params
+	var mesh_params := context.mesh_parameters
 	var height_scale: float = mesh_params.height_scale
 	var mesh_size: Vector2 = mesh_params.mesh_size
 	var subdivisions: int = mesh_params.subdivisions

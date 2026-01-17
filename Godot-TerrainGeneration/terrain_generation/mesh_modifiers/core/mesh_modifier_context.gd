@@ -156,7 +156,7 @@ func get_triangle_count() -> int:
 
 ## Check if GPU operations are available (ProcessingContext may use CPU mode).
 func use_gpu() -> bool:
-	return processing_context.use_gpu()
+	return processing_context.mesh_generator_use_gpu()
 
 ## Get RenderingDevice for GPU operations.
 ## Returns null if GPU not available (CPU fallback mode).

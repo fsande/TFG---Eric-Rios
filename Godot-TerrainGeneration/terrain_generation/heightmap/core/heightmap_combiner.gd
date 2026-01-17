@@ -25,13 +25,13 @@ func combine(images: Array[Image], context: ProcessingContext) -> Image:
 	if images.is_empty():
 		push_error("HeightmapCombiner: No images provided")
 		return null
-	if context.use_gpu() and images.size() > MAX_GPU_IMAGES:
+	if context.heightmap_use_gpu() and images.size() > MAX_GPU_IMAGES:
 		push_warning("HeightmapCombiner: GPU supports max %d images, got %d. Truncating to first %d images." % [MAX_GPU_IMAGES, images.size(), MAX_GPU_IMAGES])
 		var truncated_images: Array[Image] = []
 		for i in range(MAX_GPU_IMAGES):
 			truncated_images.append(images[i])
 		return combine_gpu(truncated_images, context)	
-	if context.use_gpu():
+	if context.heightmap_use_gpu():
 		return combine_gpu(images, context)
 	else:
 		return combine_cpu(images, context)

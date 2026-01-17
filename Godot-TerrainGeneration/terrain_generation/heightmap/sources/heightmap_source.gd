@@ -19,7 +19,7 @@ signal heightmap_changed
 func generate(context: ProcessingContext) -> Image:
 	push_error("HeightmapSource.generate() must be implemented in subclass")
 	return null
-	 
+
 ## Get metadata about this heightmap source for debugging/logging.
 func get_metadata() -> Dictionary:
 	push_error("HeightmapSource.get_metadata() must be implemented in subclass")
@@ -29,7 +29,10 @@ func get_metadata() -> Dictionary:
 @export_tool_button("Export") var export_action := export_to_png
 func export_to_png() -> void:
 	# Create temporary context for export
-	var temp_context := ProcessingContext.new(export_size, 0, ProcessingContext.ProcessorType.GPU)
+	var temp_context := ProcessingContext.new(export_size,
+		ProcessingContext.ProcessorType.CPU,
+		ProcessingContext.ProcessorType.CPU,
+		0)
 	var img := generate(temp_context)
 	temp_context.dispose()
 	

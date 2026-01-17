@@ -77,25 +77,19 @@ signal configuration_changed()
 
 @export_group("Performance")
 ## Select whether to use CPU or GPU mesh modifier.
-@export var mesh_generator_type: MeshGeneratorType = MeshGeneratorType.CPU:
+@export var mesh_generator_type: ProcessingContext.ProcessorType = ProcessingContext.ProcessorType:
 	set(value):
 		mesh_generator_type = value
 		configuration_changed.emit()
 
 ## Select how to process heightmaps relative to the mesh modifier.
-@export var heightmap_processor_type: HeightmapProcessorType = HeightmapProcessorType.MATCH_MESH:
+@export var heightmap_processor_type: ProcessingContext.ProcessorType = ProcessingContext.ProcessorType:
 	set(value):
 		heightmap_processor_type = value
 		configuration_changed.emit()
 
 ## Toggle caching of generated terrain.
 @export var enable_caching: bool = true
-
-## Mesh generator options.
-enum MeshGeneratorType {
-	CPU,
-	GPU
-}
 
 ## Heightmap processing options.
 enum HeightmapProcessorType {
@@ -119,14 +113,3 @@ func get_mesh_parameters() -> Dictionary:
 		"mesh_size": mesh_generator_parameters.mesh_size,
 		"subdivisions": mesh_generator_parameters.subdivisions
 	}
-
-func get_effective_processor_type() -> ProcessingContext.ProcessorType:
-	match heightmap_processor_type:
-		HeightmapProcessorType.CPU:
-			return ProcessingContext.ProcessorType.CPU
-		HeightmapProcessorType.GPU:
-			return ProcessingContext.ProcessorType.GPU
-		HeightmapProcessorType.MATCH_MESH:
-			return ProcessingContext.ProcessorType.GPU if mesh_generator_type == MeshGeneratorType.GPU else ProcessingContext.ProcessorType.CPU
-		_:
-			return ProcessingContext.ProcessorType.CPU

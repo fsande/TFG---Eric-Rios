@@ -1,40 +1,29 @@
 ## @brief CPU-based mesh generator that creates meshes from heightmaps.
 @tool
-class_name CPUMeshGenerator extends HeightmapMeshGenerator
+class_name CpuMeshGenerator extends HeightmapMeshGenerator
 
 ## Generate mesh by sampling the heightmap using ProcessingContext parameters.
 func generate_mesh(mesh_array: Array, heightmap: Image, context: ProcessingContext) -> MeshGenerationResult:
 	var start_time := Time.get_ticks_usec()
 	var arrays := mesh_array
 	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-	print("CPUMeshGenerator: Generating mesh with %d vertices" % vertices.size())
-	
-	# Get parameters from context
-	var mesh_parameters := context.mesh_parameters()
+	var mesh_parameters := context.mesh_parameters
 	var height_scale: float = mesh_parameters.height_scale
 	var mesh_size: Vector2 = mesh_parameters.mesh_size
-	
-	# Deform vertices based on heightmap
 	for i in range(vertices.size()):
 		var vertex := vertices[i]
 		var uv := _vertex_to_uv(vertex, mesh_size)
 		var height := _sample_heightmap(heightmap, uv)
 		vertex.y = height * height_scale
 		vertices[i] = vertex
-	
-	# Extract essential data from arrays
 	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
 	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
-	
 	var elapsed_time := Time.get_ticks_usec() - start_time
 	var result := MeshGenerationResult.new(vertices, indices, uvs, elapsed_time * 0.001, "CPU")
-	
-	# Set grid metadata for mesh modifier pipeline
 	var subdivisions: int = mesh_parameters.subdivisions
 	result.width = subdivisions + 1
 	result.height = subdivisions + 1
 	result.mesh_size = mesh_size
-	
 	print("CPUMeshGenerator: subdivisions=%d, grid=%dx%d, actual vertices=%d, mesh_size=%s" % [
 		subdivisions, result.width, result.height, vertices.size(), mesh_size
 	])
