@@ -77,13 +77,13 @@ signal configuration_changed()
 
 @export_group("Performance")
 ## Select whether to use CPU or GPU mesh modifier.
-@export var mesh_generator_type: ProcessingContext.ProcessorType = ProcessingContext.ProcessorType:
+@export var mesh_generator_type: ProcessingContext.ProcessorType = ProcessingContext.ProcessorType.CPU:
 	set(value):
 		mesh_generator_type = value
 		configuration_changed.emit()
 
 ## Select how to process heightmaps relative to the mesh modifier.
-@export var heightmap_processor_type: ProcessingContext.ProcessorType = ProcessingContext.ProcessorType:
+@export var heightmap_processor_type: ProcessingContext.ProcessorType = ProcessingContext.ProcessorType.CPU:
 	set(value):
 		heightmap_processor_type = value
 		configuration_changed.emit()

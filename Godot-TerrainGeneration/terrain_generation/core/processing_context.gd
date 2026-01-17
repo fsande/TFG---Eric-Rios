@@ -42,7 +42,6 @@ func _init(p_terrain_size: float, p_heightmap_processor: ProcessorType, p_mesh_p
 		push_error("ProcessingContext: terrain_size must be positive, got %f" % p_terrain_size)
 		p_terrain_size = 256.0
 	terrain_size = p_terrain_size
-	generation_seed = p_seed
 	heightmap_processor_type = p_heightmap_processor
 	_creation_time_ms = Time.get_ticks_msec()
 	if heightmap_processor_type == ProcessorType.GPU:
@@ -50,9 +49,10 @@ func _init(p_terrain_size: float, p_heightmap_processor: ProcessorType, p_mesh_p
 	mesh_generator_type = p_mesh_processor
 	if mesh_generator_type == ProcessorType.GPU and not _gpu_initialized:
 		_initialize_gpu()
+	generation_seed = p_seed
 	if p_seed < 0:
 		push_error("ProcessingContext: generation_seed must be non-negative, got %d" % p_seed)
-		p_seed = 0
+		generation_seed = 0
 
 ## Initialize GPU resources once.
 ## Returns true if successful, false if GPU unavailable.

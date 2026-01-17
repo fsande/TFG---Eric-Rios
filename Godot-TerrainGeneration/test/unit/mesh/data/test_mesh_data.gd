@@ -115,7 +115,8 @@ func test_get_vertex_all_vertices():
 
 func test_get_height_returns_y_component():
 	var vertices := PackedVector3Array([Vector3(0, 5.5, 0)])
-	test_mesh_data = MeshData.new(vertices, PackedInt32Array(), PackedVector2Array())
+	var uvs := PackedVector2Array([Vector2(0, 0)])
+	test_mesh_data = MeshData.new(vertices, PackedInt32Array(), uvs)
 	var height := test_mesh_data.get_height(0)
 	assert_eq(height, 5.5, "Should return Y component as height")
 
@@ -189,7 +190,11 @@ func test_height_values_are_correctly_extracted():
 		Vector3(2, -5.7, 2),   # Height = -5.7 (below sea level)
 		Vector3(3, 0.0, 3)     # Height = 0.0 (sea level)
 	])
-	test_mesh_data = MeshData.new(vertices_with_heights, PackedInt32Array(), PackedVector2Array())
+	var uvs := PackedVector2Array([
+		Vector2(0, 0), Vector2(1, 0),
+		Vector2(0, 1), Vector2(1, 1)
+	])
+	test_mesh_data = MeshData.new(vertices_with_heights, PackedInt32Array(), uvs)
 	assert_almost_eq(test_mesh_data.get_height(0), 10.5, 0.001, "Positive height")
 	assert_almost_eq(test_mesh_data.get_height(1), 25.3, 0.001, "Higher terrain")
 	assert_almost_eq(test_mesh_data.get_height(2), -5.7, 0.001, "Below sea level")

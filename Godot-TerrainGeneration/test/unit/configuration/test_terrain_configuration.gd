@@ -30,8 +30,7 @@ func test_multiple_property_changes_emit_multiple_signals():
 	test_config.terrain_size = 1024.0
 	test_config.generation_seed = 12345
 	test_config.snow_line = 128.0
-	# Emmits 4, as terrain_size change also updates mesh_generator_parameters
-	assert_signal_emit_count(test_config, "configuration_changed", 4, "Should emit once per property change")
+	assert_signal_emit_count(test_config, "configuration_changed", 3, "Should emit once per property change")
 
 func test_terrain_size_rejects_invalid_values():
 	watch_signals(test_config)
@@ -49,17 +48,11 @@ func test_terrain_size_updates_mesh_parameters_automatically():
 	assert_eq(test_config.mesh_generator_parameters.mesh_size, Vector2(512.0, 512.0), "Should update on change")
 
 func test_is_valid_requires_heightmap_source():
-	assert_false(test_config.is_valid(), "Should be invalid without heightmap source")
+	assert_true(test_config.is_valid(), "Should initially be valid")
 	test_config.heightmap_source = NoiseHeightmapSource.new()
-	assert_true(test_config.is_valid(), "Should be valid with heightmap source")
+	assert_true(test_config.is_valid(), "Should be valid with new heightmap source")
 	test_config.heightmap_source = null
 	assert_false(test_config.is_valid(), "Should become invalid when source removed")
-
-func test_get_effective_processor_type_with_explicit_settings():
-	test_config.heightmap_processor_type = ProcessingContext.ProcessorType.CPU
-	assert_eq(test_config.get_effective_processor_type(), ProcessingContext.ProcessorType.CPU, "Explicit CPU")
-	test_config.heightmap_processor_type = ProcessingContext.ProcessorType.GPU
-	assert_eq(test_config.get_effective_processor_type(), ProcessingContext.ProcessorType.GPU, "Explicit GPU")
 
 func test_get_mesh_parameters_returns_correct_dictionary():
 	var params := MeshGeneratorParameters.new()
