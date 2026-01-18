@@ -171,6 +171,7 @@
     <Content Include=".idea\.idea.Godot-TerrainGeneration\.idea\vcs.xml" />
     <Content Include=".idea\.idea.Godot-TerrainGeneration\.idea\workspace.xml" />
     <Content Include="ARCHITECTURE_EVALUATION.md" />
+    <Content Include="CPU_GPU_EQUIVALENCE_ANALYSIS.md" />
     <Content Include="gpu-cpu-comparison\.idea\.gitignore" />
     <Content Include="gpu-cpu-comparison\.idea\copilot.data.migration.agent.xml" />
     <Content Include="gpu-cpu-comparison\.idea\copilot.data.migration.ask.xml" />
@@ -206,6 +207,12 @@
     <Content Include="player\look_controller.gd.uid" />
     <Content Include="player\player.gd" />
     <Content Include="player\player.gd.uid" />
+    <Content Include="resource_helpers\gpu_resource_helper.gd" />
+    <Content Include="resource_helpers\gpu_resource_helper.gd.uid" />
+    <Content Include="resource_helpers\gpu_texture_helper.gd" />
+    <Content Include="resource_helpers\gpu_texture_helper.gd.uid" />
+    <Content Include="resource_helpers\image_helper.gd" />
+    <Content Include="resource_helpers\image_helper.gd.uid" />
     <Content Include="terrain_generation\configuration\mesh_generator_parameters.gd" />
     <Content Include="terrain_generation\configuration\mesh_generator_parameters.gd.uid" />
     <Content Include="terrain_generation\configuration\terrain_configuration.gd" />
@@ -342,6 +349,7 @@
     <Content Include="test\unit\mesh\data\test_mesh_data.gd.uid" />
     <Content Include="test\unit\mesh\data\test_mesh_generation_result.gd" />
     <Content Include="test\unit\mesh\data\test_mesh_generation_result.gd.uid" />
+    <Content Include="test\unit\mesh\generators\test_cpu_gpu_equivallence.gd" />
     <Content Include="test\unit\mesh\test_mesh_generator_factory.gd" />
     <Content Include="test\unit\test_helpers.gd" />
     <Content Include="test\unit\test_helpers.gd.uid" />

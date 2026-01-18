@@ -17,18 +17,19 @@ static func create_texture_from_image(rd: RenderingDevice, img: Image) -> RID:
 ## Creates a GPU texture from the heightmap Image.
 static func create_heightmap_texture(rd: RenderingDevice, heightmap: Image) -> RID:
 	var converted_image := heightmap.duplicate()
-	if converted_image.get_format() != Image.FORMAT_RGBA8:
-		converted_image.convert(Image.FORMAT_RGBA8)
+	if converted_image.get_format() != Image.FORMAT_RF:
+		converted_image.convert(Image.FORMAT_RF)
 	var fmt := RDTextureFormat.new()
 	fmt.width = converted_image.get_width()
 	fmt.height = converted_image.get_height()
-	fmt.format = RenderingDevice.DATA_FORMAT_R8G8B8A8_UNORM
+	fmt.format = RenderingDevice.DATA_FORMAT_R32_SFLOAT
 	fmt.usage_bits = RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT
 	var view := RDTextureView.new()
 	var image_data: PackedByteArray = converted_image.get_data()
 	print("GPU: Creating heightmap texture, data size: %d bytes" % image_data.size())
 	var texture := rd.texture_create(fmt, view, [image_data])
 	return texture
+	
 
 
 ## Creates an empty GPU texture with the specified dimensions

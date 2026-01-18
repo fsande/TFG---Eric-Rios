@@ -24,6 +24,29 @@ static func create_flat_heightmap(width: int, height: int, value: float = 0.5) -
 			img.set_pixel(x, y, Color(value, 0, 0))
 	return img
 
+## Create a noisy heightmap using NoiseHeightmapSource.
+static func create_noisy_heightmap(size: int) -> Image:
+	var heightmap_source := NoiseHeightmapSource.new()
+	return heightmap_source.generate(ProcessingContext.new(size, ProcessingContext.ProcessorType.CPU, ProcessingContext.ProcessorType.CPU))
+
+## Compare two PackedVector3Array with tolerance for floating-point differences.
+static func compare_vector3_arrays(arr1: PackedVector3Array, arr2: PackedVector3Array, tolerance: float = 0.001) -> bool:
+	if arr1.size() != arr2.size():
+		return false
+	for i in arr1.size():
+		if not vectors3_are_close(arr1[i], arr2[i], tolerance):
+			return false
+	return true
+
+## Compare two PackedVector2Array with tolerance for floating-point differences.
+static func compare_vector2_arrays(arr1: PackedVector2Array, arr2: PackedVector2Array, tolerance: float = 0.001) -> bool:
+	if arr1.size() != arr2.size():
+		return false
+	for i in arr1.size():
+		if not vectors2_are_close(arr1[i], arr2[i], tolerance):
+			return false
+	return true
+	
 ## Create a test heightmap with a diagonal gradient from bottom-left to top-right.
 static func create_diagonal_heightmap(width: int, height: int) -> Image:
 	var img := Image.create(width, height, false, Image.FORMAT_RF)
@@ -71,20 +94,25 @@ static func create_test_mesh_generation_result(width: int = 10, height: int = 10
 	result.mesh_size = Vector2(100.0, 100.0)
 	return result
 
-## Create a test ProcessingContext for CPU processing.
-static func create_test_context_cpu(terrain_size: float = 512.0, p_seed: int = 42) -> ProcessingContext:
-	return ProcessingContext.new(terrain_size, p_seed, ProcessingContext.ProcessorType.CPU)
+## Create a test ProcessingContext 
+static func create_test_processing_context(
+		terrain_size: Vector2 = Vector2(512.0, 512.0),
+		processor_type: int = ProcessingContext.ProcessorType.CPU,
+		mesh_generator_type: int = ProcessingContext.ProcessorType.CPU,
+		subdivisions: int = 64,
+		mesh_size: int = 512,
+		height_scale: float = 100.0
+) -> ProcessingContext:
+	var context := ProcessingContext.new(terrain_size.x, processor_type, mesh_generator_type)
+	context.mesh_parameters = create_test_mesh_parameters(mesh_size, subdivisions, height_scale)
+	return context
 
-## Create a test ProcessingContext for GPU processing (may fall back to CPU if GPU unavailable).
-static func create_test_context_gpu(terrain_size: float = 512.0, p_seed: int = 42) -> ProcessingContext:
-	return ProcessingContext.new(terrain_size, p_seed, ProcessingContext.ProcessorType.GPU)
-
-## Create test MeshGeneratorParameters with reasonable defaults.
-static func create_test_mesh_parameters() -> MeshGeneratorParameters:
+## Create test MeshGeneratorParameters.
+static func create_test_mesh_parameters(mesh_size: int = 512, subdivisions: int = 64, height_scale: float = 100.0) -> MeshGeneratorParameters:
 	var params := MeshGeneratorParameters.new()
-	params.mesh_size = Vector2(512.0, 512.0)
-	params.subdivisions = 64
-	params.height_scale = 100.0
+	params.mesh_size = Vector2(mesh_size, mesh_size)
+	params.subdivisions = subdivisions
+	params.height_scale = height_scale
 	return params
 
 ## Compare two images with tolerance for floating-point differences.
@@ -109,10 +137,14 @@ static func floats_are_close(a: float, b: float, tolerance: float = 0.001) -> bo
 	return abs(a - b) <= tolerance
 
 ## Compare two Vector3 values with tolerance.
-static func vectors_are_close(a: Vector3, b: Vector3, tolerance: float = 0.001) -> bool:
-	return floats_are_close(a.x, b.x, tolerance) and \
-		   floats_are_close(a.y, b.y, tolerance) and \
-		   floats_are_close(a.z, b.z, tolerance)
+static func vectors3_are_close(a: Vector3, b: Vector3, tolerance: float = 0.001) -> bool:
+	return  floats_are_close(a.x, b.x, tolerance) and \
+			floats_are_close(a.y, b.y, tolerance) and \
+			floats_are_close(a.z, b.z, tolerance)
+			
+static func vectors2_are_close(a: Vector2, b: Vector2, tolerance: float = 0.001) -> bool:
+	return  floats_are_close(a.x, b.x, tolerance) and \
+			floats_are_close(a.y, b.y, tolerance)
 
 ## Get the average value of all pixels in a heightmap.
 static func get_average_height(heightmap: Image) -> float:

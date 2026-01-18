@@ -28,3 +28,4 @@ class_name MeshGeneratorParameters extends Resource
 			subdivisions = 32
 		else:
 			subdivisions = value
+			

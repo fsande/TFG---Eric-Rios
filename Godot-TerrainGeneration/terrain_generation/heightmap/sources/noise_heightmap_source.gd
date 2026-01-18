@@ -18,7 +18,7 @@ class_name NoiseHeightmapSource extends HeightmapSource
 @export var noise: FastNoiseLite = FastNoiseLite.new():
 	set(value):
 		noise = value
-		if noise:
+		if noise and not noise.changed.is_connected(_on_noise_changed()):
 			noise.changed.connect(_on_noise_changed)
 		heightmap_changed.emit()
 
@@ -26,15 +26,11 @@ func generate(context: ProcessingContext) -> Image:
 	if not noise:
 		push_error("NoiseHeightmapSource: No noise configured")
 		return null
-	
 	var img := Image.create(resolution, resolution, false, Image.FORMAT_RF)
 	var new_noise: FastNoiseLite = noise.duplicate()
-	
-	# Use context terrain size and seed
 	new_noise.frequency = frequency / context.terrain_size
 	if context.generation_seed != 0:
 		new_noise.seed = context.generation_seed
-	
 	for y in resolution:
 		for x in resolution:
 			var nx := float(x) / resolution * context.terrain_size

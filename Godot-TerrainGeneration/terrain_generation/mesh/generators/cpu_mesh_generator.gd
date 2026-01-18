@@ -42,6 +42,4 @@ func _vertex_to_uv(vertex: Vector3, mesh_size: Vector2) -> Vector2:
 
 ## Sample the heightmap at the given UV and return the red channel as height.
 func _sample_heightmap(heightmap: Image, uv: Vector2) -> float:
-	var x := clampi(int(uv.x * heightmap.get_width()), 0, heightmap.get_width() - 1)
-	var y := clampi(int(uv.y * heightmap.get_height()), 0, heightmap.get_height() - 1)
-	return heightmap.get_pixel(x, y).r
+	return ImageHelper.sample_bilinear(heightmap, uv)

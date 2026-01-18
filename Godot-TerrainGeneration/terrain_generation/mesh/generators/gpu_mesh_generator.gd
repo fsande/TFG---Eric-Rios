@@ -26,10 +26,10 @@ func generate_mesh(mesh_array: Array, heightmap: Image, context: ProcessingConte
 	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
 	var vertex_count := vertices.size()
 	var index_count := indices.size()
-	var mesh_params := context.mesh_parameters
-	var height_scale: float = mesh_params.height_scale
-	var mesh_size: Vector2 = mesh_params.mesh_size
-	var subdivisions: int = mesh_params.subdivisions
+	var mesh_parameters := context.mesh_parameters
+	var height_scale: float = mesh_parameters.height_scale
+	var mesh_size: Vector2 = mesh_parameters.mesh_size
+	var subdivisions: int = mesh_parameters.subdivisions
 	print("GPUMeshGenerator: Generating mesh with %d vertices" % vertex_count)
 	var vertex_buffer := GpuResourceHelper.create_vector3_buffer(rd, vertices)
 	var index_buffer := GpuResourceHelper.create_int32_buffer(rd, indices)
@@ -42,6 +42,8 @@ func generate_mesh(mesh_array: Array, heightmap: Image, context: ProcessingConte
 	var sampler_state := RDSamplerState.new()
 	sampler_state.min_filter = RenderingDevice.SAMPLER_FILTER_LINEAR
 	sampler_state.mag_filter = RenderingDevice.SAMPLER_FILTER_LINEAR
+	sampler_state.repeat_u = RenderingDevice.SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE
+	sampler_state.repeat_v = RenderingDevice.SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE
 	var sampler := rd.sampler_create(sampler_state)
 	# Pass 0: Modify vertex heights
 	_execute_pass(rd, pipeline, shader, vertex_buffer, index_buffer, uv_buffer, normal_buffer, tangent_buffer,
@@ -112,16 +114,13 @@ func _create_params_buffer_with_pass(
 	index_count: int, pass_type: int
 ) -> RID:
 	var byte_array := PackedByteArray()
-	
 	byte_array.append_array(PackedFloat32Array([height_scale]).to_byte_array())
 	byte_array.append_array(PackedFloat32Array([mesh_size.x]).to_byte_array())
 	byte_array.append_array(PackedFloat32Array([mesh_size.y]).to_byte_array())
 	byte_array.append_array(PackedInt32Array([vertex_count]).to_byte_array())
 	byte_array.append_array(PackedInt32Array([index_count]).to_byte_array())
 	byte_array.append_array(PackedInt32Array([pass_type]).to_byte_array())
-	
 	print("GPUMeshGenerator: Pass %d - params buffer size: %d bytes" % [pass_type, byte_array.size()])
-	
 	return rd.storage_buffer_create(byte_array.size(), byte_array)
 
 ## Creates a unified uniform set for all required buffers and textures.
@@ -142,7 +141,6 @@ func _create_unified_uniform_set(
 		GpuResourceHelper.create_sampler_texture_uniform(7, sampler, heightmap_texture),
 		GpuResourceHelper.create_storage_buffer_uniform(8, params_buffer),
 	]
-	
 	return rd.uniform_set_create(uniforms, shader, 0)
 
 ## Reads back the tangent buffer data into a PackedVector4Array.
