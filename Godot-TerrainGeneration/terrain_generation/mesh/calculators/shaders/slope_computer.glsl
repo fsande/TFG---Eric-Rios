@@ -53,8 +53,9 @@ vec3 compute_vertex_normal(int vertex_idx, int col, int row) {
         int n2_row = row + offset2.y;
         if (n1_col < 0 || n1_col >= width || n1_row < 0 || n1_row >= height) continue;
         if (n2_col < 0 || n2_col >= width || n2_row < 0 || n2_row >= height) continue;
-        int n1_idx = n1_row * width + n1_col;
-        int n2_idx = n2_row * width + n2_col;
+        // Use inverted indexing to match the vertex_index calculation
+        int n1_idx = (height - 1 - n1_row) * width + (width - 1 - n1_col);
+        int n2_idx = (height - 1 - n2_row) * width + (width - 1 - n2_col);
         if (n1_idx >= vertex_count || n2_idx >= vertex_count) continue;
         vec3 neighbor1 = get_vertex(n1_idx);
         vec3 neighbor2 = get_vertex(n2_idx);
@@ -90,7 +91,7 @@ void main() {
     }
     int col = pixel_coord.x;
     int row = pixel_coord.y;
-    int vertex_idx = row * width + col;
+    int vertex_idx = (height - 1 - row) * width + (width - 1 - col);
     vec3 normal = compute_vertex_normal(vertex_idx, col, row);
     float slope_angle = compute_slope_angle(normal);
     vec4 result = vec4(normal.x, normal.y, normal.z, slope_angle);
