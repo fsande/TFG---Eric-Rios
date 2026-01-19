@@ -99,7 +99,6 @@ func _apply_mountain(context: MeshModifierContext) -> void:
 	var current_direction := original_direction
 	var current_position := start_position
 	for token in range(tokens):
-		print("Elevating at token %d at position (%0.2f, %0.2f)" % [token, current_position.x, current_position.y])
 		_elevate_wedge(context, current_position, current_direction, rng, noise)
 		current_position += current_direction * step_distance
 		if direction_change_interval > 0 and (token + 1) % direction_change_interval == 0:
@@ -112,11 +111,6 @@ func _apply_mountain(context: MeshModifierContext) -> void:
 func _elevate_wedge(context: MeshModifierContext, position: Vector2, direction: Vector2, rng: RandomNumberGenerator, noise_gen: FastNoiseLite) -> int:
 	var perpendicular := Vector2(-direction.y, direction.x)
 	var center_vertex_index := context.find_nearest_vertex(position)
-	print("Mountain agent finding nearest vertex for position (%0.2f, %0.2f), which is at world position (%s): %d" % [
-		position.x, position.y,
-		str(context.get_vertex_position(center_vertex_index)),
-		center_vertex_index
-	])
 	if center_vertex_index < 0:
 		push_error("Find_nearest_vertex returned -1 for position (%0.2f, %0.2f)" % [position.x, position.y])
 		return 0
@@ -129,21 +123,17 @@ func _elevate_wedge(context: MeshModifierContext, position: Vector2, direction: 
 	var scaled_search_radius := context.scale_to_grid(search_radius)
 	var candidates := context.get_neighbours_chebyshev(center_vertex_index, scaled_search_radius)
 	candidates.append(center_vertex_index)
-	print("Number of candidate vertices for wedge elevation: %d" % [candidates.size()])
 	var affected_count := 0
-	var skip_count := 0
 	for vertex_index in candidates:
 		var vertex := vertices[vertex_index]
 		var vertex_2d := Vector2(vertex.x, vertex.z)
 		var offset := vertex_2d - position
 		var along_direction := offset.dot(direction)
 		var perpendicular_distance := offset.dot(perpendicular)
-#		if abs(along_direction) > wedge_length * 0.5:
-##			skip_count += 1
-#			continue
-#		if abs(perpendicular_distance) > actual_wedge_width * 0.5:
-#			skip_count += 1
-#			continue
+		if abs(along_direction) > wedge_length * 0.5:
+			continue
+		if abs(perpendicular_distance) > actual_wedge_width * 0.5:
+			continue
 		var distance_from_center := offset.length()
 		var falloff_factor: float = 1.0 - (distance_from_center / (max(actual_wedge_width, wedge_length) * 0.5))
 		falloff_factor = clamp(falloff_factor, 0.0, 1.0)
@@ -152,8 +142,7 @@ func _elevate_wedge(context: MeshModifierContext, position: Vector2, direction: 
 		if noise_gen != null and noise_strength > 0.0:
 			var noise_value := noise_gen.get_noise_2d(vertex.x, vertex.z) 
 			noise_multiplier = 1.0 + (noise_value * noise_strength)
-		vertices[vertex_index].y += 100#actual_elevation * falloff_factor * noise_multiplier
+		vertices[vertex_index].y += actual_elevation * falloff_factor * noise_multiplier
 		affected_count += 1
-	print("Affected vertices in this wedge: %d (skipped %d)" % [affected_count, skip_count])
 	return affected_count
 	

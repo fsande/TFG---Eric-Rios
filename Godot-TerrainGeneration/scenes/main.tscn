@@ -12,7 +12,7 @@
 [ext_resource type="Script" uid="uid://n8i4a5cpdd5h" path="res://terrain_generation/mesh_modifiers/core/pipeline_stage.gd" id="8_a8y0u"]
 [ext_resource type="Material" uid="uid://bg4p6ysy07sj1" path="res://assets/materials/terrain_mat.tres" id="8_tipki"]
 [ext_resource type="Script" uid="uid://chdi7cmw56ufo" path="res://terrain_generation/mesh_modifiers/core/mesh_modifier_agent.gd" id="9_jkv2x"]
-[ext_resource type="Script" uid="uid://bnu60kpxm1klq" path="res://terrain_generation/mesh_modifiers/agents/mountain_agent_debug.gd" id="10_a8y0u"]
+[ext_resource type="Script" uid="uid://dwooplesasxf0" path="res://terrain_generation/mesh_modifiers/agents/mountain_agent.gd" id="11_a8y0u"]
 [ext_resource type="Script" uid="uid://dckjocktq6xry" path="res://terrain_generation/mesh_modifiers/core/sequential_stage.gd" id="11_muem4"]
 
 [sub_resource type="Gradient" id="Gradient_m2sqd"]
@@ -81,20 +81,21 @@ metadata/_custom_type_script = "uid://byh53w6k375jl"
 script = ExtResource("6_tipki")
 height_scale = 128.0
 mesh_size = Vector2(1024, 1024)
-subdivisions = 16
+subdivisions = 128
 
-[sub_resource type="Resource" id="Resource_jbj1t"]
-script = ExtResource("10_a8y0u")
-wedge_width = 25.0
-update_every_n_vertices = 1
-update_delay_ms = 55
-agent_name = "Mountain Agent (Debug)"
-tokens = 1
-metadata/_custom_type_script = "uid://bnu60kpxm1klq"
+[sub_resource type="Resource" id="Resource_jkv2x"]
+script = ExtResource("11_a8y0u")
+initial_direction_degrees = 270.0
+step_distance = 150.0
+wedge_width = 250.0
+wedge_length = 125.0
+elevation_height = 22.0
+agent_name = "Mountain Agent"
+metadata/_custom_type_script = "uid://dwooplesasxf0"
 
 [sub_resource type="Resource" id="Resource_0ld40"]
 script = ExtResource("11_muem4")
-agents = Array[ExtResource("9_jkv2x")]([SubResource("Resource_jbj1t")])
+agents = Array[ExtResource("9_jkv2x")]([SubResource("Resource_jkv2x")])
 metadata/_custom_type_script = "uid://dckjocktq6xry"
 
 [sub_resource type="Resource" id="Resource_gqmmt"]

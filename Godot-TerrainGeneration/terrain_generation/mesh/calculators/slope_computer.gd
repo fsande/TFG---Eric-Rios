@@ -32,11 +32,11 @@ static func _compute_cpu(mesh_result: MeshGenerationResult) -> Image:
 	var img := Image.create(width, height, false, Image.FORMAT_RGBAF)
 	for row in range(height):
 		for col in range(width):
-			var vertex_idx := row * width + col
-			if vertex_idx >= vertices.size():
+			var vertex_index := (height - 1 - row) * width + (width - 1 - col)
+			if vertex_index >= vertices.size():
 				img.set_pixel(col, row, Color(0.0, 1.0, 0.0, 0.0))  # Up normal, 0 slope
 				continue
-			var normal := _compute_vertex_normal(vertex_idx, col, row, width, height, vertices)
+			var normal := _compute_vertex_normal(vertex_index, col, row, width, height, vertices)
 			var slope_angle := _compute_slope_angle(normal)
 			img.set_pixel(col, row, Color(normal.x, normal.y, normal.z, slope_angle))
 	var elapsed_time := Time.get_ticks_usec() - start_time
@@ -125,8 +125,9 @@ static func _compute_vertex_normal(vertex_idx: int, col: int, row: int, width: i
 			continue
 		if n2_col < 0 or n2_col >= width or n2_row < 0 or n2_row >= height:
 			continue
-		var n1_idx: int = n1_row * width + n1_col
-		var n2_idx: int = n2_row * width + n2_col
+		# Use inverted indexing to match the vertex_index calculation
+		var n1_idx: int = (height - 1 - n1_row) * width + (width - 1 - n1_col)
+		var n2_idx: int = (height - 1 - n2_row) * width + (width - 1 - n2_col)
 		if n1_idx >= vertices.size() or n2_idx >= vertices.size():
 			continue
 		var v1 := vertices[n1_idx] - center
