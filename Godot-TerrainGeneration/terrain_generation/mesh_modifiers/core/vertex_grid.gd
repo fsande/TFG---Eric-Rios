@@ -31,11 +31,10 @@ func _init(p_width: int, p_height: int) -> void:
 func build_from_mesh(mesh: MeshGenerationResult) -> void:
 	if mesh.width != width or mesh.height != height:
 		push_warning("VertexGrid: Dimension mismatch (expected %dx%d, got %dx%d)" % [width, height, mesh.width, mesh.height])
-	
 	_grid_to_index.clear()
 	_index_to_grid.clear()
 	grid_vertex_count = 0
-	
+	var vertex_count := mesh.get_vertex_count()
 	for row in range(height):
 		for col in range(width):
 			var vertex_index := row * width + col

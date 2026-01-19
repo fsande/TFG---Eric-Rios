@@ -51,7 +51,7 @@ func get_produced_data_types() -> Array[String]:
 	return ["tunnel_locations"]
 
 func validate(context: MeshModifierContext) -> bool:
-	if not context.get_mesh_data():
+	if not context.get_mesh_generation_result():
 		push_error("TunnelBoringAgent: No mesh data in context")
 		return false
 	if tunnel_radius <= 0 or tunnel_length <= 0:
@@ -84,7 +84,7 @@ func execute(context: MeshModifierContext) -> MeshModifierResult:
 		return MeshModifierResult.create_failure("No valid entry points found for tunnel placement", elapsed_to_error)
 	var entry_points_to_use: Array[TunnelEntryPoint]= filtered_entry_points.slice(0, tunnel_count)
 	_lengthen_entry_points(entry_points_to_use)
-	_debug_draw_entry_points(entry_points_to_use, context.scene_root)
+	_debug_draw_entry_points(entry_points_to_use, context.agent_node_root)
 	var tunnels_created := 0
 	var time_before_creation := Time.get_ticks_msec()
 	for i in range(entry_points_to_use.size()):
@@ -132,25 +132,19 @@ func _debug_draw_entry_points(entry_points: Array[TunnelEntryPoint], root: Node3
 	else:
 		for child in container.get_children():
 			child.queue_free()
-	# Create a semi-transparent red cylinder for each tunnel
 	for entry in entry_points:
-		# Create cylinder volume for debug visualization
 		var cylinder := CylinderVolume.new(entry.position, entry.tunnel_direction, tunnel_radius, tunnel_length)
 		var debug_data := cylinder.get_debug_mesh()
 		var mesh: Mesh = debug_data[0]
 		var transform: Transform3D = debug_data[1]
-		
 		var mi := MeshInstance3D.new()
 		mi.mesh = mesh
-		
-		# Semi-transparent red material
 		var mat := StandardMaterial3D.new()
 		mat.albedo_color = Color(1.0, 0.0, 0.0, 0.3)
 		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		mat.cull_mode = BaseMaterial3D.CULL_DISABLED  # Show both sides
 		mi.material_override = mat
 		mi.global_transform = transform
-		
 		container.add_child(mi)
 
 ## Create a tunnel at the specified entry point using CSG boolean subtraction.
@@ -158,7 +152,7 @@ func _create_tunnel_at(entry: TunnelEntryPoint, context: MeshModifierContext) ->
 	var entry_pos: Vector3 = entry.position
 	var tunnel_direction: Vector3 = entry.tunnel_direction
 	var cylinder := CylinderVolume.new(entry_pos, tunnel_direction, tunnel_radius, tunnel_length)
-	var original_mesh := context.get_mesh_data().mesh_data
+	var original_mesh := context.get_mesh_generation_result().mesh_data
 	var csg_operator := CSGBooleanOperator.new()
 	print("  CSG: Subtracting cylinder from mesh (%d triangles)" % original_mesh.get_triangle_count())
 	var modified_mesh := csg_operator.subtract_volume_from_mesh(original_mesh, cylinder)
@@ -170,7 +164,7 @@ func _create_tunnel_at(entry: TunnelEntryPoint, context: MeshModifierContext) ->
 
 ## Replace mesh data in context with new mesh
 func _replace_mesh_in_context(context: MeshModifierContext, new_mesh_data: MeshData) -> void:
-	var mesh_result := context.get_mesh_data()
+	var mesh_result := context.get_mesh_generation_result()
 	mesh_result.mesh_data = new_mesh_data
 	mesh_result.mark_dirty()
 

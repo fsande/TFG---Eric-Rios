@@ -20,10 +20,10 @@ var _grid: VertexGrid
 var processing_context: ProcessingContext
 
 ## Terrain world data
-var terrain_data: TerrainData
+var _terrain_data: TerrainData
 
 ## Scene management (for agents that spawn objects)
-var scene_root: Node3D
+var agent_node_root: Node3D
 
 ## Pipeline parameters
 var parameters: MeshGeneratorParameters
@@ -36,14 +36,13 @@ var current_agent_name: String = ""
 
 ## Construct context with mesh data and processing context.
 ## ProcessingContext is REQUIRED for GPU operations and parameter access.
-func _init(p_terrain_data: TerrainData, p_processing_context: ProcessingContext, p_scene_root: Node3D, p_parameters: MeshGeneratorParameters) -> void:
+func _init(p_terrain_data: TerrainData, p_processing_context: ProcessingContext, p_agent_node_root: Node3D, p_parameters: MeshGeneratorParameters) -> void:
 	_mesh = p_terrain_data.mesh_result
-	terrain_data = p_terrain_data
+	_terrain_data = p_terrain_data
 	processing_context = p_processing_context
 	_grid = VertexGrid.new(_mesh.width, _mesh.height)
 	_grid.build_from_mesh(_mesh)
-	
-	scene_root = p_scene_root if p_scene_root else Node3D.new()
+	agent_node_root = p_agent_node_root if p_agent_node_root else Node3D.new()
 	parameters = p_parameters
 
 
@@ -73,7 +72,7 @@ func mark_mesh_dirty() -> void:
 
 ## Get terrain size in world units.
 func terrain_size() -> Vector2:
-	return terrain_data.terrain_size
+	return _terrain_data.terrain_size
 
 ## Convert world-space measure to grid-space units.
 func scale_to_grid(measure: float) -> int:
@@ -146,10 +145,6 @@ func is_surface_vertex(index: int) -> bool:
 func remove_triangles_if(filter_func: Callable) -> int:
 	return _mesh.remove_triangles_if(filter_func)
 
-## Get triangle count.
-func get_triangle_count() -> int:
-	return _mesh.get_triangle_count()
-
 ## ===========================
 ## GPU OPERATIONS
 ## ===========================
@@ -167,14 +162,6 @@ func get_rendering_device() -> RenderingDevice:
 ## Returns invalid RID if GPU not available.
 func get_or_create_shader(shader_path: String) -> RID:
 	return processing_context.get_or_create_shader(shader_path)
-
-## Get processing context directly (for advanced GPU operations).
-func get_processing_context() -> ProcessingContext:
-	return processing_context
-
-## Track GPU memory allocation (for profiling).
-func track_gpu_allocation(bytes: int) -> void:
-	processing_context.track_gpu_allocation(bytes)
 
 ## Get terrain size from processing context.
 func get_terrain_size() -> float:
@@ -208,7 +195,7 @@ func print_execution_summary() -> void:
 		])
 
 ## Get mesh data reference (for agent validation).
-func get_mesh_data() -> MeshGenerationResult:
+func get_mesh_generation_result() -> MeshGenerationResult:
 	return _mesh
 
 ## ===========================
@@ -231,7 +218,7 @@ func get_moore_neighbours(vertex_index: int) -> PackedInt32Array:
 
 ## Get the original heightmap used to generate this terrain.
 func get_heightmap() -> Image:
-	return terrain_data.heightmap
+	return _terrain_data.heightmap
 
 ## Get precomputed slope normal map (returns null if not computed).
 func get_slope_normal_map() -> Image:

@@ -18,7 +18,7 @@ class_name NoiseHeightmapSource extends HeightmapSource
 @export var noise: FastNoiseLite = FastNoiseLite.new():
 	set(value):
 		noise = value
-		if noise and not noise.changed.is_connected(_on_noise_changed()):
+		if noise:
 			noise.changed.connect(_on_noise_changed)
 		heightmap_changed.emit()
 

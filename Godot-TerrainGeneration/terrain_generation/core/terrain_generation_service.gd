@@ -70,7 +70,7 @@ func _execute_mesh_modification_pipeline(config: TerrainConfiguration, processin
 		)
 		if modifier_context:
 			last_mesh_modifier_context = modifier_context
-			mesh_result = modifier_context.get_mesh_data()
+			mesh_result = modifier_context.get_mesh_generation_result()
 		else:
 			push_warning("TerrainGenerationService: Mesh modification pipeline failed")
 

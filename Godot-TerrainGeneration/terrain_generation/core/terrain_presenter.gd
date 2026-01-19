@@ -33,6 +33,8 @@ class_name TerrainPresenter extends Node3D
 ## Editor tool button to apply visual changes without regenerating.
 @export_tool_button("Update Visuals") var update_visuals_action := _update_visuals
 
+static var current_presenter: TerrainPresenter = null
+
 var _mesh_instance: MeshInstance3D
 var _terrain_collision: TerrainCollision
 ## TODO: Refactor agent node handling into separate component
@@ -61,6 +63,7 @@ func _setup_collision() -> void:
 ## Regenerate terrain from the current `configuration` and update the scene.
 ## Uses async generation if use_async_generation is enabled, otherwise runs synchronously.
 func regenerate() -> void:
+	current_presenter = self
 	if not terrain_configuration:
 		push_warning("TerrainPresenter: No configuration assigned")
 		return
@@ -110,23 +113,23 @@ func _update_presentation(terrain_data: TerrainData) -> void:
 	if not terrain_data:
 		push_warning("TerrainPresenter: No terrain data to present")
 		return
-	_update_visuals(terrain_data)
+	if _mesh_instance:
+		_mesh_instance.mesh = terrain_data.get_mesh()
+	_update_visuals()
 	if terrain_configuration.generate_collision: 
 		_terrain_collision.update_collision(terrain_data, terrain_configuration.collision_layers)
 	_update_agent_nodes(terrain_data)
 
-## Update mesh and material from the current TerrainData.
-func _update_visuals(terrain_data: TerrainData) -> void:
-	if _mesh_instance:
-		_mesh_instance.mesh = terrain_data.get_mesh()
-		if terrain_configuration.terrain_material:
-			_mesh_instance.material_override = terrain_configuration.terrain_material
-		if terrain_configuration.terrain_material and terrain_configuration.terrain_material is ShaderMaterial:
-			var shader_mat := terrain_configuration.terrain_material as ShaderMaterial
-			# TODO: better configurable parameter mapping
-			var parameter_name := "height"
-			if shader_mat.get_shader_parameter(parameter_name) != null:
-				shader_mat.set_shader_parameter(parameter_name, terrain_configuration.snow_line)
+## Update material from terrain configuration parameters.
+func _update_visuals() -> void:
+	if terrain_configuration.terrain_material:
+		_mesh_instance.material_override = terrain_configuration.terrain_material
+	if terrain_configuration.terrain_material and terrain_configuration.terrain_material is ShaderMaterial:
+		var shader_mat := terrain_configuration.terrain_material as ShaderMaterial
+		# TODO: better configurable parameter mapping
+		var parameter_name := "height"
+		if shader_mat.get_shader_parameter(parameter_name) != null:
+			shader_mat.set_shader_parameter(parameter_name, terrain_configuration.snow_line)
 
 ## Called when the terrain configuration changes.
 func _on_config_changed() -> void:

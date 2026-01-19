@@ -62,8 +62,8 @@ func generate_mesh(mesh_array: Array, heightmap: Image, context: ProcessingConte
 	GpuResourceHelper.free_rids(rd, rids)
 	var elapsed_time := Time.get_ticks_usec() - start_time
 	var result := MeshGenerationResult.new(modified_vertices, indices, uvs, elapsed_time * 0.001, "GPU")
-	result.width = subdivisions + 1
-	result.height = subdivisions + 1
+	result.width = subdivisions + 2
+	result.height = subdivisions + 2
 	result.mesh_size = mesh_size
 	print("GPUMeshGenerator: subdivisions=%s, grid=%sx%s, actual vertices=%s, mesh_size=%s" % [
 		str(subdivisions), str(result.width), str(result.height), str(modified_vertices.size()), str(mesh_size)

@@ -305,6 +305,7 @@
     <Content Include="terrain_generation\mesh_generators\tangent_calculation_data.gd" />
     <Content Include="terrain_generation\mesh_generators\tangent_calculation_data.gd.uid" />
     <Content Include="terrain_generation\mesh_generators\terrain_configuration.gd" />
+    <Content Include="terrain_generation\mesh_modifiers\agents\mountain_agent_debug.gd" />
     <Content Include="terrain_generation\mesh_modifiers\agents\terrain_raise_agent.gd" />
     <Content Include="terrain_generation\mesh_modifiers\agents\terrain_raise_agent.gd.uid" />
     <Content Include="terrain_generation\mesh_modifiers\agents\tunnel_boring_agent.gd" />

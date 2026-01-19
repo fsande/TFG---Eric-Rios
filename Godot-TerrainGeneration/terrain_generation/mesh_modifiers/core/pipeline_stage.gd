@@ -64,10 +64,6 @@ func _execute_agent(agent: MeshModifierAgent, context: MeshModifierContext) -> M
 	if agent._check_timeout(start_time):
 		result = MeshModifierResult.create_timeout(Time.get_ticks_msec() - start_time, agent._get_display_name())
 	agent._update_stats(result)
-	if result.is_success():
-		agent.execution_completed.emit(result)
-	else:
-		agent.execution_failed.emit(result.message)
 	agent_completed.emit(agent._get_display_name(), result)
 	if log_agent_stats:
 		print("  Agent '%s': %s" % [agent._get_display_name(), result.get_formatted_string()])

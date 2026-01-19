@@ -25,7 +25,7 @@ func modifies_mesh() -> bool:
 	return true
 
 func validate(context: MeshModifierContext) -> bool:
-	if not context.get_mesh_data():
+	if not context.get_mesh_generation_result():
 		push_error("TerrainRaiseAgent: No mesh data in context")
 		return false
 	return true
@@ -33,7 +33,29 @@ func validate(context: MeshModifierContext) -> bool:
 func execute(context: MeshModifierContext) -> MeshModifierResult:
 	var start_time := Time.get_ticks_msec()
 	progress_updated.emit(0.0, "Starting terrain raise")
+	_raise_terrain(context)
+	progress_updated.emit(1.0, "Terrain raise complete")
+	var elapsed := Time.get_ticks_msec() - start_time
+	var metadata := {
+		"center": center_position,
+		"radius": radius,
+		"height": height,
+		"falloff": falloff,
+	}
+	return MeshModifierResult.create_success(
+		elapsed,
+		"Raised terrain at %s (radius: %.1f, height: %.1f)" % [center_position, radius, height],
+		metadata
+	)
+
+func _raise_terrain(context: MeshModifierContext) -> void:
 	var vertex_index := context.find_nearest_vertex(center_position)
+	print("Raise agent finding nearest vertex for position (%0.2f, %0.2f), which is at world position (%s): %d" % [
+		center_position.x,
+		center_position.y,
+		str(context.get_vertex_position(vertex_index)),
+		vertex_index
+	])
 	var scaled_radius := context.scale_to_grid(radius)
 	var affected := context.get_neighbours_chebyshev(vertex_index, scaled_radius)
 	affected.append(vertex_index)
@@ -57,17 +79,3 @@ func execute(context: MeshModifierContext) -> MeshModifierResult:
 		strength = pow(strength, falloff + 1.0)
 		vertices[vertex_idx].y += height * strength
 	context.mark_mesh_dirty()
-	progress_updated.emit(1.0, "Terrain raise complete")
-	var elapsed := Time.get_ticks_msec() - start_time
-	var metadata := {
-		"center": center_position,
-		"radius": radius,
-		"height": height,
-		"falloff": falloff,
-		"affected_vertices": affected.size()
-	}
-	return MeshModifierResult.create_success(
-		elapsed,
-		"Raised terrain at %s (radius: %.1f, height: %.1f, vertices: %d)" % [center_position, radius, height, affected.size()],
-		metadata
-	)

@@ -23,7 +23,6 @@ func add_vertices(positions: PackedVector3Array, vertex_uvs: PackedVector2Array)
 	if positions.size() != vertex_uvs.size():
 		push_error("MeshTopologyModifier: Position and UV array size mismatch")
 		return -1
-	
 	var base_index := _mesh_data.vertices.size()
 	_mesh_data.vertices.append_array(positions)
 	_mesh_data.uvs.append_array(vertex_uvs)
@@ -48,30 +47,20 @@ func add_triangles(triangle_indices: PackedInt32Array) -> void:
 func remove_triangles_if(filter_func: Callable) -> int:
 	var new_indices := PackedInt32Array()
 	var removed_count := 0
-	
 	for i in range(0, _mesh_data.indices.size(), 3):
 		var i0 := _mesh_data.indices[i]
 		var i1 := _mesh_data.indices[i + 1]
 		var i2 := _mesh_data.indices[i + 2]
-		
 		var v0 := _mesh_data.vertices[i0]
 		var v1 := _mesh_data.vertices[i1]
 		var v2 := _mesh_data.vertices[i2]
-		
-		# If filter returns true, skip this triangle (remove it)
 		if filter_func.call(v0, v1, v2):
 			removed_count += 1
 			continue
-		
-		# Keep this triangle
 		new_indices.append(i0)
 		new_indices.append(i1)
 		new_indices.append(i2)
-	
 	_mesh_data.indices = new_indices
 	return removed_count
 
-## Get the underlying mesh data (for read access).
-func get_mesh_data() -> MeshData:
-	return _mesh_data
 

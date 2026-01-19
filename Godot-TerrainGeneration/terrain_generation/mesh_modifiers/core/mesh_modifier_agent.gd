@@ -8,12 +8,6 @@ class_name MeshModifierAgent extends Resource
 
 ## Emitted during execution to report progress (0.0 to 1.0).
 signal progress_updated(progress: float, message: String)
-## Emitted when agent finishes execution.
-signal execution_completed(result: MeshModifierResult)
-## Emitted when agent encounters fatal error.
-signal execution_failed(error_message: String)
-## Emitted when validation fails.
-signal validation_failed(error_message: String)
 
 ## Whether this agent is active in the pipeline.
 @export var enabled: bool = true
@@ -23,8 +17,7 @@ signal validation_failed(error_message: String)
 @export var agent_name: String = ""
 
 ## Number of processing tokens this agent consumes.
-## 0 means no limit.
-@export var tokens: int = 0
+@export var tokens: int = 25
 
 @export_group("Performance")
 ## Maximum execution time before abort (30 seconds default).
@@ -42,7 +35,7 @@ func _init() ->void:
 		agent_name = get_agent_type()
 
 ## Main execution method - MUST be overridden by subclasses.
-func execute(context: MeshModifierContext) -> MeshModifierResult:
+func execute(_context: MeshModifierContext) -> MeshModifierResult:
 	push_error("%s: execute() must be implemented by subclass" % get_agent_type())
 	return MeshModifierResult.create_failure("execute() not implemented")
 
@@ -53,8 +46,8 @@ func get_agent_type() -> String:
 
 ## Validate prerequisites before execution.
 ## Override to check required data exists, parameters are valid, etc.
-func validate(context: MeshModifierContext) -> bool:
-	return true
+func validate(_context: MeshModifierContext) -> bool:
+	return false
 
 ## Declare what analysis data this agent requires.
 ## Example: ["water_flow_data", "terrain_analysis"]
@@ -96,26 +89,6 @@ func get_metadata() -> Dictionary:
 		"required_data": get_required_data_types(),
 		"produced_data": get_produced_data_types()
 	}
-
-## Get performance statistics.
-func get_performance_stats() -> Dictionary:
-	return {
-		"execution_count": _execution_count,
-		"average_time_ms": _total_execution_time / max(1, _execution_count),
-		"total_time_ms": _total_execution_time,
-		"last_execution_time_ms": _last_result.elapsed_time_ms if _last_result else 0.0
-	}
-
-## Reset performance statistics.
-func reset_performance_stats() -> void:
-	_execution_count = 0
-	_total_execution_time = 0.0
-	_last_result = null
-
-## Internal helper to emit progress signal.
-func _report_progress(progress: float, message: String) -> void:
-	progress = clampf(progress, 0.0, 1.0)
-	progress_updated.emit(progress, message)
 
 ## Internal helper to get display name.
 func _get_display_name() -> String:

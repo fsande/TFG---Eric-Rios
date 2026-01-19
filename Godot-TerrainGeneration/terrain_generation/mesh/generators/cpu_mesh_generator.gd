@@ -21,8 +21,8 @@ func generate_mesh(mesh_array: Array, heightmap: Image, context: ProcessingConte
 	var elapsed_time := Time.get_ticks_usec() - start_time
 	var result := MeshGenerationResult.new(vertices, indices, uvs, elapsed_time * 0.001, "CPU")
 	var subdivisions: int = mesh_parameters.subdivisions
-	result.width = subdivisions + 1
-	result.height = subdivisions + 1
+	result.width = subdivisions + 2
+	result.height = subdivisions + 2
 	result.mesh_size = mesh_size
 	print("CPUMeshGenerator: subdivisions=%d, grid=%dx%d, actual vertices=%d, mesh_size=%s" % [
 		subdivisions, result.width, result.height, vertices.size(), mesh_size
