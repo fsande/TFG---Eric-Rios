@@ -27,7 +27,10 @@ static func create_flat_heightmap(width: int, height: int, value: float = 0.5) -
 ## Create a noisy heightmap using NoiseHeightmapSource.
 static func create_noisy_heightmap(size: int) -> Image:
 	var heightmap_source := NoiseHeightmapSource.new()
-	return heightmap_source.generate(ProcessingContext.new(size, ProcessingContext.ProcessorType.CPU, ProcessingContext.ProcessorType.CPU))
+	var context := ProcessingContext.new(size, ProcessingContext.ProcessorType.CPU, ProcessingContext.ProcessorType.CPU)
+	var result := heightmap_source.generate(context)
+	context.dispose()
+	return result
 
 ## Compare two PackedVector3Array with tolerance for floating-point differences.
 static func compare_vector3_arrays(arr1: PackedVector3Array, arr2: PackedVector3Array, tolerance: float = 0.001) -> bool:

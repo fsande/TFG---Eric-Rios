@@ -3,6 +3,20 @@ extends GutTest
 var cpu_generator: CpuMeshGenerator
 var gpu_generator: GpuMeshGenerator
 var plane: PlaneMesh
+var context_cpu: ProcessingContext
+var context_gpu: ProcessingContext
+
+func before_all():
+	context_cpu = ProcessingContext.new(1024.0, ProcessingContext.ProcessorType.CPU, ProcessingContext.ProcessorType.CPU)
+	context_gpu = ProcessingContext.new(1024.0, ProcessingContext.ProcessorType.GPU, ProcessingContext.ProcessorType.GPU)
+
+func after_all():
+	if context_cpu and not context_cpu._is_disposed:
+		context_cpu.dispose()
+	if context_gpu and not context_gpu._is_disposed:
+		context_gpu.dispose()
+	context_cpu = null
+	context_gpu = null
 
 func before_each():
 	cpu_generator = CpuMeshGenerator.new()
@@ -13,10 +27,10 @@ func after_each():
 	cpu_generator = null
 	gpu_generator = null
 	plane = null
-	
+
 func test_cpu_gpu_equivalence_small():
 	parametric_equivalence_test(64, Vector2(256, 256), 256, 50.0, 16)
-	
+
 func test_cpu_gpu_equivalence_medium():
 	parametric_equivalence_test(128, Vector2(512, 512), 512, 100.0, 32)
 
@@ -26,23 +40,9 @@ func test_cpu_gpu_equivalence_large():
 ## Parametric test function to compare CPU and GPU mesh generation results.
 ## Default tolerance is reasonable for floating-point comparisons, especially as operations on CPU vs GPU may yield slightly different results.
 func parametric_equivalence_test(heightmap_size: int, terrain_size: Vector2, mesh_size: int, height_scale: float, subdivisions: int, tolerance: float = 1e-2):
-	var heightmap := TestHelpers.create_noisy_heightmap(heightmap_size)
-	var context_cpu := TestHelpers.create_test_processing_context(
-		terrain_size,
-		ProcessingContext.ProcessorType.CPU,
-		ProcessingContext.ProcessorType.CPU,
-		subdivisions,
-		mesh_size,
-		height_scale
-	)
-	var context_gpu := TestHelpers.create_test_processing_context(
-		terrain_size,
-		ProcessingContext.ProcessorType.GPU,
-		ProcessingContext.ProcessorType.GPU,
-		subdivisions,
-		mesh_size,
-		height_scale
-	)
+	var heightmap := TestHelpers.create_noisy_heightmap(heightmap_size)	
+	context_cpu.mesh_parameters = TestHelpers.create_test_mesh_parameters(mesh_size, subdivisions, height_scale)
+	context_gpu.mesh_parameters = TestHelpers.create_test_mesh_parameters(mesh_size, subdivisions, height_scale)
 	plane.subdivide_depth = subdivisions
 	plane.subdivide_width = subdivisions
 	plane.size = Vector2(mesh_size, mesh_size)

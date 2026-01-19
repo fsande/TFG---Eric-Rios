@@ -351,7 +351,7 @@
     <Content Include="test\unit\mesh\data\test_mesh_data.gd.uid" />
     <Content Include="test\unit\mesh\data\test_mesh_generation_result.gd" />
     <Content Include="test\unit\mesh\data\test_mesh_generation_result.gd.uid" />
-    <Content Include="test\unit\mesh\generators\test_cpu_gpu_equivallence.gd" />
+    <Content Include="test\unit\mesh\generators\test_cpu_gpu_equivalence.gd" />
     <Content Include="test\unit\mesh\test_mesh_generator_factory.gd" />
     <Content Include="test\unit\test_helpers.gd" />
     <Content Include="test\unit\test_helpers.gd.uid" />

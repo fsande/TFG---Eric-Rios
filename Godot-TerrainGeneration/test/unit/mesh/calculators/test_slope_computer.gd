@@ -4,17 +4,19 @@ var test_context_cpu: ProcessingContext
 var test_context_gpu: ProcessingContext
 var test_mesh_result: MeshGenerationResult
 
-func before_each():
+func before_all():
 	test_context_cpu = ProcessingContext.new(512.0, ProcessingContext.ProcessorType.CPU, ProcessingContext.ProcessorType.CPU, 42)
 	test_context_gpu = ProcessingContext.new(512.0, ProcessingContext.ProcessorType.GPU, ProcessingContext.ProcessorType.GPU, 42)
 
-func after_each():
+func after_all():
 	if test_context_cpu and not test_context_cpu._is_disposed:
 		test_context_cpu.dispose()
 	if test_context_gpu and not test_context_gpu._is_disposed:
 		test_context_gpu.dispose()
 	test_context_cpu = null
 	test_context_gpu = null
+
+func after_each():
 	test_mesh_result = null
 
 func test_compute_slope_normal_map_rejects_null_mesh_result():
