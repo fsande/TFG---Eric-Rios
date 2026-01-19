@@ -280,6 +280,7 @@
     <Content Include="terrain_generation\mesh\generators\mesh_generator_factory_instance_example.gd" />
     <Content Include="terrain_generation\mesh\generators\shaders\mesh_processor.glsl" />
     <Content Include="terrain_generation\mesh\generators\shaders\mesh_processor.glsl.import" />
+    <Content Include="terrain_generation\mesh\utilities\mesh_array_reorderer.gd" />
     <Content Include="terrain_generation\mesh\utilities\mesh_slope_data_provider.gd" />
     <Content Include="terrain_generation\mesh\utilities\mesh_slope_data_provider.gd.uid" />
     <Content Include="terrain_generation\mesh\utilities\mesh_topology_modifier.gd" />
@@ -355,6 +356,7 @@
     <Content Include="test\unit\test_helpers.gd" />
     <Content Include="test\unit\test_helpers.gd.uid" />
     <Content Include="test\UNIT_TEST_ROADMAP.md" />
+    <Content Include="test_vertex_coords.gd" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".godot\shader_cache\Fsr2AccumulatePassShaderRD\04c43a42d0dec2c54cb90a97e26d888c88995df139142948afde178db865de21\" />

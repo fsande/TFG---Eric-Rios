@@ -34,13 +34,15 @@ func build_from_mesh(mesh: MeshGenerationResult) -> void:
 	_grid_to_index.clear()
 	_index_to_grid.clear()
 	grid_vertex_count = 0
-	var vertex_count := mesh.get_vertex_count()
+	# Index 0 of the array is the bottom right corner
+	# Row and col should match expected image orientation (0,0 at top-left), so we invert
 	for row in range(height):
 		for col in range(width):
-			var vertex_index := row * width + col
+			var vertex_index := (height - 1 - row) * width + (width - 1 - col)
 			if vertex_index < mesh.get_vertex_count():
 				_set_grid_mapping(col, row, vertex_index)
 				grid_vertex_count += 1
+
 
 ## Check if vertex is part of the regular grid (vs cave/overhang geometry).
 func is_grid_vertex(vertex_index: int) -> bool:
@@ -60,21 +62,16 @@ func get_moore_neighbours(vertex_index: int) -> PackedInt32Array:
 	var grid_pos := _get_grid_position(vertex_index)
 	if grid_pos.x < 0:
 		return PackedInt32Array()
-	
 	var neighbours := PackedInt32Array()
-	
 	for dy in range(-1, 2):
 		for dx in range(-1, 2):
 			if dx == 0 and dy == 0:
 				continue
-			
 			var neighbour_col := grid_pos.x + dx
 			var neighbour_row := grid_pos.y + dy
 			var neighbour_index := _get_vertex_at(neighbour_col, neighbour_row)
-			
 			if neighbour_index >= 0:
 				neighbours.append(neighbour_index)
-	
 	return neighbours
 
 ## Get neighbours within Chebyshev distance (square region around vertex).
@@ -93,10 +90,7 @@ func get_neighbours_chebyshev(vertex_index: int, distance: int) -> PackedInt32Ar
 			var neighbour_index := _get_vertex_at(neighbour_col, neighbour_row)
 			if neighbour_index >= 0:
 				neighbours.append(neighbour_index)
-	
 	return neighbours
-
-
 
 ## ===========================
 ## SPATIAL LOOKUP
@@ -123,7 +117,6 @@ func get_nearest_grid_vertex(world_pos: Vector2, mesh_size: Vector2) -> int:
 	var col := int(clamp(normalized_x * width, 0.0, float(max(0, width - 1))))
 	var row := int(clamp(normalized_y * height, 0.0, float(max(0, height - 1))))
 	return _get_vertex_at(col, row)
-
 
 ## ===========================
 ## INTERNAL HELPERS
