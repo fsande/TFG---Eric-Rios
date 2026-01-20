@@ -1,8 +1,7 @@
-[gd_scene load_steps=33 format=3 uid="uid://b5f0uf728r68g"]
+[gd_scene load_steps=34 format=3 uid="uid://b5f0uf728r68g"]
 
 [ext_resource type="PackedScene" uid="uid://baa7kovw3ralm" path="res://player/BasicPlayer.tscn" id="3_avahw"]
 [ext_resource type="PackedScene" uid="uid://bdf3hehjq3yeb" path="res://scenes/terrain.tscn" id="4_1bvp3"]
-[ext_resource type="Texture2D" uid="uid://bnxd1bfxkl1lw" path="res://assets/heightmaps/LaPalma.png" id="5_a8y0u"]
 [ext_resource type="PackedScene" uid="uid://k5n4e67sj3xd" path="res://scenes/water_plane.tscn" id="5_lquwl"]
 [ext_resource type="Script" uid="uid://byh53w6k375jl" path="res://terrain_generation/heightmap/sources/texture_heightmap_source.gd" id="6_jkv2x"]
 [ext_resource type="Script" uid="uid://cng2l66yyegrm" path="res://terrain_generation/configuration/mesh_generator_parameters.gd" id="6_tipki"]
@@ -12,7 +11,7 @@
 [ext_resource type="Script" uid="uid://n8i4a5cpdd5h" path="res://terrain_generation/mesh_modifiers/core/pipeline_stage.gd" id="8_a8y0u"]
 [ext_resource type="Material" uid="uid://bg4p6ysy07sj1" path="res://assets/materials/terrain_mat.tres" id="8_tipki"]
 [ext_resource type="Script" uid="uid://chdi7cmw56ufo" path="res://terrain_generation/mesh_modifiers/core/mesh_modifier_agent.gd" id="9_jkv2x"]
-[ext_resource type="Script" uid="uid://dwooplesasxf0" path="res://terrain_generation/mesh_modifiers/agents/mountain_agent.gd" id="11_a8y0u"]
+[ext_resource type="Script" uid="uid://c5wpcgwyi82e3" path="res://terrain_generation/mesh_modifiers/agents/terrain_raise_agent.gd" id="10_trceg"]
 [ext_resource type="Script" uid="uid://dckjocktq6xry" path="res://terrain_generation/mesh_modifiers/core/sequential_stage.gd" id="11_muem4"]
 
 [sub_resource type="Gradient" id="Gradient_m2sqd"]
@@ -72,9 +71,15 @@ shader_parameter/wave_direction2 = Vector2(0, 1)
 shader_parameter/time_scale = 0.01499999966472
 shader_parameter/uv_scale = 100.0
 
+[sub_resource type="Gradient" id="Gradient_a8y0u"]
+colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_jkv2x"]
+gradient = SubResource("Gradient_a8y0u")
+
 [sub_resource type="Resource" id="Resource_muem4"]
 script = ExtResource("6_jkv2x")
-heightmap_texture = ExtResource("5_a8y0u")
+heightmap_texture = SubResource("GradientTexture1D_jkv2x")
 metadata/_custom_type_script = "uid://byh53w6k375jl"
 
 [sub_resource type="Resource" id="Resource_t5u1y"]
@@ -83,19 +88,16 @@ height_scale = 128.0
 mesh_size = Vector2(1024, 1024)
 subdivisions = 128
 
-[sub_resource type="Resource" id="Resource_jkv2x"]
-script = ExtResource("11_a8y0u")
-initial_direction_degrees = 270.0
-step_distance = 150.0
-wedge_width = 250.0
-wedge_length = 125.0
-elevation_height = 22.0
-agent_name = "Mountain Agent"
-metadata/_custom_type_script = "uid://dwooplesasxf0"
+[sub_resource type="Resource" id="Resource_jbj1t"]
+script = ExtResource("10_trceg")
+center_position = Vector2(-500, -500)
+height = 50.0
+agent_name = "Terrain Raise Agent"
+metadata/_custom_type_script = "uid://c5wpcgwyi82e3"
 
 [sub_resource type="Resource" id="Resource_0ld40"]
 script = ExtResource("11_muem4")
-agents = Array[ExtResource("9_jkv2x")]([SubResource("Resource_jkv2x")])
+agents = Array[ExtResource("9_jkv2x")]([SubResource("Resource_jbj1t")])
 metadata/_custom_type_script = "uid://dckjocktq6xry"
 
 [sub_resource type="Resource" id="Resource_gqmmt"]

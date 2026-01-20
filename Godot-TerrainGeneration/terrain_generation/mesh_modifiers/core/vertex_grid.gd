@@ -110,7 +110,7 @@ func get_nearest_grid_vertex_uv(uv: Vector2) -> int:
 func get_nearest_grid_vertex(world_pos: Vector2, mesh_size: Vector2) -> int:
 	var half_w := mesh_size.x * 0.5
 	var half_h := mesh_size.y * 0.5
-	var clamped_x: float = clamp(world_pos.x, -half_w, half_w)
+	var clamped_x: float = clamp(-world_pos.x, -half_w, half_w)
 	var clamped_y: float = clamp(world_pos.y, -half_h, half_h)
 	var normalized_x := (-clamped_x / mesh_size.x) + 0.5
 	var normalized_y := (-clamped_y / mesh_size.y) + 0.5
