@@ -39,7 +39,7 @@ var _execution_context: MeshModifierContext = null
 var _start_time_ms: int = 0
 
 ## Execute entire pipeline.
-func execute(terrain_data: TerrainData, processing_context: ProcessingContext, scene_root: Node3D, parameters: MeshGeneratorParameters) -> MeshModifierContext:
+func execute(terrain_data: TerrainData, processing_context: ProcessingContext, agent_node_root: Node3D, parameters: MeshGeneratorParameters) -> MeshModifierContext:
 	if not validate(terrain_data):
 		_is_executing = false
 		return null
@@ -48,7 +48,7 @@ func execute(terrain_data: TerrainData, processing_context: ProcessingContext, s
 	_is_executing = true
 	_start_time_ms = Time.get_ticks_msec()
 	pipeline_started.emit()
-	_execution_context = MeshModifierContext.new(terrain_data, processing_context, scene_root, parameters)
+	_execution_context = MeshModifierContext.new(terrain_data, processing_context, agent_node_root, parameters)
 	for stage_index in range(stages.size()):
 		var stage := stages[stage_index]
 		if not stage.enabled:

@@ -27,7 +27,7 @@ class_name TunnelBoringAgent extends MeshModifierAgent
 @export var min_cliff_height: float = 15.0
 
 ## Minimum slope angle (degrees) for cliff detection.
-@export_range(10.0, 80.0, 5.0) var min_cliff_angle: float = 45.0
+@export_range(5.0, 90.0, 5.0) var min_cliff_angle: float = 10.0
 
 ## Number of tunnels to create.
 @export_range(1, 10, 1) var tunnel_count: int = 1
@@ -83,15 +83,15 @@ func execute(context: MeshModifierContext) -> MeshModifierResult:
 		var elapsed_to_error := Time.get_ticks_msec() - start_time
 		return MeshModifierResult.create_failure("No valid entry points found for tunnel placement", elapsed_to_error)
 	var entry_points_to_use: Array[TunnelEntryPoint]= filtered_entry_points.slice(0, tunnel_count)
-	_lengthen_entry_points(entry_points_to_use)
+#	_lengthen_entry_points(entry_points_to_use)
 	_debug_draw_entry_points(entry_points_to_use, context.agent_node_root)
 	var tunnels_created := 0
 	var time_before_creation := Time.get_ticks_msec()
-	for i in range(entry_points_to_use.size()):
-		var entry := entry_points_to_use[i]
-		progress_updated.emit(float(i) / tunnel_count, "Creating tunnel %d/%d" % [i + 1, tunnel_count])
-		if _create_tunnel_at(entry, context):
-			tunnels_created += 1
+#	for i in range(entry_points_to_use.size()):
+#		var entry := entry_points_to_use[i]
+#		progress_updated.emit(float(i) / tunnel_count, "Creating tunnel %d/%d" % [i + 1, tunnel_count])
+#		if _create_tunnel_at(entry, context):
+#			tunnels_created += 1
 	var creation_time := Time.get_ticks_msec() - time_before_creation
 	print("Created %d tunnel(s) in %d ms." % [tunnels_created, creation_time])
 	var elapsed := Time.get_ticks_msec() - start_time	
@@ -117,21 +117,15 @@ func _filter_entry_points(entry_points: Array[TunnelEntryPoint], context: MeshMo
 			continue
 		if not entry.is_within_bounds(tunnel_length, terrain_size):
 			continue
-		
 		valid_points.append(entry)
 	return valid_points
 
 ## Debug: Draw cylinders at entry points in the scene.
 func _debug_draw_entry_points(entry_points: Array[TunnelEntryPoint], root: Node3D) -> void:
 	var container_name := "TunnelDebugCylinders"
-	var container := root.get_node_or_null(container_name)
-	if container == null:
-		container = Node3D.new()
-		container.name = container_name
-		root.add_child(container)
-	else:
-		for child in container.get_children():
-			child.queue_free()
+	var container := NodeCreationHelper.get_or_create_node(root, container_name, Node3D) as Node3D
+	for child in container.get_children():
+		child.queue_free()
 	for entry in entry_points:
 		var cylinder := CylinderVolume.new(entry.position, entry.tunnel_direction, tunnel_radius, tunnel_length)
 		var debug_data := cylinder.get_debug_mesh()
@@ -193,7 +187,6 @@ func _generate_tunnel_interior_underground(origin: Vector3, direction: Vector3, 
 			var x := cos(angle) * tunnel_radius
 			var y := sin(angle) * tunnel_radius
 			var offset := right * x + up * y
-			
 			positions.append(slice_center + offset)
 			uvs.append(Vector2(float(segment) / tunnel_segments, t))
 	for ring_idx in range(ring_start_indices.size() - 1):

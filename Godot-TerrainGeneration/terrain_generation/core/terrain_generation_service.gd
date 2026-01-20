@@ -23,26 +23,31 @@ func _generate_terrain(config: TerrainConfiguration) -> TerrainData:
 		return null
 	var start_time := Time.get_ticks_msec()
 	var processing_context := _generate_processing_context(config)
+	var agent_node_root: Node3D = null  
 	var heightmap := _generate_heightmap(config, processing_context)
 	if not heightmap:
-		return _fail_generation("Failed to generate heightmap", processing_context)
+		return _fail_generation("Failed to generate heightmap", processing_context, agent_node_root)
 	var mesh_result := mesh_builder.build_mesh(heightmap, processing_context)
 	if not mesh_result:
-		return _fail_generation("Failed to generate mesh", processing_context)
-	_execute_mesh_modification_pipeline(config, processing_context, heightmap, mesh_result)
+		return _fail_generation("Failed to generate mesh", processing_context, agent_node_root)
+	agent_node_root = _execute_mesh_modification_pipeline(config, processing_context, heightmap, mesh_result)
 	processing_context.dispose()
 	var collision := _generate_collision_shape(config, mesh_result)
 	var total_time := Time.get_ticks_msec() - start_time
-	var terrain_data := _create_terrain_data(config, heightmap, mesh_result, collision, total_time)
+	var terrain_data := _create_terrain_data(config, heightmap, mesh_result, collision, total_time, agent_node_root)	
 	print("TerrainGenerationService: Generated terrain in %s ms (%s vertices)" % [
 		str(total_time),
 		str(terrain_data.get_vertex_count())
 	])
 	return terrain_data
-	
-func _fail_generation(message: String, processing_context: ProcessingContext) -> TerrainData:
+
+func _fail_generation(message: String, processing_context: ProcessingContext, agent_node_root: Node3D) -> TerrainData:
 	if processing_context:
 		processing_context.dispose()
+	if agent_node_root:
+		var freed_count := OrphanNodeDetector.cleanup_orphans_in(agent_node_root)
+		if freed_count > 0:
+			print("TerrainGenerationService: Cleaned up %d orphaned nodes after generation failure" % freed_count)
 	push_error("TerrainGenerationService: %s" % message)
 	return null
 
@@ -58,14 +63,15 @@ func _generate_heightmap(config: TerrainConfiguration, processing_context: Proce
 	processing_context.mesh_parameters = config.mesh_generator_parameters
 	return config.heightmap_source.generate(processing_context)
 
-func _execute_mesh_modification_pipeline(config: TerrainConfiguration, processing_context: ProcessingContext, heightmap: Image, mesh_result: MeshGenerationResult) -> void:
-	var scene_root: Node3D = Node3D.new()
+func _execute_mesh_modification_pipeline(config: TerrainConfiguration, processing_context: ProcessingContext, 
+	heightmap: Image, mesh_result: MeshGenerationResult) -> Node3D:
+	var agent_node_root := Node3D.new()
 	if config.mesh_modification_pipeline:
 		var initial_terrain_data := TerrainData.new(heightmap, mesh_result, Vector2(config.terrain_size, config.terrain_size), null, {}, 0)
 		var modifier_context := config.mesh_modification_pipeline.execute(
 			initial_terrain_data,
 			processing_context,
-			scene_root,
+			agent_node_root,
 			processing_context.mesh_parameters
 		)
 		if modifier_context:
@@ -73,13 +79,14 @@ func _execute_mesh_modification_pipeline(config: TerrainConfiguration, processin
 			mesh_result = modifier_context.get_mesh_generation_result()
 		else:
 			push_warning("TerrainGenerationService: Mesh modification pipeline failed")
+	return agent_node_root
 
 func _generate_collision_shape(config: TerrainConfiguration, mesh_result: MeshGenerationResult) -> Shape3D:
 	if config.generate_collision:
 		return mesh_builder.build_collision(mesh_result)
 	return null
 
-func _create_terrain_data(config: TerrainConfiguration, heightmap: Image, mesh_result: MeshGenerationResult, collision: Shape3D, total_time: int) -> TerrainData:
+func _create_terrain_data(config: TerrainConfiguration, heightmap: Image, mesh_result: MeshGenerationResult, collision: Shape3D, total_time: int, agent_node_root: Node3D = null) -> TerrainData:
 	var metadata := {
 		"heightmap_metadata": config.heightmap_source.get_metadata(),
 		"configuration": {
@@ -90,4 +97,4 @@ func _create_terrain_data(config: TerrainConfiguration, heightmap: Image, mesh_r
 		},
 		"mesh_modification_enabled": config.mesh_modification_pipeline != null,
 	}
-	return TerrainData.new(heightmap, mesh_result, Vector2(config.terrain_size, config.terrain_size), collision, metadata, total_time)
+	return TerrainData.new(heightmap, mesh_result, Vector2(config.terrain_size, config.terrain_size), collision, metadata, total_time, agent_node_root)

@@ -69,6 +69,16 @@ func generate_mesh(mesh_array: Array, heightmap: Image, context: ProcessingConte
 		str(subdivisions), str(result.width), str(result.height), str(modified_vertices.size()), str(mesh_size)
 	])
 	result.slope_normal_map = SlopeComputer.compute_slope_normal_map(result, context)
+	var slope_as_red := Image.create(result.slope_normal_map.get_width(), result.slope_normal_map.get_height(), false, Image.FORMAT_RGB8)
+	var highest_slope := 0.0
+	for y in range(slope_as_red.get_height()):
+		for x in range(slope_as_red.get_width()):
+			var slope_value := result.slope_normal_map.get_pixel(x, y).a
+			slope_as_red.set_pixel(x, y, Color(slope_value, slope_value, slope_value))	
+			if slope_value > highest_slope:		
+				highest_slope = slope_value
+	print("GPUMeshGenerator: Highest slope angle in normal map: %.4f radians (%.2f degrees)" % [highest_slope, rad_to_deg(highest_slope)])
+	DebugImageExporter.export_image(slope_as_red, "gpu_slope_normal_map.png")
 	return result
 
 ## Executes a compute shader pass for the specified operation type.

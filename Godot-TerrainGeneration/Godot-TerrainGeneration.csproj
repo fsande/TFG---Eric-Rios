@@ -170,8 +170,12 @@
     <Content Include=".idea\.idea.Godot-TerrainGeneration\.idea\projectSettingsUpdater.xml" />
     <Content Include=".idea\.idea.Godot-TerrainGeneration\.idea\vcs.xml" />
     <Content Include=".idea\.idea.Godot-TerrainGeneration\.idea\workspace.xml" />
+    <Content Include="AGENT_NODE_FLOW_DOCUMENTATION.md" />
     <Content Include="ARCHITECTURE_EVALUATION.md" />
+    <Content Include="ASYNC_NODE_CREATION_BUG_REPORT.md" />
     <Content Include="CPU_GPU_EQUIVALENCE_ANALYSIS.md" />
+    <Content Include="FIX_NESTED_NODES_VISIBILITY.md" />
+    <Content Include="FIX_ORPHAN_NODE_WARNING.md" />
     <Content Include="gpu-cpu-comparison\.idea\.gitignore" />
     <Content Include="gpu-cpu-comparison\.idea\copilot.data.migration.agent.xml" />
     <Content Include="gpu-cpu-comparison\.idea\copilot.data.migration.ask.xml" />
@@ -207,12 +211,14 @@
     <Content Include="player\look_controller.gd.uid" />
     <Content Include="player\player.gd" />
     <Content Include="player\player.gd.uid" />
+    <Content Include="REFACTORING_AGENT_NODE_ROOT.md" />
     <Content Include="resource_helpers\gpu_resource_helper.gd" />
     <Content Include="resource_helpers\gpu_resource_helper.gd.uid" />
     <Content Include="resource_helpers\gpu_texture_helper.gd" />
     <Content Include="resource_helpers\gpu_texture_helper.gd.uid" />
     <Content Include="resource_helpers\image_helper.gd" />
     <Content Include="resource_helpers\image_helper.gd.uid" />
+    <Content Include="resource_helpers\orphan_node_detector.gd" />
     <Content Include="terrain_generation\configuration\mesh_generator_parameters.gd" />
     <Content Include="terrain_generation\configuration\mesh_generator_parameters.gd.uid" />
     <Content Include="terrain_generation\configuration\terrain_configuration.gd" />

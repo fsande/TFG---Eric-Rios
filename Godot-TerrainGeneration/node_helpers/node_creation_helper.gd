@@ -1,7 +1,7 @@
 @tool
 class_name NodeCreationHelper extends RefCounted
 
-static func get_or_create_node(parent: Node, node_name: String, node_type: Variant) -> Node:
+static func get_or_create_node(parent: Node, node_name: String, node_type: Variant = Node) -> Node:
 	if parent == null:
 		push_error("NodeCreationHelper.get_or_create_node: parent is null")
 		return null

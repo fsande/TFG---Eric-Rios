@@ -19,6 +19,10 @@ var generation_time_ms: float
 ## World size of the terrain
 var terrain_size: Vector2
 
+## Container for agent-generated nodes (debug visualizations, spawned objects, etc.)
+## Populated during mesh modification pipeline, transferred to scene tree by presenter.
+var agent_node_root: Node3D
+
 ## Cached ArrayMesh built from mesh_result.
 var _cached_mesh: ArrayMesh = null
 
@@ -29,7 +33,8 @@ func _init(
 	p_terrain_size: Vector2,
 	p_collision: Shape3D = null,
 	p_metadata: Dictionary = {},
-	p_time: float = 0.0
+	p_time: float = 0.0,
+	p_agent_node_root: Node3D = null
 ):
 	heightmap = p_heightmap
 	mesh_result = p_mesh_result
@@ -37,6 +42,7 @@ func _init(
 	collision_shape = p_collision
 	metadata = p_metadata
 	generation_time_ms = p_time
+	agent_node_root = p_agent_node_root
 
 ## Get the mesh as ArrayMesh (builds on first call, then cached).
 func get_mesh() -> ArrayMesh:
@@ -59,3 +65,14 @@ func get_triangle_count() -> int:
 	if mesh_result:
 		return mesh_result.indices.size() / 3
 	return 0
+
+## Cleanup orphaned agent nodes to prevent memory leaks.
+## Call this when discarding TerrainData that was never applied to the scene.
+## If nodes were transferred to scene tree, they're safe and won't be freed.
+func cleanup_orphaned_nodes() -> void:
+	if agent_node_root:
+		var freed_count := OrphanNodeDetector.cleanup_orphans_in(agent_node_root)
+		if freed_count > 0:
+			print("TerrainData: Freed %d orphaned nodes" % freed_count)
+		agent_node_root = null
+

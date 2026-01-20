@@ -41,6 +41,9 @@ var _terrain_collision: TerrainCollision
 var _agent_nodes_container: Node3D
 var _generation_service: TerrainGenerationService
 
+## Current terrain data (tracked for cleanup)
+var _current_terrain_data: TerrainData = null
+
 ## Async generation state
 var _is_generating: bool = false
 
@@ -110,6 +113,9 @@ func _apply_generated_terrain(terrain_data: TerrainData) -> void:
 
 ## Update scene nodes (mesh, material, collision) from the current TerrainData.
 func _update_presentation(terrain_data: TerrainData) -> void:
+	if _current_terrain_data and _current_terrain_data != terrain_data:
+		_current_terrain_data.cleanup_orphaned_nodes()
+	_current_terrain_data = terrain_data
 	if not terrain_data:
 		push_warning("TerrainPresenter: No terrain data to present")
 		return
@@ -136,19 +142,26 @@ func _on_config_changed() -> void:
 	if auto_generate:
 		regenerate()
 
-## Update agent-generated scene nodes from terrain metadata.
+## Update agent-generated scene nodes from terrain data.
 func _update_agent_nodes(terrain_data: TerrainData) -> void:
 	if not _agent_nodes_container:
 		return
 	for child in _agent_nodes_container.get_children():
 		_agent_nodes_container.remove_child(child)
 		child.queue_free()
-	if terrain_data and terrain_data.metadata.has("scene_root"):
-		var scene_root = terrain_data.metadata.get("scene_root")
-		if scene_root and scene_root is Node3D:
-			for child in scene_root.get_children():
-				scene_root.remove_child(child)
-				_agent_nodes_container.add_child(child)
-				if Engine.is_editor_hint():
-					child.owner = get_tree().edited_scene_root
-			print("TerrainPresenter: Added %d agent-generated objects" % _agent_nodes_container.get_child_count())
+	if terrain_data and terrain_data.agent_node_root:
+		var agent_root := terrain_data.agent_node_root
+		for child in agent_root.get_children():
+			agent_root.remove_child(child)
+			_agent_nodes_container.add_child(child)
+			if Engine.is_editor_hint():
+				_set_owner_recursive(child, get_tree().edited_scene_root)
+		print("TerrainPresenter: Added %d agent-generated objects" % _agent_nodes_container.get_child_count())
+		agent_root.queue_free()
+		terrain_data.agent_node_root = null
+
+## Recursively set owner for node and all descendants (needed for editor visibility).
+func _set_owner_recursive(node: Node, owner_node: Node) -> void:
+	node.owner = owner_node
+	for child in node.get_children():
+		_set_owner_recursive(child, owner_node)

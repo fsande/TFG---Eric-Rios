@@ -242,7 +242,7 @@ func sample_cliff_positions(min_slope_angle: float, min_height: float, sample_co
 	var slope_map := get_slope_normal_map()
 	var heightmap := get_heightmap()
 	if not slope_map or not heightmap:
-		push_warning("MeshModifierContext: Missing slope map or heightmap for cliff sampling")
+		push_error("MeshModifierContext: Missing slope map or heightmap for cliff sampling")
 		return results
 	var resized_images := ImageHelper.resize_images_to_largest([slope_map, heightmap])
 	slope_map = resized_images[0]
