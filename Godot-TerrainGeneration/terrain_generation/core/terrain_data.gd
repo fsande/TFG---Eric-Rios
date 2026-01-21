@@ -75,4 +75,3 @@ func cleanup_orphaned_nodes() -> void:
 		if freed_count > 0:
 			print("TerrainData: Freed %d orphaned nodes" % freed_count)
 		agent_node_root = null
-

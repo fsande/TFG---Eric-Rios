@@ -41,4 +41,3 @@ func has_valid_direction() -> bool:
 func is_within_bounds(tunnel_length: float, terrain_size: Vector2) -> bool:
 	var tunnel_end := position + tunnel_direction * tunnel_length
 	return abs(tunnel_end.x) <= terrain_size.x * 0.4 and abs(tunnel_end.z) <= terrain_size.y * 0.4
-  
