@@ -49,25 +49,19 @@ func signed_distance(point: Vector3) -> float:
 
 
 ## Generate interior mesh for cylindrical tunnel (TunnelShape interface)
-func generate_interior_mesh(terrain_querier: TerrainHeightQuerier) -> MeshData:
+func generate_interior_mesh(_terrain_querier: TerrainHeightQuerier) -> MeshData:
 	var mesh_data := MeshData.new()
 	var basis := _create_tunnel_basis()
 	var right := basis.x
 	var up := basis.y
 	var ring_count := length_segments + 1
-	var verts_per_ring := radial_segments
-	var created_rings: Array[bool] = []
-	created_rings.resize(ring_count)
+	var verts_per_ring := radial_segments + 1
 	for ring_idx in range(ring_count):
 		var t := float(ring_idx) / float(length_segments)
 		var ring_center := origin + direction * (t * length)
-		var terrain_height: float = terrain_querier.get_height_at(Vector2(ring_center.x, ring_center.z))
-		var is_underground := ring_center.y < terrain_height
-		created_rings[ring_idx] = is_underground
-		if not is_underground:
-			continue
-		for seg_idx in range(radial_segments):
-			var angle := (float(seg_idx) / float(radial_segments)) * TAU
+		for seg_idx in range(verts_per_ring):
+			var actual_seg := seg_idx % radial_segments
+			var angle := (float(actual_seg) / float(radial_segments)) * TAU
 			var cos_angle := cos(angle)
 			var sin_angle := sin(angle)
 			var offset := right * cos_angle * radius + up * sin_angle * radius
@@ -75,35 +69,21 @@ func generate_interior_mesh(terrain_querier: TerrainHeightQuerier) -> MeshData:
 			var uv := Vector2(float(seg_idx) / float(radial_segments), t)
 			mesh_data.vertices.append(vertex_pos)
 			mesh_data.uvs.append(uv)
-	var vertex_ring_index := 0
 	for ring_idx in range(ring_count - 1):
-		if not created_rings[ring_idx] or not created_rings[ring_idx + 1]:
-			continue
-		var ring_base := vertex_ring_index * verts_per_ring
-		var next_ring_base := (vertex_ring_index + 1) * verts_per_ring
+		var ring_base := ring_idx * verts_per_ring
+		var next_ring_base := (ring_idx + 1) * verts_per_ring
 		for seg_idx in range(radial_segments):
-			var next_seg := (seg_idx + 1) % radial_segments
 			var v0 := ring_base + seg_idx
-			var v1 := ring_base + next_seg
+			var v1 := ring_base + seg_idx + 1
 			var v2 := next_ring_base + seg_idx
-			var v3 := next_ring_base + next_seg
+			var v3 := next_ring_base + seg_idx + 1
 			mesh_data.indices.append(v0)
-			mesh_data.indices.append(v2)
-			mesh_data.indices.append(v1)
 			mesh_data.indices.append(v1)
 			mesh_data.indices.append(v2)
+			mesh_data.indices.append(v1)
 			mesh_data.indices.append(v3)
-		vertex_ring_index += 1
+			mesh_data.indices.append(v2)
 	return mesh_data
-
-## Get collision shape for cylindrical tunnel (TunnelShape interface)
-func get_collision_shape() -> Shape3D:
-	# For Phase 1, return a simple CapsuleShape3D
-	# Phase 2 will implement proper ConcavePolygonShape3D from mesh
-	var capsule := CapsuleShape3D.new()
-	capsule.radius = radius
-	capsule.height = length
-	return capsule
 
 ## Get debug mesh representation as a cylinder (CSGVolume interface)
 func get_debug_mesh() -> Array:

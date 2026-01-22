@@ -52,7 +52,7 @@ const INTERSECTION_T_MIN: float = 0.0
 const INTERSECTION_T_MAX: float = 1.0
 
 ## Tolerance for edge-terrain intersection calculations (in world units)
-var edge_intersection_tolerance: float = 0.01
+var edge_intersection_tolerance: float = -0.5
 
 ## Quality setting for interpolation (higher = more accurate but slower)
 var interpolation_quality: int = 1

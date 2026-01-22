@@ -16,14 +16,18 @@ func before_each():
 
 func test_create_cylindrical():
 	assert_not_null(definition, "Definition should be created")
-	assert_eq(definition.shape_type, "Cylindrical", "Shape type should be Cylindrical")
+	assert_not_null(definition.shape_parameters, "Shape parameters should be created")
+	assert_true(definition.shape_parameters is CylindricalShapeParameters, "Should be cylindrical parameters")
+	assert_eq(definition.get_shape_type(), TunnelShapeType.Type.CYLINDRICAL, "Shape type should be CYLINDRICAL")
 	assert_eq(definition.entry_point, entry_point, "Entry point should match")
 
 func test_create_cylindrical_sets_parameters():
-	assert_eq(definition.get_shape_param("radius"), 3.0, "Radius should be set")
-	assert_eq(definition.get_shape_param("length"), 20.0, "Length should be set")
-	assert_eq(definition.get_shape_param("radial_segments"), 16, "Radial segments should default")
-	assert_eq(definition.get_shape_param("length_segments"), 8, "Length segments should default")
+	var params := definition.shape_parameters as CylindricalShapeParameters
+	assert_not_null(params, "Parameters should be CylindricalShapeParameters")
+	assert_eq(params.radius, 3.0, "Radius should be set")
+	assert_eq(params.length, 20.0, "Length should be set")
+	assert_eq(params.radial_segments, 16, "Radial segments should default")
+	assert_eq(params.length_segments, 8, "Length segments should default")
 
 func test_default_properties():
 	assert_null(definition.tunnel_material, "Material should default to null")
@@ -65,48 +69,33 @@ func test_is_valid_fails_with_invalid_radius():
 	entry_point = TunnelEntryPoint.new(Vector3.ZERO, Vector3.UP, 0.0)
 	var invalid := TunnelDefinition.create_cylindrical(entry_point, -1.0, 20.0)
 	assert_false(invalid.is_valid(), "Should fail with negative radius")
-	assert_push_error("TunnelDefinition: Cylindrical tunnel requires positive radius")
+	assert_push_error("TunnelDefinition: Radius must be positive")
 
 func test_is_valid_fails_with_invalid_length():
 	entry_point = TunnelEntryPoint.new(Vector3.ZERO, Vector3.UP, 0.0)
 	var invalid := TunnelDefinition.create_cylindrical(entry_point, 3.0, 0.0)
 	assert_false(invalid.is_valid(), "Should fail with zero length")
-	assert_push_error("TunnelDefinition: Cylindrical tunnel requires positive length")
-
-func test_get_shape_param():
-	assert_eq(definition.get_shape_param("radius"), 3.0, "Should get existing param")
-	assert_null(definition.get_shape_param("nonexistent"), "Should return null for missing param")
-	assert_eq(definition.get_shape_param("nonexistent", 42), 42, "Should return default for missing param")
-
-func test_set_shape_param():
-	definition.set_shape_param("custom", "value")
-	assert_eq(definition.get_shape_param("custom"), "value", "Should set and retrieve param")
-
-func test_to_dict():
-	var dict := definition.to_dict()
-	assert_eq(dict["shape_type"], "Cylindrical", "Dict should include shape type")
-	assert_eq(dict["position"], Vector3(10, 50, 20), "Dict should include position")
-	assert_true(dict.has("shape_parameters"), "Dict should include shape parameters")
-	assert_true(dict.has("generate_collision"), "Dict should include collision flag")
+	assert_push_error("TunnelDefinition: Length must be positive")
 
 func test_from_dict():
-	var dict := definition.to_dict()
-	var restored := TunnelDefinition.from_dict(dict, entry_point)
-	
-	assert_eq(restored.shape_type, definition.shape_type, "Shape type should match")
-	assert_eq(restored.generate_collision, definition.generate_collision, "Collision flag should match")
-	assert_eq(restored.collision_layers, definition.collision_layers, "Collision layers should match")
+	# Dictionary serialization removed - test direct parameter access instead
+	var params := definition.shape_parameters as CylindricalShapeParameters
+	assert_not_null(params, "Should have cylindrical parameters")
+	assert_eq(params.radius, 3.0, "Radius should match")
+	assert_eq(params.length, 20.0, "Length should match")
 
 func test_create_debug():
 	var debug_def := TunnelDefinition.create_debug(entry_point)
 	assert_true(debug_def.debug_visualization, "Debug definition should have visualization enabled")
-	assert_eq(debug_def.shape_type, "Cylindrical", "Debug definition should be cylindrical")
-	assert_eq(debug_def.get_shape_param("radius"), 3.0, "Debug definition should have default radius")
+	assert_eq(debug_def.get_shape_type(), TunnelShapeType.Type.CYLINDRICAL, "Debug definition should be cylindrical")
+	var params := debug_def.shape_parameters as CylindricalShapeParameters
+	assert_eq(params.radius, 3.0, "Debug definition should have default radius")
 
 func test_create_debug_with_custom_params():
 	var debug_def := TunnelDefinition.create_debug(entry_point, 5.0, 30.0)
-	assert_eq(debug_def.get_shape_param("radius"), 5.0, "Should use custom radius")
-	assert_eq(debug_def.get_shape_param("length"), 30.0, "Should use custom length")
+	var params := debug_def.shape_parameters as CylindricalShapeParameters
+	assert_eq(params.radius, 5.0, "Should use custom radius")
+	assert_eq(params.length, 30.0, "Should use custom length")
 
 func test_material_assignment():
 	var mat := StandardMaterial3D.new()

@@ -174,6 +174,8 @@
     <Content Include="ARCHITECTURE_EVALUATION.md" />
     <Content Include="ASYNC_NODE_CREATION_BUG_REPORT.md" />
     <Content Include="CPU_GPU_EQUIVALENCE_ANALYSIS.md" />
+    <Content Include="ENTRANCE_CAP_FIX_DETAILS.md" />
+    <Content Include="ENTRANCE_CAP_QUICK_START.md" />
     <Content Include="FIX_NESTED_NODES_VISIBILITY.md" />
     <Content Include="FIX_ORPHAN_NODE_WARNING.md" />
     <Content Include="gpu-cpu-comparison\.idea\.gitignore" />
@@ -223,6 +225,9 @@
     <Content Include="resource_helpers\image_helper.gd" />
     <Content Include="resource_helpers\image_helper.gd.uid" />
     <Content Include="resource_helpers\orphan_node_detector.gd" />
+    <Content Include="RESTORATION_SUMMARY.md" />
+    <Content Include="SIMPLE_VERTEX_SNAPPING_COMPLETE.md" />
+    <Content Include="SIMPLE_VERTEX_SNAPPING_PLAN.md" />
     <Content Include="terrain_generation\configuration\mesh_generator_parameters.gd" />
     <Content Include="terrain_generation\configuration\mesh_generator_parameters.gd.uid" />
     <Content Include="terrain_generation\configuration\terrain_configuration.gd" />
@@ -339,6 +344,8 @@
     <Content Include="terrain_generation\mesh_modifiers\csg\csg_volume.gd.uid" />
     <Content Include="terrain_generation\mesh_modifiers\csg\cylinder_volume.gd" />
     <Content Include="terrain_generation\mesh_modifiers\csg\cylinder_volume.gd.uid" />
+    <Content Include="terrain_generation\mesh_modifiers\tunnel\builders\tunnel_scene_builder.gd" />
+    <Content Include="terrain_generation\mesh_modifiers\tunnel\builders\tunnel_shape_factory.gd" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\core\terrain_height_querier.gd" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\core\terrain_height_query.gd" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\core\terrain_height_query_impl.gd" />
@@ -348,6 +355,8 @@
     <Content Include="terrain_generation\mesh_modifiers\tunnel\core\tunnel_entry_point.gd.uid" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\core\tunnel_interfaces.gd" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\core\tunnel_interior_provider.gd" />
+    <Content Include="terrain_generation\mesh_modifiers\tunnel\core\tunnel_shape_type.gd" />
+    <Content Include="terrain_generation\mesh_modifiers\tunnel\core\tunnel_shape_type.gd.uid" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\cylindrical_tunnel_shape.gd" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\generation\tunnel_collision_generator.gd" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\generation\tunnel_interior_clipper.gd" />
@@ -382,6 +391,12 @@
     <Content Include="test\unit\test_helpers.gd.uid" />
     <Content Include="test_vertex_coords.gd" />
     <Content Include="TUNNEL_BORING_AGENT_REDESIGN_REPORT.md" />
+    <Content Include="TUNNEL_ENTRANCE_QUICK_REFERENCE.md" />
+    <Content Include="TUNNEL_ENTRANCE_SEAM_FIX.md" />
+    <Content Include="TUNNEL_ENTRANCE_SOLUTION_ANALYSIS.md" />
+    <Content Include="TUNNEL_SHAPE_EXTENSION_ROADMAP.md" />
+    <Content Include="TUNNEL_SYSTEM_CURRENT_STATE.md" />
+    <Content Include="VERTEX_STITCHING_ROADMAP.md" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".godot\shader_cache\Fsr2AccumulatePassShaderRD\04c43a42d0dec2c54cb90a97e26d888c88995df139142948afde178db865de21\" />
@@ -401,7 +416,6 @@
     <Folder Include=".godot\shader_cache\VolumetricFogShaderRD\b4dd1d878a773bfd3670e580d7655c262e7c3070a5667de022bb881ba6f64364\" />
     <Folder Include=".godot\shader_cache\VolumetricFogShaderRD\edf7cfdc03734aac137e008bab9652e5aeda353e952ba62dfcb5d9190ba21da1\" />
     <Folder Include=".godot\shader_cache\VolumetricFogShaderRD\fe352ea61d45a1becd37b6cde528377232cf0b234eab02c91b64cf8e6f06f3a0\" />
-    <Folder Include="terrain_generation\mesh_modifiers\tunnel\builders\" />
     <Folder Include="terrain_generation\mesh_modifiers\tunnel\utilities\" />
   </ItemGroup>
 </Project>
