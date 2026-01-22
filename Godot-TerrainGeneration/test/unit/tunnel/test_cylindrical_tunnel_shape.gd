@@ -61,21 +61,20 @@ func test_get_debug_mesh():
 	assert_true(debug_data[1] is Transform3D, "Debug transform should be Transform3D")
 
 func test_generate_interior_mesh_creates_vertices():
-	var mock_terrain_query := func(xz: Vector2) -> float: return 50.0
+	var mock_terrain_query := TestHelpers.create_flat_terrain_query(50.0)
 	var mesh_data := shape.generate_interior_mesh(mock_terrain_query)
 	assert_not_null(mesh_data, "Interior mesh should not be null")
 	assert_gt(mesh_data.vertices.size(), 0, "Interior mesh should have vertices")
 	assert_eq(mesh_data.vertices.size(), mesh_data.uvs.size(), "Vertices and UVs should match")
 
 func test_generate_interior_mesh_creates_indices():
-	var mock_terrain_query := func(xz: Vector2) -> float: return 50.0
+	var mock_terrain_query := TestHelpers.create_flat_terrain_query(50.0)
 	var mesh_data := shape.generate_interior_mesh(mock_terrain_query)
-	
 	assert_gt(mesh_data.indices.size(), 0, "Interior mesh should have indices")
 	assert_eq(mesh_data.indices.size() % 3, 0, "Indices should form triangles")
 
 func test_generate_interior_mesh_skips_above_ground():
-	var mock_terrain_query := func(xz: Vector2) -> float: return -10.0
+	var mock_terrain_query := TestHelpers.create_flat_terrain_query(-50.0)
 	var mesh_data := shape.generate_interior_mesh(mock_terrain_query)
 	assert_eq(mesh_data.vertices.size(), 0, "Should skip above-ground geometry")
 
@@ -109,4 +108,3 @@ func test_vertical_tunnel():
 		15.0
 	)
 	assert_eq(vertical_shape.direction, Vector3.UP, "Vertical direction should be preserved")
-

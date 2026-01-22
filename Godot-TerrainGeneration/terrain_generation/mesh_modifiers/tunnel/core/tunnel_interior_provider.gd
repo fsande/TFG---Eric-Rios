@@ -2,7 +2,7 @@
 @tool
 class_name TunnelInteriorProvider extends RefCounted
 
-func generate_interior_mesh(terrain_query: Callable) -> MeshData:
+func generate_interior_mesh(terrain_querier: TerrainHeightQuerier) -> MeshData:
 	push_error("TunnelInteriorProvider.generate_interior_mesh() must be overridden")
 	return MeshData.new()
 

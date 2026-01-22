@@ -10,9 +10,9 @@ class_name TunnelShape extends CSGVolume
 ## Generate the interior mesh for this tunnel shape.
 ## Only creates geometry that should be underground (above-ground parts excluded).
 ##
-## @param terrain_height_query Callable(Vector2) -> float that returns terrain height at XZ position
+## @param terrain_querier Interface for terrain height queries
 ## @return MeshData containing the tunnel interior geometry (walls, ceiling, floor)
-func generate_interior_mesh(terrain_height_query: Callable) -> MeshData:
+func generate_interior_mesh(terrain_querier: TerrainHeightQuerier) -> MeshData:
 	push_error("TunnelShape.generate_interior_mesh() must be overridden by subclass")
 	return MeshData.new()
 

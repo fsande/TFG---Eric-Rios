@@ -36,57 +36,36 @@ func _init(p_origin: Vector3, p_direction: Vector3, p_radius: float, p_length: f
 ## Returns signed distance from point to cylinder surface (CSGVolume interface)
 ## Negative inside, positive outside
 func signed_distance(point: Vector3) -> float:
-	# Vector from cylinder origin to point
 	var to_point := point - origin
-	
-	# Project onto cylinder axis to get distance along axis
 	var axis_distance := to_point.dot(direction)
-	
-	# Get perpendicular component (distance from axis)
 	var axis_point := origin + direction * axis_distance
 	var radial_distance := point.distance_to(axis_point)
-	
-	# Calculate signed distance to cylinder surface
 	var radial_sd := radial_distance - radius
-	
-	# Calculate signed distance to end caps
 	var cap_sd: float = max(-axis_distance, axis_distance - length)
-	
-	# Combine: inside when both are negative
 	if radial_sd < 0.0 and cap_sd < 0.0:
-		# Inside cylinder - return largest negative value
 		return max(radial_sd, cap_sd)
 	else:
-		# Outside cylinder - return distance to nearest surface
 		return sqrt(max(radial_sd, 0.0) ** 2 + max(cap_sd, 0.0) ** 2)
 
 
 ## Generate interior mesh for cylindrical tunnel (TunnelShape interface)
-func generate_interior_mesh(terrain_height_query: Callable) -> MeshData:
+func generate_interior_mesh(terrain_querier: TerrainHeightQuerier) -> MeshData:
 	var mesh_data := MeshData.new()
 	var basis := _create_tunnel_basis()
 	var right := basis.x
 	var up := basis.y
 	var ring_count := length_segments + 1
 	var verts_per_ring := radial_segments
-	
-	# Track which rings actually got created
 	var created_rings: Array[bool] = []
 	created_rings.resize(ring_count)
-	
 	for ring_idx in range(ring_count):
 		var t := float(ring_idx) / float(length_segments)
 		var ring_center := origin + direction * (t * length)
-		
-		# Check if this ring is underground
-		var terrain_height: float = terrain_height_query.call(Vector2(ring_center.x, ring_center.z))
+		var terrain_height: float = terrain_querier.get_height_at(Vector2(ring_center.x, ring_center.z))
 		var is_underground := ring_center.y < terrain_height
-		
 		created_rings[ring_idx] = is_underground
-		
 		if not is_underground:
 			continue
-		
 		for seg_idx in range(radial_segments):
 			var angle := (float(seg_idx) / float(radial_segments)) * TAU
 			var cos_angle := cos(angle)
@@ -96,33 +75,24 @@ func generate_interior_mesh(terrain_height_query: Callable) -> MeshData:
 			var uv := Vector2(float(seg_idx) / float(radial_segments), t)
 			mesh_data.vertices.append(vertex_pos)
 			mesh_data.uvs.append(uv)
-	
-	# Generate indices only between consecutive underground rings
 	var vertex_ring_index := 0
 	for ring_idx in range(ring_count - 1):
 		if not created_rings[ring_idx] or not created_rings[ring_idx + 1]:
 			continue
-			
 		var ring_base := vertex_ring_index * verts_per_ring
 		var next_ring_base := (vertex_ring_index + 1) * verts_per_ring
-		
 		for seg_idx in range(radial_segments):
 			var next_seg := (seg_idx + 1) % radial_segments
 			var v0 := ring_base + seg_idx
 			var v1 := ring_base + next_seg
 			var v2 := next_ring_base + seg_idx
 			var v3 := next_ring_base + next_seg
-			
-			# First triangle
 			mesh_data.indices.append(v0)
 			mesh_data.indices.append(v2)
 			mesh_data.indices.append(v1)
-			
-			# Second triangle
 			mesh_data.indices.append(v1)
 			mesh_data.indices.append(v2)
 			mesh_data.indices.append(v3)
-		
 		vertex_ring_index += 1
 	return mesh_data
 
@@ -186,13 +156,10 @@ func _create_tunnel_basis() -> Basis:
 	var forward := direction
 	var right := Vector3.ZERO
 	var up := Vector3.ZERO
-	# Find perpendicular vectors
 	if abs(forward.y) < 0.999:
-		# Use world up as reference
 		right = Vector3.UP.cross(forward).normalized()
 		up = forward.cross(right).normalized()
 	else:
-		# Tunnel is nearly vertical, use world right as reference
 		right = forward.cross(Vector3.RIGHT).normalized()
 		up = forward.cross(right).normalized()
 	return Basis(right, up, forward)

@@ -149,6 +149,51 @@ static func vectors2_are_close(a: Vector2, b: Vector2, tolerance: float = 0.001)
 	return  floats_are_close(a.x, b.x, tolerance) and \
 			floats_are_close(a.y, b.y, tolerance)
 
+## Create a single triangle mesh for testing.
+static func create_triangle_mesh(v0: Vector3, v1: Vector3, v2: Vector3, 
+	uv0: Vector2 = Vector2(0, 0), uv1: Vector2 = Vector2(1, 0), uv2: Vector2 = Vector2(0.5, 1)) -> MeshData:
+	var mesh := MeshData.new()
+	mesh.vertices = PackedVector3Array([v0, v1, v2])
+	mesh.uvs = PackedVector2Array([uv0, uv1, uv2])
+	mesh.indices = PackedInt32Array([0, 1, 2])
+	return mesh
+
+## Create a simple box mesh with multiple triangles for collision testing.
+static func create_box_mesh(size: Vector3 = Vector3(1, 1, 1)) -> MeshData:
+	var mesh := MeshData.new()
+	var half := size * 0.5
+	mesh.vertices = PackedVector3Array([
+		Vector3(-half.x, -half.y, -half.z),
+		Vector3(half.x, -half.y, -half.z),
+		Vector3(-half.x, half.y, -half.z),
+		Vector3(half.x, half.y, -half.z),
+		Vector3(-half.x, -half.y, half.z),
+		Vector3(half.x, -half.y, half.z)
+	])
+	mesh.uvs = PackedVector2Array([
+		Vector2(0, 0),
+		Vector2(1, 0),
+		Vector2(0, 1),
+		Vector2(1, 1),
+		Vector2(0, 0),
+		Vector2(1, 0)
+	])
+	mesh.indices = PackedInt32Array([
+		0, 1, 2,
+		1, 3, 2,
+		0, 4, 5
+	])
+	return mesh
+
+## Create a flat terrain height querier for testing.
+static func create_flat_terrain_query(height: float = 10.0) -> TerrainHeightQuerier:
+	return FlatTerrainQuerier.new(height)
+
+## Create a cylindrical tunnel shape for testing.
+static func create_test_tunnel_shape(origin: Vector3 = Vector3.ZERO, 
+	direction: Vector3 = Vector3.FORWARD, radius: float = 3.0, length: float = 20.0) -> CylindricalTunnelShape:
+	return CylindricalTunnelShape.new(origin, direction, radius, length)
+
 ## Get the average value of all pixels in a heightmap.
 static func get_average_height(heightmap: Image) -> float:
 	if heightmap == null:
@@ -245,8 +290,8 @@ static func create_linear_slope_mesh(
 	for y in mesh_size:
 		for x in mesh_size:
 			var height := float(x) * slope_x_multiplier + \
-						  float(y) * slope_y_multiplier + \
-						  float(x + y) * slope_combined_multiplier
+				float(y) * slope_y_multiplier + \
+				float(x + y) * slope_combined_multiplier
 			vertices.append(Vector3(float(x), height, float(y)))
 			uvs.append(Vector2(float(x) / float(mesh_size - 1), float(y) / float(mesh_size - 1)))
 	for y in mesh_size - 1:

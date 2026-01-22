@@ -209,6 +209,7 @@
     <Content Include="PHASE_1_COMPLETION_SUMMARY.md" />
     <Content Include="PHASE_1_FINAL_SUMMARY.md" />
     <Content Include="PHASE_1_REFACTORING_SUMMARY.md" />
+    <Content Include="PHASE_2_TEST_REFACTORING_SUMMARY.md" />
     <Content Include="player\BasicPlayer.tscn" />
     <Content Include="player\look_controller.gd" />
     <Content Include="player\look_controller.gd.uid" />
@@ -338,6 +339,7 @@
     <Content Include="terrain_generation\mesh_modifiers\csg\csg_volume.gd.uid" />
     <Content Include="terrain_generation\mesh_modifiers\csg\cylinder_volume.gd" />
     <Content Include="terrain_generation\mesh_modifiers\csg\cylinder_volume.gd.uid" />
+    <Content Include="terrain_generation\mesh_modifiers\tunnel\core\terrain_height_querier.gd" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\core\terrain_height_query.gd" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\core\terrain_height_query_impl.gd" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\core\tunnel_collision_provider.gd" />
@@ -347,6 +349,9 @@
     <Content Include="terrain_generation\mesh_modifiers\tunnel\core\tunnel_interfaces.gd" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\core\tunnel_interior_provider.gd" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\cylindrical_tunnel_shape.gd" />
+    <Content Include="terrain_generation\mesh_modifiers\tunnel\generation\tunnel_collision_generator.gd" />
+    <Content Include="terrain_generation\mesh_modifiers\tunnel\generation\tunnel_interior_clipper.gd" />
+    <Content Include="terrain_generation\mesh_modifiers\tunnel\generation\tunnel_interior_generator.gd" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\README.md" />
     <Content Include="terrain_generation\mesh_modifiers\tunnel\tunnel_shape.gd" />
     <Content Include="terrain_generation\visual_shaders\advanced_terrain_shader.gdshader" />
@@ -375,7 +380,6 @@
     <Content Include="test\unit\mesh\test_mesh_generator_factory.gd" />
     <Content Include="test\unit\test_helpers.gd" />
     <Content Include="test\unit\test_helpers.gd.uid" />
-    <Content Include="test\UNIT_TEST_ROADMAP.md" />
     <Content Include="test_vertex_coords.gd" />
     <Content Include="TUNNEL_BORING_AGENT_REDESIGN_REPORT.md" />
   </ItemGroup>
@@ -398,7 +402,6 @@
     <Folder Include=".godot\shader_cache\VolumetricFogShaderRD\edf7cfdc03734aac137e008bab9652e5aeda353e952ba62dfcb5d9190ba21da1\" />
     <Folder Include=".godot\shader_cache\VolumetricFogShaderRD\fe352ea61d45a1becd37b6cde528377232cf0b234eab02c91b64cf8e6f06f3a0\" />
     <Folder Include="terrain_generation\mesh_modifiers\tunnel\builders\" />
-    <Folder Include="terrain_generation\mesh_modifiers\tunnel\generation\" />
     <Folder Include="terrain_generation\mesh_modifiers\tunnel\utilities\" />
   </ItemGroup>
 </Project>
