@@ -67,11 +67,15 @@ func _initialize_components() -> void:
 ## Initialize default shape parameters if not set
 func _initialize_default_parameters() -> void:
 	if not shape_parameters:
-		shape_parameters = CylindricalShapeParameters.new()
-		shape_parameters.radius = 3.0
-		shape_parameters.length = 20.0
-		shape_parameters.radial_segments = 16
-		shape_parameters.length_segments = 8
+		var params := CylindricalShapeParameters.new()
+		if params:
+			params.radius = 3.0
+			params.length = 20.0
+			params.radial_segments = 16
+			params.length_segments = 8
+			shape_parameters = params
+		else:
+			push_warning("TunnelBoringAgent: Failed to create default CylindricalShapeParameters")
 
 func get_agent_type() -> String:
 	return "TunnelBoring"
@@ -161,10 +165,30 @@ func _create_tunnel_definitions(entry_points: Array[TunnelEntryPoint]) -> Array[
 	for entry in entry_points:
 		entry.position -= entry.surface_normal * tunnel_entrance_extra_length
 		var params := shape_parameters.duplicate_parameters()
+		if not params:
+			push_error("TunnelBoringAgent: Failed to duplicate shape parameters")
+			continue
 		if params is CylindricalShapeParameters:
 			var cylindrical_params := params as CylindricalShapeParameters
 			cylindrical_params.length += tunnel_entrance_extra_length
+		elif params is NaturalCaveParameters:
+			var cave_params := params as NaturalCaveParameters
+			cave_params.length += tunnel_entrance_extra_length
+		elif params is SplineShapeParameters:
+			var spline_params := params as SplineShapeParameters
+			if spline_params.path_curve:
+				spline_params.path_curve = SplineShapeParameters.transform_curve_to_entry(
+					spline_params.path_curve,
+					entry.position,
+					entry.tunnel_direction,
+					entry.surface_normal
+				)
+			if not spline_params.auto_calculate_length:
+				spline_params.manual_length += tunnel_entrance_extra_length
 		var definition := TunnelDefinition.new(entry, params)
+		if not definition:
+			push_error("TunnelBoringAgent: Failed to create tunnel definition")
+			continue
 		definition.generate_collision = enable_collision
 		definition.debug_visualization = show_debug_visualization
 		definition.debug_color = debug_color
@@ -262,19 +286,30 @@ func _filter_entry_points(entry_points: Array[TunnelEntryPoint], context: MeshMo
 
 		valid_points.append(entry)
 	return valid_points
-	
+
 ## Get metadata about this agent
 func get_metadata() -> Dictionary:
 	var base := super.get_metadata()
 	if shape_parameters:
 		base["shape_type"] = TunnelShapeType.get_display_name(shape_parameters.get_shape_type())
-		base["shape_summary"] = shape_parameters.to_string()
 		base["tunnel_length"] = shape_parameters.get_length()
 		if shape_parameters is CylindricalShapeParameters:
 			var cyl_params := shape_parameters as CylindricalShapeParameters
 			base["tunnel_radius"] = cyl_params.radius
 			base["tunnel_radial_segments"] = cyl_params.radial_segments
 			base["tunnel_length_segments"] = cyl_params.length_segments
+		elif shape_parameters is NaturalCaveParameters:
+			var cave_params := shape_parameters as NaturalCaveParameters
+			base["base_radius"] = cave_params.base_radius
+			base["radius_variation"] = cave_params.radius_variation
+			base["noise_seed"] = cave_params.noise_seed
+			base["noise_frequency"] = cave_params.noise_frequency
+		elif shape_parameters is SplineShapeParameters:
+			var spline_params := shape_parameters as SplineShapeParameters
+			base["radius"] = spline_params.radius
+			base["radial_segments"] = spline_params.radial_segments
+			base["path_segments"] = spline_params.path_segments
+			base["curve_points"] = spline_params.path_curve.point_count if spline_params.path_curve else 0
 	base["enable_csg_subtraction"] = enable_csg_subtraction
 	base["enable_interior_generation"] = enable_interior_generation
 	base["enable_collision"] = enable_collision

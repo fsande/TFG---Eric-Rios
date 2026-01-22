@@ -28,9 +28,6 @@ func get_validation_errors() -> Array[String]:
 		errors.append("Length segments must be at least 1 (got %d)" % length_segments)
 	return errors
 
-func to_string() -> String:
-	return "Cylindrical(r=%.1fm, l=%.1fm, segs=%d/%d)" % [radius, length, radial_segments, length_segments]
-
 func duplicate_parameters() -> TunnelShapeParameters:
 	var dup := CylindricalShapeParameters.new()
 	dup.radius = radius

@@ -14,9 +14,6 @@ func is_valid() -> bool:
 	push_error("TunnelShapeParameters.is_valid() must be overridden by subclass")
 	return false
 
-func to_string() -> String:
-	return "TunnelShapeParameters (override in subclass)"
-
 func duplicate_parameters() -> TunnelShapeParameters:
 	push_error("TunnelShapeParameters.duplicate_parameters() must be overridden by subclass")
 	return null

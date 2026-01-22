@@ -20,6 +20,7 @@ var debug_visualization: bool = false
 var debug_color: Color = Color(1.0, 0.0, 0.0, 0.3)
 
 func _init(p_entry_point: TunnelEntryPoint, p_shape_params: TunnelShapeParameters = null) -> void:
+	print("initializing TunnelDefinition")
 	entry_point = p_entry_point
 	shape_parameters = p_shape_params if p_shape_params else CylindricalShapeParameters.new()
 

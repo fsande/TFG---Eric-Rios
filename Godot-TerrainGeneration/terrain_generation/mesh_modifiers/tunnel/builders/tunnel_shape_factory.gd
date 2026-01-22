@@ -14,10 +14,31 @@ static func create_from_definition(definition: TunnelDefinition) -> TunnelShape:
 	match definition.get_shape_type():
 		TunnelShapeType.Type.CYLINDRICAL:
 			return _create_cylindrical_from_definition(definition)
+		TunnelShapeType.Type.NATURAL_CAVE:
+			return _create_natural_cave_from_definition(definition)
+		TunnelShapeType.Type.SPLINE:
+			return _create_spline_from_definition(definition)
 		_:
 			push_error("TunnelShapeFactory: Unsupported shape type: %s" % 
 				TunnelShapeType.get_display_name(definition.get_shape_type()))
 			return null
+
+static func _create_spline_from_definition(definition: TunnelDefinition) -> SplineTunnelShape:
+	var params := definition.shape_parameters as SplineShapeParameters
+	if params == null:
+		push_error("TunnelShapeFactory: Expected SplineShapeParameters but got null")
+		return null
+	if not params.path_curve or params.path_curve.point_count < 2:
+		push_error("TunnelShapeFactory: Invalid path curve (points: %d)" % 
+			(params.path_curve.point_count if params.path_curve else 0))
+		return null
+	var shape := SplineTunnelShape.new(
+		params.path_curve,
+		params.radius
+	)
+	shape.radial_segments = params.radial_segments
+	shape.path_segments = params.path_segments
+	return shape
 
 static func _create_cylindrical_from_definition(definition: TunnelDefinition) -> CylindricalTunnelShape:
 	var params := definition.shape_parameters as CylindricalShapeParameters
@@ -33,6 +54,28 @@ static func _create_cylindrical_from_definition(definition: TunnelDefinition) ->
 		definition.get_direction(),
 		params.radius,
 		params.length
+	)
+	shape.radial_segments = params.radial_segments
+	shape.length_segments = params.length_segments
+	return shape
+
+static func _create_natural_cave_from_definition(definition: TunnelDefinition) -> NaturalCaveTunnelShape:
+	var params := definition.shape_parameters as NaturalCaveParameters
+	if params == null:
+		push_error("TunnelShapeFactory: Expected NaturalCaveParameters but got null")
+		return null
+	if params.base_radius <= 0 or params.length <= 0:
+		push_error("TunnelShapeFactory: Invalid dimensions (base_radius: %.2f, length: %.2f)" % 
+			[params.base_radius, params.length])
+		return null
+	var shape := NaturalCaveTunnelShape.new(
+		definition.get_position(),
+		definition.get_direction(),
+		params.base_radius,
+		params.radius_variation,
+		params.length,
+		params.noise_seed,
+		params.noise_frequency
 	)
 	shape.radial_segments = params.radial_segments
 	shape.length_segments = params.length_segments
