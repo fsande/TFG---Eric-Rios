@@ -401,6 +401,7 @@
     <Content Include="TUNNEL_ENTRANCE_SEAM_FIX.md" />
     <Content Include="TUNNEL_ENTRANCE_SOLUTION_ANALYSIS.md" />
     <Content Include="TUNNEL_SHAPE_EXTENSION_ROADMAP.md" />
+    <Content Include="TUNNEL_SYSTEM_CODE_REVIEW.md" />
     <Content Include="TUNNEL_SYSTEM_CURRENT_STATE.md" />
     <Content Include="VERTEX_STITCHING_ROADMAP.md" />
   </ItemGroup>
