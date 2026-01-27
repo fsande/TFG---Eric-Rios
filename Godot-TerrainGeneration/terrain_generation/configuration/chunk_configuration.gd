@@ -10,25 +10,12 @@ class_name ChunkConfiguration extends Resource
 ## Enable the chunking system
 @export var enable_chunking: bool = false
 
-## Chunk loading strategy type
-@export_enum("Grid", "QuadTree", "FrustumCulling") var loading_strategy: String = "Grid"
-
-@export_group("Grid Strategy")
-## Load chunks within this radius (in chunk units)
-@export var grid_load_radius: int = 3
-
-## Unload chunks beyond this radius (in chunk units)
-@export var grid_unload_radius: int = 5
-
-@export_group("QuadTree Strategy")
-## Maximum view distance for chunk loading
-@export var quadtree_max_distance: float = 400.0
-
-## Minimum chunk size before stopping subdivision
-@export var quadtree_min_chunk_size: float = 25.0
-
-## Enable hierarchical loading (load parent chunks before children)
-@export var quadtree_hierarchical_loading: bool = true
+## Chunk loading strategy configuration (determines which strategy is used)
+@export var load_strategy_config: ChunkLoadStrategyConfiguration = GridLoadStrategyConfiguration.new():
+	set(value):
+		load_strategy_config = value
+		if load_strategy_config == null:
+			load_strategy_config = GridLoadStrategyConfiguration.new()
 
 @export_group("LOD Settings")
 ## Enable Godot's automatic LOD generation per chunk
@@ -60,6 +47,8 @@ class_name ChunkConfiguration extends Resource
 ## Validate configuration settings
 func is_valid() -> bool:
 	if chunk_size.x <= 0.0 or chunk_size.y <= 0.0:
+		return false
+	if load_strategy_config and not load_strategy_config.is_valid():
 		return false
 	return true
 

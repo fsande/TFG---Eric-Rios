@@ -209,12 +209,12 @@ func _partition_terrain_into_chunks(terrain_data: TerrainData) -> ChunkedTerrain
 	if not terrain_data:
 		return null
 	var chunk_config := terrain_configuration.chunk_configuration
+	var chunks := MeshPartitioner.partition_mesh(terrain_data.mesh_result, chunk_config.chunk_size)
 	var chunked_data := ChunkedTerrainData.new()
+	for chunk in chunks:
+		chunked_data.add_chunk(chunk)
 	chunked_data.terrain_data = terrain_data
 	chunked_data.chunk_size = chunk_config.chunk_size
-	# TODO: Implement actual terrain partitioning logic
-	# This would slice the terrain mesh into chunks based on chunk_size
-	# For now, return empty chunked data structure
 	return chunked_data
 
 ## Apply chunked terrain to scene
@@ -239,8 +239,31 @@ func _setup_chunk_manager(chunked_data: ChunkedTerrainData) -> void:
 	_chunk_manager.load_strategy = _create_load_strategy(chunk_config)
 
 ## Create chunk loading strategy from configuration
-func _create_load_strategy(_chunk_config: ChunkConfiguration) -> ChunkLoadStrategy:
-	# TODO: Implement strategy factory based on _chunk_config.loading_strategy
-	# For now return null, implementation pending
-	return null
+func _create_load_strategy(chunk_config: ChunkConfiguration) -> ChunkLoadStrategy:
+	if not chunk_config or not chunk_config.load_strategy_config:
+		return null
+	var strategy_config := chunk_config.load_strategy_config
+	var strategy_type := strategy_config.get_strategy_type()
+	var strategy: ChunkLoadStrategy = null
+	match strategy_type:
+		"Grid":
+			var grid_strategy := GridLoadStrategy.new()
+			if strategy_config is GridLoadStrategyConfiguration:
+				grid_strategy.load_radius_chunks = strategy_config.load_radius
+				grid_strategy.unload_radius_chunks = strategy_config.unload_radius
+			strategy = grid_strategy
+		"FrustumCulling":
+			var frustum_strategy := FrustumCullingLoadStrategy.new()
+			if strategy_config is FrustumCullingStrategyConfiguration:
+				frustum_strategy.preload_margin = strategy_config.preload_margin
+				frustum_strategy.max_outside_frustum = strategy_config.max_outside_frustum
+				frustum_strategy.use_grid_fallback = strategy_config.use_grid_fallback
+				frustum_strategy.fallback_radius = strategy_config.fallback_radius
+			strategy = frustum_strategy
+		"QuadTree":
+			strategy = QuadTreeLoadStrategy.new()
+		_:
+			push_warning("TerrainPresenter: Unknown strategy type '%s', using Grid" % strategy_type)
+			strategy = GridLoadStrategy.new()
+	return strategy
 

@@ -16,6 +16,17 @@ var chunks: Array[ChunkMeshData] = []
 ## Chunk lookup map (chunk_coord -> ChunkMeshData)
 var _chunk_map: Dictionary = {}
 
+## Rebuild internal chunk lookup map
+func _rebuild_chunk_map() -> void:
+	_chunk_map.clear()
+	for chunk in chunks:
+		_chunk_map[chunk.chunk_coord] = chunk
+
+## Add a chunk to the collection
+func add_chunk(chunk: ChunkMeshData) -> void:
+	chunks.append(chunk)
+	_chunk_map[chunk.chunk_coord] = chunk
+
 ## Get chunk at specific grid coordinate
 func get_chunk_at(coord: Vector2i) -> ChunkMeshData:
 	return _chunk_map.get(coord, null)

@@ -22,7 +22,6 @@ func should_load_chunk(chunk: ChunkMeshData, camera_pos: Vector3, context: Dicti
 ## @param context Additional context
 ## @return true if chunk should be unloaded
 func should_unload_chunk(chunk: ChunkMeshData, camera_pos: Vector3, context: Dictionary) -> bool:
-	# TODO: Default implementation (can be overridden)
 	return false
 
 ## Calculate loading priority for a chunk (higher = load sooner)
@@ -31,22 +30,18 @@ func should_unload_chunk(chunk: ChunkMeshData, camera_pos: Vector3, context: Dic
 ## @param camera_pos Current camera position
 ## @return Priority value (higher = more important)
 func get_load_priority(chunk: ChunkMeshData, camera_pos: Vector3) -> float:
-	# TODO: Default implementation (can be overridden)
 	return 0.0
 
 ## Get maximum number of chunks to load/unload per frame
 ## @return Vector2i(max_loads, max_unloads)
 func get_max_operations_per_frame() -> Vector2i:
-	# TODO: Default implementation (can be overridden)
 	return Vector2i(2, 4)
 
 ## Called when strategy is activated (optional initialization)
 func on_activated(chunk_manager: Node) -> void:
-	# TODO: Optional override for initialization
 	pass
 
 ## Called when strategy is deactivated (optional cleanup)
 func on_deactivated() -> void:
-	# TODO: Optional override for cleanup
 	pass
 
