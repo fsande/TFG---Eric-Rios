@@ -45,11 +45,6 @@ func _init(p_terrain_data: TerrainData, p_processing_context: ProcessingContext,
 	agent_node_root = p_agent_node_root if p_agent_node_root else Node3D.new()
 	parameters = p_parameters
 
-
-## ===========================
-## VERTEX ACCESS
-## ===========================
-
 ## Get vertex position by index (for single vertex queries).
 func get_vertex_position(index: int) -> Vector3:
 	return _mesh.get_vertex(index)
@@ -64,11 +59,6 @@ func get_vertex_array() -> PackedVector3Array:
 ## Call this after modifying vertices via get_vertex_array().
 func mark_mesh_dirty() -> void:
 	_mesh.mark_dirty()
-
-
-## ===========================
-## SPATIAL QUERIES
-## ===========================
 
 ## Get terrain size in world units.
 func terrain_size() -> Vector2:

@@ -49,6 +49,13 @@ signal configuration_changed()
 		mesh_generator_parameters = value
 		configuration_changed.emit()
 
+@export_group("Chunking & LOD")
+## Chunk configuration for large terrains (optional, null disables chunking)
+@export var chunk_configuration: ChunkConfiguration:
+	set(value):
+		chunk_configuration = value
+		configuration_changed.emit()
+
 @export_group("Visuals")
 ## Height threshold for snow material application.
 @export_range(0.0, 2800.0, 1.0) var snow_line: float = 64.0:

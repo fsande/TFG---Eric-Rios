@@ -107,11 +107,6 @@ func get_vertex_count() -> int:
 func get_triangle_count() -> int:
 	return mesh_data.get_triangle_count()
 
-## ===========================
-## TOPOLOGY MODIFICATION (for caves, overhangs, etc.)
-## Delegates to MeshTopologyModifier
-## ===========================
-
 ## Add a single vertex to the mesh. Returns the new vertex index.
 ## These vertices are NOT part of the grid (non-grid vertices).
 func add_vertex(position: Vector3, uv: Vector2 = Vector2.ZERO) -> int:
@@ -147,12 +142,6 @@ func remove_triangles_if(filter_func: Callable) -> int:
 ## Delegates to ArrayMeshBuilder following Builder Pattern.
 func build_mesh() -> ArrayMesh:
 	return ArrayMeshBuilder.build_mesh(mesh_data)
-
-
-## ===========================
-## SLOPE DATA ACCESS
-## Delegates to MeshSlopeDataProvider
-## ===========================
 
 ## Get slope normal map (returns null if not computed).
 func get_slope_normal_map() -> Image:
