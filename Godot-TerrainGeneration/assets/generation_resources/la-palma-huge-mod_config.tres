@@ -1,0 +1,108 @@
+[gd_resource type="Resource" script_class="TerrainConfiguration" load_steps=32 format=3 uid="uid://dad4rdky32leh"]
+
+[ext_resource type="Script" uid="uid://o0lhahullfck" path="res://terrain_generation/heightmap/combiners/multiplication_combiner.gd" id="1_fbd1u"]
+[ext_resource type="Script" uid="uid://bex5sqputtgkm" path="res://terrain_generation/heightmap/sources/composite_heightmap_source.gd" id="2_h81rt"]
+[ext_resource type="Script" uid="uid://0igih326n7n3" path="res://terrain_generation/heightmap/sources/heightmap_source.gd" id="3_8wy4g"]
+[ext_resource type="Script" uid="uid://3hgc2pv3fq1m" path="res://terrain_generation/heightmap/combiners/average_combiner.gd" id="4_u3dug"]
+[ext_resource type="Texture2D" uid="uid://bnxd1bfxkl1lw" path="res://assets/heightmaps/LaPalma.png" id="5_tkwlf"]
+[ext_resource type="Script" uid="uid://byh53w6k375jl" path="res://terrain_generation/heightmap/sources/texture_heightmap_source.gd" id="6_w3s5h"]
+[ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="7_bgxs3"]
+[ext_resource type="Script" uid="uid://cng2l66yyegrm" path="res://terrain_generation/configuration/mesh_generator_parameters.gd" id="8_iq7ya"]
+[ext_resource type="Script" uid="uid://cew10t4ohbwr2" path="res://terrain_generation/mesh_modifiers/core/mesh_modifier_pipeline.gd" id="9_bgyd2"]
+[ext_resource type="Script" uid="uid://n8i4a5cpdd5h" path="res://terrain_generation/mesh_modifiers/core/pipeline_stage.gd" id="10_kvpex"]
+[ext_resource type="Script" uid="uid://chdi7cmw56ufo" path="res://terrain_generation/mesh_modifiers/core/mesh_modifier_agent.gd" id="11_hbvov"]
+[ext_resource type="Script" uid="uid://cnlelb6epgmjl" path="res://terrain_generation/mesh_modifiers/agents/tunnel_boring_agent.gd" id="12_s5383"]
+[ext_resource type="Script" uid="uid://d2xr254y4uice" path="res://terrain_generation/mesh_modifiers/tunnel/core/shape_parameters/spline_shape_parameters.gd" id="13_hdy3h"]
+[ext_resource type="Script" uid="uid://dckjocktq6xry" path="res://terrain_generation/mesh_modifiers/core/sequential_stage.gd" id="14_n0ogd"]
+[ext_resource type="Script" uid="uid://b6bp6j1f4vnm1" path="res://terrain_generation/configuration/terrain_configuration.gd" id="15_ir40q"]
+[ext_resource type="Material" uid="uid://bg4p6ysy07sj1" path="res://assets/materials/terrain_mat.tres" id="16_6q5qh"]
+
+[sub_resource type="Resource" id="Resource_2wyq8"]
+script = ExtResource("1_fbd1u")
+metadata/_custom_type_script = "uid://o0lhahullfck"
+
+[sub_resource type="Resource" id="Resource_vxglm"]
+script = ExtResource("4_u3dug")
+metadata/_custom_type_script = "uid://3hgc2pv3fq1m"
+
+[sub_resource type="Resource" id="Resource_2f3dj"]
+script = ExtResource("6_w3s5h")
+heightmap_texture = ExtResource("5_tkwlf")
+metadata/_custom_type_script = "uid://byh53w6k375jl"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_yq6so"]
+noise_type = 2
+frequency = 0.0092
+fractal_type = 0
+
+[sub_resource type="Resource" id="Resource_fv21b"]
+script = ExtResource("7_bgxs3")
+frequency = 3.0
+noise = SubResource("FastNoiseLite_yq6so")
+metadata/_custom_type_script = "uid://rlx21xot8cjj"
+
+[sub_resource type="Resource" id="Resource_tel4y"]
+script = ExtResource("2_h81rt")
+sources = Array[ExtResource("3_8wy4g")]([SubResource("Resource_2f3dj"), SubResource("Resource_fv21b")])
+combiner = SubResource("Resource_vxglm")
+metadata/_custom_type_script = "uid://bex5sqputtgkm"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_qkpxi"]
+
+[sub_resource type="Resource" id="Resource_5q0nq"]
+script = ExtResource("7_bgxs3")
+noise = SubResource("FastNoiseLite_qkpxi")
+metadata/_custom_type_script = "uid://rlx21xot8cjj"
+
+[sub_resource type="Resource" id="Resource_dgi5k"]
+script = ExtResource("2_h81rt")
+sources = Array[ExtResource("3_8wy4g")]([SubResource("Resource_tel4y"), SubResource("Resource_5q0nq")])
+combiner = SubResource("Resource_2wyq8")
+metadata/_custom_type_script = "uid://bex5sqputtgkm"
+
+[sub_resource type="Resource" id="Resource_t5u1y"]
+script = ExtResource("8_iq7ya")
+height_scale = 1280.0
+mesh_size = Vector2(5120, 5120)
+subdivisions = 1024
+
+[sub_resource type="Curve3D" id="Curve3D_jkv2x"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 35, -120, 0, 0, 0, 0, 0, 0, 0, 56, -135, 0, 0, 0, 0, 0, 0, 0, 70, -100, 45),
+"tilts": PackedFloat32Array(0, 0, 0)
+}
+point_count = 3
+
+[sub_resource type="Resource" id="Resource_jbj1t"]
+script = ExtResource("13_hdy3h")
+path_curve = SubResource("Curve3D_jkv2x")
+metadata/_custom_type_script = "uid://d2xr254y4uice"
+
+[sub_resource type="Resource" id="Resource_a8y0u"]
+script = ExtResource("12_s5383")
+shape_parameters = SubResource("Resource_jbj1t")
+enable_csg_subtraction = false
+agent_name = "Tunnel Boring Agent"
+metadata/_custom_type_script = "uid://cnlelb6epgmjl"
+
+[sub_resource type="Resource" id="Resource_0ld40"]
+script = ExtResource("14_n0ogd")
+agents = Array[ExtResource("11_hbvov")]([SubResource("Resource_a8y0u")])
+metadata/_custom_type_script = "uid://dckjocktq6xry"
+
+[sub_resource type="Resource" id="Resource_gqmmt"]
+script = ExtResource("9_bgyd2")
+stages = Array[ExtResource("10_kvpex")]([SubResource("Resource_0ld40")])
+metadata/_custom_type_script = "uid://cew10t4ohbwr2"
+
+[resource]
+script = ExtResource("15_ir40q")
+heightmap_source = SubResource("Resource_dgi5k")
+terrain_size = 5120.0
+mesh_modification_pipeline = SubResource("Resource_gqmmt")
+mesh_generator_parameters = SubResource("Resource_t5u1y")
+snow_line = 160.0
+terrain_material = ExtResource("16_6q5qh")
+mesh_generator_type = 1
+heightmap_processor_type = 1
+enable_caching = false
