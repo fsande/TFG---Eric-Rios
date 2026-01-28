@@ -77,7 +77,6 @@ shader_parameter/uv_scale = 100.0
 
 [sub_resource type="Resource" id="Resource_dp3eg"]
 script = ExtResource("5_jbj1t")
-metadata/_custom_type_script = "uid://cm3klosjm6jt3"
 
 [sub_resource type="Resource" id="Resource_yc10j"]
 script = ExtResource("6_muem4")
@@ -198,6 +197,7 @@ material_override = SubResource("StandardMaterial3D_jbj1t")
 mesh = SubResource("ArrayMesh_muem4")
 
 [node name="TunnelDebugCylinders" type="Node3D" parent="NewTerrain"]
+visible = false
 
 [node name="DebugTunnel_0" type="MeshInstance3D" parent="NewTerrain/TunnelDebugCylinders"]
 transform = Transform3D(-0.2171132, 0.97614646, 0, -0.97614646, -0.2171132, 0, 0, 0, 1, -41.677982, 109.859924, -2.3255825)

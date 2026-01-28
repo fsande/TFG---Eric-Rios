@@ -6,3 +6,6 @@ func is_valid() -> bool:
 	
 func get_strategy_type() -> String:
 	return "Base"
+	
+func get_strategy() -> ChunkLoadStrategy:
+	return null

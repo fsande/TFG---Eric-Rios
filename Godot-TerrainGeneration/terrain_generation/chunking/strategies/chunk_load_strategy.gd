@@ -11,7 +11,7 @@ class_name ChunkLoadStrategy extends RefCounted
 ## @param camera_pos Current camera position in world space
 ## @param context Additional context (loaded chunks, frame budget, etc.)
 ## @return true if chunk should be loaded, false otherwise
-func should_load_chunk(chunk: ChunkMeshData, camera_pos: Vector3, context: Dictionary) -> bool:
+func should_load_chunk(chunk: ChunkMeshData, camera_pos: Vector3, context: ChunkLoadContext) -> bool:
 #	push_error("ChunkLoadStrategy.should_load_chunk() must be overridden in subclass")
 	return true
 
@@ -21,7 +21,7 @@ func should_load_chunk(chunk: ChunkMeshData, camera_pos: Vector3, context: Dicti
 ## @param camera_pos Current camera position
 ## @param context Additional context
 ## @return true if chunk should be unloaded
-func should_unload_chunk(chunk: ChunkMeshData, camera_pos: Vector3, context: Dictionary) -> bool:
+func should_unload_chunk(chunk: ChunkMeshData, camera_pos: Vector3, context: ChunkLoadContext) -> bool:
 	return false
 
 ## Calculate loading priority for a chunk (higher = load sooner)

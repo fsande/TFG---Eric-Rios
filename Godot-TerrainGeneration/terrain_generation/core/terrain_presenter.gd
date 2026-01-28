@@ -115,13 +115,13 @@ func _apply_generated_terrain(terrain_data: TerrainData) -> void:
 		return
 	if show_generation_time:
 		print("TerrainPresenter: Async generation completed in %.1f ms" % terrain_data.generation_time_ms)
-	_update_presentation(terrain_data)
 	if _is_chunking_enabled():
 		var chunked_data := _chunked_presenter.partition_terrain(terrain_data)
 		if not chunked_data:
 			push_error("TerrainPresenter: Chunked generation failed")
 			return
 		_chunked_presenter.apply_chunked_terrain(chunked_data)
+	_update_presentation(terrain_data)
 
 ## Update scene nodes (mesh, material, collision) from the current TerrainData.
 func _update_presentation(terrain_data: TerrainData) -> void:
@@ -135,12 +135,12 @@ func _update_presentation(terrain_data: TerrainData) -> void:
 		if _mesh_instance:
 			_mesh_instance.mesh = terrain_data.get_mesh()
 			_mesh_instance.visible = true
-		_update_visuals()
 		if terrain_configuration.generate_collision: 
 			_terrain_collision.update_collision(terrain_data, terrain_configuration.collision_layers)
 	else:
 		if _mesh_instance:
 			_mesh_instance.visible = false
+	_update_visuals()
 	_update_agent_nodes(terrain_data)
 
 ## Update material from terrain configuration parameters.

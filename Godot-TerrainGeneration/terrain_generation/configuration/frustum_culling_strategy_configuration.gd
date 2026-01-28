@@ -22,3 +22,11 @@ func get_strategy_type() -> String:
 
 func is_valid() -> bool:
 	return preload_margin >= 0.0 and (not use_grid_fallback or fallback_radius > 0)
+	
+func get_strategy() -> ChunkLoadStrategy:
+	var strategy = FrustumCullingLoadStrategy.new()
+#	strategy.preload_margin = preload_margin
+#	strategy.max_outside_frustum = max_outside_frustum
+#	strategy.use_grid_fallback = use_grid_fallback
+#	strategy.fallback_radius = fallback_radius
+	return strategy

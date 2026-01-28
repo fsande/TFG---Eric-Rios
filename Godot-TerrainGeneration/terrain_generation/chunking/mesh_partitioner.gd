@@ -16,7 +16,6 @@ static func partition_mesh(mesh_result: MeshGenerationResult, chunk_size: Vector
 		return []
 	var mesh_size := mesh_result.mesh_size
 	var grid_dims := _calculate_chunk_grid_dimensions(mesh_size, chunk_size)
-	print("Amount of vertices before partition: %d" % mesh_result.vertices.size())
 	var chunks: Array[ChunkMeshData] = []
 	for chunk_z in range(grid_dims.y):
 		for chunk_x in range(grid_dims.x):
@@ -28,7 +27,6 @@ static func partition_mesh(mesh_result: MeshGenerationResult, chunk_size: Vector
 	var chunk_vertex_count := 0
 	for chunk in chunks:
 		chunk_vertex_count += chunk.mesh_data.vertices.size()
-	print("Amount of vertices after partition: %d (%.2f%% of original)" % [chunk_vertex_count, float(chunk_vertex_count) / float(mesh_result.vertices.size()) * 100.0])
 	return chunks
 
 ## Partition mesh with overlapping boundaries to prevent seams
@@ -67,7 +65,6 @@ static func _extract_chunk(
 	var chunk_uvs := PackedVector2Array()
 	var chunk_indices := PackedInt32Array()
 	var vertex_map := {}
-	print("Extracting chunk at %v (min: %v, max: %v)" % [chunk_coord, chunk_min, chunk_max])
 	for i in range(0, mesh_result.indices.size(), 3):
 		var idx0 := mesh_result.indices[i]
 		var idx1 := mesh_result.indices[i + 1]

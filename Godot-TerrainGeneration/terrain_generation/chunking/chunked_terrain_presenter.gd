@@ -63,43 +63,8 @@ func _setup_or_update_chunk_manager(chunked_data: ChunkedTerrainData) -> void:
 	_chunk_manager.full_collision_distance = chunk_config.collision_distance
 	_chunk_manager.debug_mode = false
 	_chunk_manager.chunk_data_source = chunked_data
-	_chunk_manager.load_strategy = _create_load_strategy(chunk_config)
+	_chunk_manager.load_strategy = chunk_config.get_strategy()
 	_chunk_manager.load_all_chunks()
-
-## Create and configure chunk loading strategy from configuration
-func _create_load_strategy(chunk_config: ChunkConfiguration) -> ChunkLoadStrategy:
-	if not chunk_config or not chunk_config.load_strategy_config:
-		return _create_default_strategy()
-	var strategy_config := chunk_config.load_strategy_config
-	var strategy_type := strategy_config.get_strategy_type()
-	match strategy_type:
-		"Grid":
-			return _create_grid_strategy(strategy_config)
-		"FrustumCulling":
-			return _create_frustum_strategy(strategy_config)
-		"QuadTree":
-			return _create_quadtree_strategy(strategy_config)
-		_:
-			push_warning("ChunkedTerrainPresenter: Unknown strategy type '%s', using Grid" % strategy_type)
-			return _create_default_strategy()
-
-## Create grid-based load strategy
-func _create_grid_strategy(config: ChunkLoadStrategyConfiguration) -> GridLoadStrategy:
-	var strategy := GridLoadStrategy.new()
-	return strategy
-
-## Create frustum culling load strategy
-func _create_frustum_strategy(config: ChunkLoadStrategyConfiguration) -> FrustumCullingLoadStrategy:
-	var strategy := FrustumCullingLoadStrategy.new()
-	return strategy
-
-## Create quadtree load strategy
-func _create_quadtree_strategy(_config: ChunkLoadStrategyConfiguration) -> QuadTreeLoadStrategy:
-	return QuadTreeLoadStrategy.new()
-
-## Create default strategy (Grid)
-func _create_default_strategy() -> GridLoadStrategy:
-	return GridLoadStrategy.new()
 
 ## Cleanup chunk manager
 func cleanup() -> void:
@@ -110,4 +75,3 @@ func cleanup() -> void:
 ## Get chunk manager reference (for debugging/stats)
 func get_chunk_manager() -> ChunkManager:
 	return _chunk_manager
-

@@ -2,6 +2,7 @@
 ##
 ## @details Defines chunk size, loading strategies, LOD parameters,
 ## and collision settings for chunked terrain rendering.
+@tool
 class_name ChunkConfiguration extends Resource
 
 ## Size of each chunk in world units (XZ plane)
@@ -52,3 +53,7 @@ func is_valid() -> bool:
 		return false
 	return true
 
+func get_strategy() -> ChunkLoadStrategy:
+	if load_strategy_config:
+		return load_strategy_config.get_strategy()
+	return null

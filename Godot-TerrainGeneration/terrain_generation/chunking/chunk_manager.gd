@@ -60,7 +60,7 @@ func _process(delta: float) -> void:
 	if _update_timer >= update_interval:
 		_update_timer = 0.0
 		_update_chunk_visibility()
-		
+
 func load_all_chunks() -> void:
 	if not chunk_data_source:
 		return
@@ -158,16 +158,13 @@ func _update_chunk_visibility() -> void:
 		if not camera:
 			return
 	var camera_pos := camera.global_position
-	var context := {
-		"loaded_chunks": loaded_chunks,
-		"frame_time": get_process_delta_time()
-	}
+	var context := ChunkLoadContext.new(loaded_chunks, get_process_delta_time())
 	var budgets := load_strategy.get_max_operations_per_frame()
 	var max_loads := budgets.x
 	var max_unloads := budgets.y
 	var loads_this_frame := 0
 	var unloads_this_frame := 0
-	var chunks_to_unload := []
+	var chunks_to_unload: Array[Vector2i] = []
 	for coord in loaded_chunks.keys():
 		var chunk := chunk_data_source.get_chunk_at(coord)
 		if chunk and load_strategy.should_unload_chunk(chunk, camera_pos, context):
@@ -177,16 +174,25 @@ func _update_chunk_visibility() -> void:
 			break
 		_unload_chunk(coord)
 		unloads_this_frame += 1
-	var chunks_to_load := []
+	var chunks_to_load: Array[ChunkLoadPriority] = []
 	for chunk in chunk_data_source.chunks:
 		if not loaded_chunks.has(chunk.chunk_coord):
 			if load_strategy.should_load_chunk(chunk, camera_pos, context):
 				var priority := load_strategy.get_load_priority(chunk, camera_pos)
-				chunks_to_load.append({"chunk": chunk, "priority": priority})
-	chunks_to_load.sort_custom(func(a, b): return a.priority > b.priority)
+				chunks_to_load.append(ChunkLoadPriority.new(chunk, priority))
+	chunks_to_load.sort_custom(func(a: ChunkLoadPriority, b: ChunkLoadPriority): return a.priority > b.priority)
 	for item in chunks_to_load:
 		if loads_this_frame >= max_loads:
 			break
 		_load_chunk(item.chunk, camera_pos)
 		loads_this_frame += 1
+
+## Helper class for prioritized chunk loading
+class ChunkLoadPriority:
+	var chunk: ChunkMeshData
+	var priority: float
+	
+	func _init(p_chunk: ChunkMeshData, p_priority: float) -> void:
+		chunk = p_chunk
+		priority = p_priority
 

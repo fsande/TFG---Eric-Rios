@@ -234,6 +234,7 @@
     <Content Include="terrain_generation\chunking\chunked_terrain_data.gd" />
     <Content Include="terrain_generation\chunking\chunked_terrain_data.gd.uid" />
     <Content Include="terrain_generation\chunking\chunked_terrain_presenter.gd" />
+    <Content Include="terrain_generation\chunking\chunk_load_context.gd" />
     <Content Include="terrain_generation\chunking\chunk_manager.gd" />
     <Content Include="terrain_generation\chunking\chunk_manager.gd.uid" />
     <Content Include="terrain_generation\chunking\chunk_mesh_data.gd" />
