@@ -98,7 +98,7 @@ metadata/_custom_type_script = "uid://byh53w6k375jl"
 [sub_resource type="Resource" id="Resource_t5u1y"]
 script = ExtResource("6_tipki")
 height_scale = 128.0
-mesh_size = Vector2(200, 200)
+mesh_size = Vector2(1000, 1000)
 subdivisions = 128
 
 [sub_resource type="Resource" id="Resource_jkv2x"]
@@ -123,7 +123,7 @@ metadata/_custom_type_script = "uid://cew10t4ohbwr2"
 [sub_resource type="Resource" id="Resource_choun"]
 script = ExtResource("7_85g3d")
 heightmap_source = SubResource("Resource_muem4")
-terrain_size = 200.0
+terrain_size = 1000.0
 mesh_modification_pipeline = SubResource("Resource_gqmmt")
 mesh_generator_parameters = SubResource("Resource_t5u1y")
 chunk_configuration = SubResource("Resource_yc10j")
@@ -173,7 +173,7 @@ environment = SubResource("Environment_p20re")
 transform = Transform3D(0.055089504, 4.364501e-08, -0.99848145, 0.99848145, -2.4080364e-09, 0.055089504, 0, -1, -4.371139e-08, 0, 142.29492, 0)
 
 [node name="Player" parent="." instance=ExtResource("3_avahw")]
-transform = Transform3D(-0.9297122, 0, 0.36828688, 0, 1, 0, -0.36828688, 0, -0.9297122, 5.118164, 69.88452, 11.601316)
+transform = Transform3D(0.585736, 0, 0.81050193, 0, 1, 0, -0.81050193, 0, 0.585736, -339.35065, 183.51385, -76.88117)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.613, 6, 0)

@@ -45,10 +45,7 @@ func apply_chunked_terrain(chunked_data: ChunkedTerrainData) -> void:
 func update_visuals(material: Material) -> void:
 	if not _chunk_manager:
 		return
-	for chunk_coord in _chunk_manager.loaded_chunks:
-		var mesh_instance: MeshInstance3D = _chunk_manager.loaded_chunks[chunk_coord]
-		if mesh_instance:
-			mesh_instance.material_override = material
+	_chunk_manager.set_terrain_material(material)
 
 ## Setup or update the chunk manager with new data
 func _setup_or_update_chunk_manager(chunked_data: ChunkedTerrainData) -> void:

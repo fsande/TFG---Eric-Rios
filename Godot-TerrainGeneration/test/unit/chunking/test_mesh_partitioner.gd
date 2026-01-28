@@ -130,6 +130,7 @@ func test_validate_rectangular_mesh_and_chunks() -> void:
 	assert_eq(validation.vertices.missing_positions, 0, "All vertex positions should be preserved")
 	assert_eq(validation.positions.position_errors.size(), 0, "All chunks should have correct positions")
 
+
 func test_parametric_validation_suite() -> void:
 	var configs: Array[Dictionary] = [
 		{"mesh_size": Vector2(100.0, 100.0), "chunk_size": Vector2(50.0, 50.0), "subdivisions": 10},

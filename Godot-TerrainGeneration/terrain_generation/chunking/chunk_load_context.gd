@@ -13,4 +13,3 @@ var frame_time: float
 func _init(p_loaded_chunks: Dictionary, p_frame_time: float) -> void:
 	loaded_chunks = p_loaded_chunks
 	frame_time = p_frame_time
-

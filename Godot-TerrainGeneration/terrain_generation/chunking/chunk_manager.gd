@@ -28,6 +28,9 @@ var camera: Camera3D = null
 ## Currently loaded chunks (chunk_coord -> MeshInstance3D)
 var loaded_chunks: Dictionary = {}
 
+## Material to apply to all chunks (set by presenter)
+var terrain_material: Material = null
+
 ## Enable collision generation for chunks
 @export var generate_collision: bool = true
 
@@ -87,6 +90,8 @@ func _load_chunk(chunk: ChunkMeshData, camera_pos: Vector3) -> void:
 	mesh_instance.name = "Chunk_%d_%d" % [chunk.chunk_coord.x, chunk.chunk_coord.y]
 	mesh_instance.mesh = chunk.mesh
 	mesh_instance.position = chunk.world_position
+	if terrain_material:
+		mesh_instance.material_override = terrain_material
 	if generate_collision:
 		_add_chunk_collision(mesh_instance, chunk, camera_pos)
 	add_child(mesh_instance)
@@ -126,6 +131,21 @@ func _clear_all_chunks() -> void:
 	for coord in loaded_chunks.keys():
 		_unload_chunk(coord)
 
+## Set material for all current and future chunks
+## @param material Material to apply to chunk mesh instances
+func set_terrain_material(material: Material) -> void:
+	terrain_material = material
+	_apply_material_to_loaded_chunks()
+
+## Apply stored material to all currently loaded chunks
+func _apply_material_to_loaded_chunks() -> void:
+	if not terrain_material:
+		return
+	for chunk_coord in loaded_chunks:
+		var mesh_instance: MeshInstance3D = loaded_chunks[chunk_coord]
+		if mesh_instance:
+			mesh_instance.material_override = terrain_material
+
 ## Add collision to a chunk's mesh instance
 func _add_chunk_collision(mesh_instance: MeshInstance3D, chunk: ChunkMeshData, camera_pos: Vector3) -> void:
 	var distance := chunk.distance_to(camera_pos)
@@ -156,6 +176,7 @@ func _update_chunk_visibility() -> void:
 	if not camera:
 		camera = get_viewport().get_camera_3d()
 		if not camera:
+			print("ChunkManager: No camera found for chunk visibility updates.")
 			return
 	var camera_pos := camera.global_position
 	var context := ChunkLoadContext.new(loaded_chunks, get_process_delta_time())

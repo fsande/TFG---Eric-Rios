@@ -29,20 +29,6 @@ static func partition_mesh(mesh_result: MeshGenerationResult, chunk_size: Vector
 		chunk_vertex_count += chunk.mesh_data.vertices.size()
 	return chunks
 
-## Partition mesh with overlapping boundaries to prevent seams
-##
-## @param mesh_result Source mesh to partition
-## @param chunk_size Size of each chunk in world units
-## @param overlap_margin Amount of overlap between adjacent chunks (world units)
-## @return Array of ChunkMeshData objects with overlapping edges
-static func partition_mesh_with_overlap(
-	mesh_result: MeshGenerationResult,
-	chunk_size: Vector2,
-	_overlap_margin: float = 2.0
-) -> Array[ChunkMeshData]:
-	push_warning("MeshPartitioner: Overlapping partition not yet implemented, using standard partition")
-	return partition_mesh(mesh_result, chunk_size)
-
 ## Extract single chunk from source mesh
 static func _extract_chunk(
 	mesh_result: MeshGenerationResult,

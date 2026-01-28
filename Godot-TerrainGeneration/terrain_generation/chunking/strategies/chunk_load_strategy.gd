@@ -38,7 +38,7 @@ func get_max_operations_per_frame() -> Vector2i:
 	return Vector2i(2, 4)
 
 ## Called when strategy is activated (optional initialization)
-func on_activated(chunk_manager: Node) -> void:
+func on_activated(chunk_manager: ChunkManager) -> void:
 	pass
 
 ## Called when strategy is deactivated (optional cleanup)

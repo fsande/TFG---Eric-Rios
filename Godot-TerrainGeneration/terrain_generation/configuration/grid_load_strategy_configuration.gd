@@ -11,9 +11,23 @@ class_name GridLoadStrategyConfiguration extends ChunkLoadStrategyConfiguration
 ## Unload chunks beyond this radius (in chunk units)
 @export_range(1, 30) var unload_radius: int = 5
 
+## Maximum chunks to load per frame (optional, overrides parent config)
+@export_range(1, 10) var max_chunks_load_per_frame: int = 2
+
+## Maximum chunks to unload per frame (optional, overrides parent config)
+@export_range(1, 20) var max_chunks_unload_per_frame: int = 4
+
 func get_strategy_type() -> String:
 	return "Grid"
 
 func is_valid() -> bool:
 	return load_radius > 0 and unload_radius >= load_radius
+
+func get_strategy() -> ChunkLoadStrategy:
+	var strategy := GridLoadStrategy.new()
+	strategy.load_radius = load_radius
+	strategy.unload_radius = unload_radius
+	strategy.max_loads_per_frame = max_chunks_load_per_frame
+	strategy.max_unloads_per_frame = max_chunks_unload_per_frame
+	return strategy
 

@@ -208,7 +208,6 @@
     <Content Include="heightmaps\ultrapalma.png" />
     <Content Include="heightmaps\ultrapalma.png.import" />
     <Content Include="IMAGE_BASED_OPTIMIZATION.md" />
-    <Content Include="LOD_STRUCTURE_COMPLETE.md" />
     <Content Include="NATURAL_CAVE_IMPLEMENTATION.md" />
     <Content Include="PHASE_1_COMPLETION_SUMMARY.md" />
     <Content Include="PHASE_1_FINAL_SUMMARY.md" />
