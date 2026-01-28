@@ -2,6 +2,7 @@
 ##
 ## @details Loads chunks in a fixed radius around the camera position.
 ## Simple and predictable behavior suitable for most use cases.
+@tool
 class_name GridLoadStrategyConfiguration extends ChunkLoadStrategyConfiguration
 
 ## Load chunks within this radius (in chunk units)

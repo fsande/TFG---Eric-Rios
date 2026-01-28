@@ -233,6 +233,7 @@
     <Content Include="SPLINE_TUNNEL_IMPLEMENTATION.md" />
     <Content Include="terrain_generation\chunking\chunked_terrain_data.gd" />
     <Content Include="terrain_generation\chunking\chunked_terrain_data.gd.uid" />
+    <Content Include="terrain_generation\chunking\chunked_terrain_presenter.gd" />
     <Content Include="terrain_generation\chunking\chunk_manager.gd" />
     <Content Include="terrain_generation\chunking\chunk_manager.gd.uid" />
     <Content Include="terrain_generation\chunking\chunk_mesh_data.gd" />

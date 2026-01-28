@@ -2,6 +2,7 @@
 ##
 ## @details Only loads chunks visible in the camera frustum.
 ## Most efficient for performance but can cause pop-in if not tuned properly.
+@tool
 class_name FrustumCullingStrategyConfiguration extends ChunkLoadStrategyConfiguration
 
 ## Extra margin beyond frustum to preload chunks (world units)

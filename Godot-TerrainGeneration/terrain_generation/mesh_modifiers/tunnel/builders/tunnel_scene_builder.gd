@@ -82,6 +82,7 @@ func get_or_create_tunnel_container(root: Node3D) -> Node3D:
 		return existing as Node3D
 	var container := Node3D.new()
 	container.name = TUNNEL_CONTAINER_NAME
+	container.owner = null
 	root.add_child(container)
 	container.owner = root.owner if root.owner != null else root
 	return container

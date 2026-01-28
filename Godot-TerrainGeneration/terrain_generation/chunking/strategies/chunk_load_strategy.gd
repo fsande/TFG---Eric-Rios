@@ -12,8 +12,8 @@ class_name ChunkLoadStrategy extends RefCounted
 ## @param context Additional context (loaded chunks, frame budget, etc.)
 ## @return true if chunk should be loaded, false otherwise
 func should_load_chunk(chunk: ChunkMeshData, camera_pos: Vector3, context: Dictionary) -> bool:
-	push_error("ChunkLoadStrategy.should_load_chunk() must be overridden in subclass")
-	return false
+#	push_error("ChunkLoadStrategy.should_load_chunk() must be overridden in subclass")
+	return true
 
 ## Determine if a loaded chunk should be unloaded
 ##

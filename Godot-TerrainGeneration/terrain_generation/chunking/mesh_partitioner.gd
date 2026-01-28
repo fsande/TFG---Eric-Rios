@@ -16,8 +16,8 @@ static func partition_mesh(mesh_result: MeshGenerationResult, chunk_size: Vector
 		return []
 	var mesh_size := mesh_result.mesh_size
 	var grid_dims := _calculate_chunk_grid_dimensions(mesh_size, chunk_size)
+	print("Amount of vertices before partition: %d" % mesh_result.vertices.size())
 	var chunks: Array[ChunkMeshData] = []
-	var origin_offset := Vector3(-mesh_size.x / 2.0, 0, -mesh_size.y / 2.0)
 	for chunk_z in range(grid_dims.y):
 		for chunk_x in range(grid_dims.x):
 			var coord := Vector2i(chunk_x, chunk_z)
@@ -25,6 +25,10 @@ static func partition_mesh(mesh_result: MeshGenerationResult, chunk_size: Vector
 			if chunk:
 				chunks.append(chunk)
 	print("MeshPartitioner: Created %d chunks (%dx%d grid)" % [chunks.size(), grid_dims.x, grid_dims.y])
+	var chunk_vertex_count := 0
+	for chunk in chunks:
+		chunk_vertex_count += chunk.mesh_data.vertices.size()
+	print("Amount of vertices after partition: %d (%.2f%% of original)" % [chunk_vertex_count, float(chunk_vertex_count) / float(mesh_result.vertices.size()) * 100.0])
 	return chunks
 
 ## Partition mesh with overlapping boundaries to prevent seams
@@ -63,6 +67,7 @@ static func _extract_chunk(
 	var chunk_uvs := PackedVector2Array()
 	var chunk_indices := PackedInt32Array()
 	var vertex_map := {}
+	print("Extracting chunk at %v (min: %v, max: %v)" % [chunk_coord, chunk_min, chunk_max])
 	for i in range(0, mesh_result.indices.size(), 3):
 		var idx0 := mesh_result.indices[i]
 		var idx1 := mesh_result.indices[i + 1]
@@ -73,10 +78,10 @@ static func _extract_chunk(
 		var triangle_center := (v0 + v1 + v2) / 3.0
 		var local_pos := Vector2(triangle_center.x - origin_offset.x, triangle_center.z - origin_offset.z)
 		if local_pos.x >= chunk_min.x and local_pos.x < chunk_max.x and \
-		   local_pos.y >= chunk_min.y and local_pos.y < chunk_max.y:
-			var new_idx0 := _add_vertex_to_chunk(idx0, mesh_result, chunk_vertices, chunk_uvs, vertex_map)
-			var new_idx1 := _add_vertex_to_chunk(idx1, mesh_result, chunk_vertices, chunk_uvs, vertex_map)
-			var new_idx2 := _add_vertex_to_chunk(idx2, mesh_result, chunk_vertices, chunk_uvs, vertex_map)
+			local_pos.y >= chunk_min.y and local_pos.y < chunk_max.y:
+			var new_idx0 := _add_vertex_to_chunk(idx0, mesh_result, chunk_vertices, chunk_uvs, vertex_map, chunk_center)
+			var new_idx1 := _add_vertex_to_chunk(idx1, mesh_result, chunk_vertices, chunk_uvs, vertex_map, chunk_center)
+			var new_idx2 := _add_vertex_to_chunk(idx2, mesh_result, chunk_vertices, chunk_uvs, vertex_map, chunk_center)
 			chunk_indices.append(new_idx0)
 			chunk_indices.append(new_idx1)
 			chunk_indices.append(new_idx2)
@@ -97,12 +102,15 @@ static func _add_vertex_to_chunk(
 	source_mesh: MeshGenerationResult,
 	chunk_vertices: PackedVector3Array,
 	chunk_uvs: PackedVector2Array,
-	vertex_map: Dictionary
+	vertex_map: Dictionary,
+	chunk_center: Vector3
 ) -> int:
 	if vertex_map.has(original_index):
 		return vertex_map[original_index]
 	var new_index := chunk_vertices.size()
-	chunk_vertices.append(source_mesh.vertices[original_index])
+	var vertex := source_mesh.vertices[original_index]
+	var local_vertex := vertex - chunk_center
+	chunk_vertices.append(local_vertex)
 	chunk_uvs.append(source_mesh.uvs[original_index])
 	vertex_map[original_index] = new_index
 	return new_index

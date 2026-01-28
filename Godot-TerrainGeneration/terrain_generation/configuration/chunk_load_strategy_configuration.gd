@@ -1,3 +1,4 @@
+@tool
 class_name ChunkLoadStrategyConfiguration extends Resource
 
 func is_valid() -> bool:

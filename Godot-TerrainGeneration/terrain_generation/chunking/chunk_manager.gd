@@ -3,6 +3,7 @@
 ## @details Uses a ChunkLoadStrategy to determine which chunks should be
 ## visible based on camera position. Handles mesh instancing, collision
 ## generation, and memory management with per-frame budgets.
+@tool
 class_name ChunkManager extends Node3D
 
 ## Source data containing all chunks
@@ -59,6 +60,12 @@ func _process(delta: float) -> void:
 	if _update_timer >= update_interval:
 		_update_timer = 0.0
 		_update_chunk_visibility()
+		
+func load_all_chunks() -> void:
+	if not chunk_data_source:
+		return
+	for chunk in chunk_data_source.chunks:
+		_load_chunk(chunk, camera.global_position if camera else Vector3.ZERO)
 
 ## Load a single chunk into the scene
 func _load_chunk(chunk: ChunkMeshData, camera_pos: Vector3) -> void:
@@ -92,7 +99,7 @@ func _load_chunk(chunk: ChunkMeshData, camera_pos: Vector3) -> void:
 ## Get chunk configuration from parent presenter
 func _get_chunk_configuration() -> ChunkConfiguration:
 	var presenter := get_parent()
-	if presenter and presenter.has_method("get") and presenter.get("terrain_configuration"):
+	if presenter is TerrainPresenter:
 		var terrain_config = presenter.terrain_configuration
 		if terrain_config and terrain_config.chunk_configuration:
 			return terrain_config.chunk_configuration
@@ -182,22 +189,4 @@ func _update_chunk_visibility() -> void:
 			break
 		_load_chunk(item.chunk, camera_pos)
 		loads_this_frame += 1
-
-## Get debug statistics
-func get_stats() -> Dictionary:
-	return {
-		"loaded_chunks": loaded_chunks.size(),
-		"total_loads": _total_loads,
-		"total_unloads": _total_unloads,
-		"memory_usage": _calculate_memory_usage()
-	}
-
-## Calculate total memory usage of loaded chunks
-func _calculate_memory_usage() -> int:
-	var total := 0
-	for coord in loaded_chunks.keys():
-		var chunk := chunk_data_source.get_chunk_at(coord)
-		if chunk:
-			total += chunk.get_memory_usage()
-	return total
 

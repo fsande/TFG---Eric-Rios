@@ -61,58 +61,14 @@ func build_mesh_with_lod(normal_merge_angle: float = 60.0, normal_split_angle: f
 	if not mesh_data or mesh_data.vertices.size() == 0:
 		push_warning("ChunkMeshData: Cannot build mesh - no mesh data")
 		return null
-	var importer_mesh := ImporterMesh.new()
-	var arrays := []
-	arrays.resize(Mesh.ARRAY_MAX)
-	arrays[Mesh.ARRAY_VERTEX] = mesh_data.vertices
-	arrays[Mesh.ARRAY_INDEX] = mesh_data.indices
-	arrays[Mesh.ARRAY_TEX_UV] = mesh_data.uvs
-	importer_mesh.add_surface(
-		Mesh.PRIMITIVE_TRIANGLES,
-		arrays,
-		[],
-		{},
-		null,
-		""
-	)
-	importer_mesh.generate_lods(normal_merge_angle, normal_split_angle, [])
-	mesh = importer_mesh.get_mesh()
-	if mesh:
-		lod_level_count = 1
-		for i in range(1, mesh.get_surface_count()):
-			var surface_name := mesh.surface_get_name(i)
-			if surface_name.begins_with("lod"):
-				lod_level_count += 1
+	mesh = ArrayMeshBuilder.build_mesh(mesh_data)
 	return mesh
 
 ## Generate collision shape for this chunk
 ## @param use_simplified Use simplified collision (BoxShape3D vs ConcavePolygonShape3D)
 ## @return Generated collision shape
 func build_collision(use_simplified: bool = false) -> Shape3D:
-	if has_collision and collision_shape:
-		return collision_shape
-	if use_simplified:
-		var box := BoxShape3D.new()
-		box.size = aabb.size
-		collision_shape = box
-	else:
-		if not mesh_data or mesh_data.vertices.size() == 0:
-			push_warning("ChunkMeshData: Cannot build collision - no mesh data")
-			return null
-		var shape := ConcavePolygonShape3D.new()
-		var faces := PackedVector3Array()
-		for i in range(0, mesh_data.indices.size(), 3):
-			var idx0 := mesh_data.indices[i]
-			var idx1 := mesh_data.indices[i + 1]
-			var idx2 := mesh_data.indices[i + 2]
-			if idx0 < mesh_data.vertices.size() and idx1 < mesh_data.vertices.size() and idx2 < mesh_data.vertices.size():
-				faces.append(mesh_data.vertices[idx0])
-				faces.append(mesh_data.vertices[idx1])
-				faces.append(mesh_data.vertices[idx2])
-		shape.set_faces(faces)
-		collision_shape = shape
-	has_collision = true
-	return collision_shape
+	return null
 
 ## Get distance from this chunk's center to a point
 func distance_to(point: Vector3) -> float:
@@ -124,20 +80,6 @@ func contains_point_xz(point: Vector3) -> bool:
 	var half_x := chunk_size.x / 2.0
 	var half_z := chunk_size.y / 2.0
 	return abs(local.x) <= half_x and abs(local.z) <= half_z
-
-## Get memory usage estimate (bytes)
-func get_memory_usage() -> int:
-	var total := 0
-	if mesh_data:
-		total += mesh_data.vertices.size() * 12  # Vector3 = 3 floats
-		total += mesh_data.indices.size() * 4    # int32
-		total += mesh_data.uvs.size() * 8        # Vector2 = 2 floats
-	if mesh:
-		# Approximate mesh memory (varies by format)
-		total += 1024  # Base mesh overhead
-	if collision_shape:
-		total += 512  # Base collision overhead
-	return total
 
 ## Cleanup resources
 func cleanup() -> void:

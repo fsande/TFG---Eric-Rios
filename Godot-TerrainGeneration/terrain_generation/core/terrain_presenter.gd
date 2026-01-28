@@ -38,12 +38,9 @@ static var current_presenter: TerrainPresenter = null
 
 var _mesh_instance: MeshInstance3D
 var _terrain_collision: TerrainCollision
-## TODO: Refactor agent node handling into separate component
 var _agent_nodes_container: Node3D
 var _generation_service: TerrainGenerationService
-## Chunk manager (only used when chunking is enabled)
-var _chunk_manager: ChunkManager
-
+var _chunked_presenter: ChunkedTerrainPresenter
 
 ## Current terrain data (tracked for cleanup)
 var _current_terrain_data: TerrainData = null
@@ -53,21 +50,20 @@ var _is_generating: bool = false
 
 func _ready() -> void:
 	_generation_service = TerrainGenerationService.new()
+	_chunked_presenter = ChunkedTerrainPresenter.new(self, terrain_configuration)
 	_setup_scene_nodes()
 	_setup_collision()
 	if terrain_configuration and auto_generate:
 		regenerate()
 
 ## Setup required scene nodes (MeshInstance3D, agent nodes container).
-## Check if chunking mode is enabled in configuration
-func _is_chunking_enabled() -> bool:
-	return terrain_configuration != null and \
-		terrain_configuration.chunk_configuration != null and \
-		terrain_configuration.chunk_configuration.enable_chunking
-
 func _setup_scene_nodes() -> void:
 	_mesh_instance = NodeCreationHelper.get_or_create_node(self, "TerrainMesh", MeshInstance3D) as MeshInstance3D
 	_agent_nodes_container = NodeCreationHelper.get_or_create_node(self, "AgentGeneratedNodes", Node3D) as Node3D
+
+## Check if chunking mode is enabled in configuration
+func _is_chunking_enabled() -> bool:
+	return _chunked_presenter and _chunked_presenter.is_enabled()
 
 ## Setup terrain collision handler.
 func _setup_collision() -> void:
@@ -90,11 +86,8 @@ func regenerate() -> void:
 
 ## Synchronous terrain generation (blocks the main thread).
 func _regenerate_sync() -> void:
-	if _is_chunking_enabled():
-		_regenerate_chunked_sync()
-	else:
-		var terrain_data := _generation_service.generate(terrain_configuration)
-		_apply_generated_terrain(terrain_data)
+	var terrain_data := _generation_service.generate(terrain_configuration)
+	_apply_generated_terrain(terrain_data)
 
 ## Asynchronous terrain generation (runs on worker thread).
 func _regenerate_async() -> void:
@@ -103,10 +96,7 @@ func _regenerate_async() -> void:
 		return
 	_is_generating = true
 	var config_copy := terrain_configuration.duplicate()
-	if _is_chunking_enabled():
-		WorkerThreadPool.add_task(_generate_chunked_on_worker_thread.bind(config_copy))
-	else:
-		WorkerThreadPool.add_task(_generate_on_worker_thread.bind(config_copy))
+	WorkerThreadPool.add_task(_generate_on_worker_thread.bind(config_copy))
 
 ## Worker thread function - generates terrain data without touching scene nodes.
 func _generate_on_worker_thread(config: TerrainConfiguration) -> void:
@@ -126,6 +116,12 @@ func _apply_generated_terrain(terrain_data: TerrainData) -> void:
 	if show_generation_time:
 		print("TerrainPresenter: Async generation completed in %.1f ms" % terrain_data.generation_time_ms)
 	_update_presentation(terrain_data)
+	if _is_chunking_enabled():
+		var chunked_data := _chunked_presenter.partition_terrain(terrain_data)
+		if not chunked_data:
+			push_error("TerrainPresenter: Chunked generation failed")
+			return
+		_chunked_presenter.apply_chunked_terrain(chunked_data)
 
 ## Update scene nodes (mesh, material, collision) from the current TerrainData.
 func _update_presentation(terrain_data: TerrainData) -> void:
@@ -149,14 +145,20 @@ func _update_presentation(terrain_data: TerrainData) -> void:
 
 ## Update material from terrain configuration parameters.
 func _update_visuals() -> void:
-	if terrain_configuration.terrain_material:
-		_mesh_instance.material_override = terrain_configuration.terrain_material
-	if terrain_configuration.terrain_material and terrain_configuration.terrain_material is ShaderMaterial:
-		var shader_mat := terrain_configuration.terrain_material as ShaderMaterial
+	if not terrain_configuration.terrain_material:
+		return
+	var material := terrain_configuration.terrain_material
+	if material is ShaderMaterial:
+		var shader_mat := material as ShaderMaterial
 		# TODO: better configurable parameter mapping
 		var parameter_name := "height"
 		if shader_mat.get_shader_parameter(parameter_name) != null:
 			shader_mat.set_shader_parameter(parameter_name, terrain_configuration.snow_line)
+	if _is_chunking_enabled():
+		_chunked_presenter.update_visuals(material)
+	else:
+		if _mesh_instance:
+			_mesh_instance.material_override = material
 
 ## Called when the terrain configuration changes.
 func _on_config_changed() -> void:
@@ -186,84 +188,3 @@ func _set_owner_recursive(node: Node, owner_node: Node) -> void:
 	node.owner = owner_node
 	for child in node.get_children():
 		_set_owner_recursive(child, owner_node)
-
-## Synchronous chunked terrain generation
-func _regenerate_chunked_sync() -> void:
-	var terrain_data := _generation_service.generate(terrain_configuration)
-	var chunked_data := _partition_terrain_into_chunks(terrain_data)
-	_apply_chunked_terrain(terrain_data, chunked_data)
-
-## Worker thread function for chunked terrain generation
-func _generate_chunked_on_worker_thread(config: TerrainConfiguration) -> void:
-	var terrain_data := _generation_service.generate(config)
-	var chunked_data := _partition_terrain_into_chunks(terrain_data)
-	_on_chunked_generation_complete_from_thread.call_deferred(terrain_data, chunked_data)
-
-## Called on main thread when chunked worker thread completes
-func _on_chunked_generation_complete_from_thread(terrain_data: TerrainData, chunked_data: ChunkedTerrainData) -> void:
-	_is_generating = false
-	_apply_chunked_terrain(terrain_data, chunked_data)
-
-## Partition generated terrain into chunks
-func _partition_terrain_into_chunks(terrain_data: TerrainData) -> ChunkedTerrainData:
-	if not terrain_data:
-		return null
-	var chunk_config := terrain_configuration.chunk_configuration
-	var chunks := MeshPartitioner.partition_mesh(terrain_data.mesh_result, chunk_config.chunk_size)
-	var chunked_data := ChunkedTerrainData.new()
-	for chunk in chunks:
-		chunked_data.add_chunk(chunk)
-	chunked_data.terrain_data = terrain_data
-	chunked_data.chunk_size = chunk_config.chunk_size
-	return chunked_data
-
-## Apply chunked terrain to scene
-func _apply_chunked_terrain(terrain_data: TerrainData, chunked_data: ChunkedTerrainData) -> void:
-	if not terrain_data or not chunked_data:
-		push_error("TerrainPresenter: Chunked generation failed")
-		return
-	if show_generation_time:
-		print("TerrainPresenter: Chunked terrain generation completed in %.1f ms" % terrain_data.generation_time_ms)
-	_update_presentation(terrain_data)
-	_setup_chunk_manager(chunked_data)
-
-## Setup or update chunk manager with chunked terrain data
-func _setup_chunk_manager(chunked_data: ChunkedTerrainData) -> void:
-	var chunk_config := terrain_configuration.chunk_configuration
-	if not _chunk_manager:
-		_chunk_manager = NodeCreationHelper.get_or_create_node(self, "ChunkManager", ChunkManager) as ChunkManager
-		_chunk_manager.generate_collision = terrain_configuration.generate_collision
-		_chunk_manager.collision_layers = terrain_configuration.collision_layers
-		_chunk_manager.full_collision_distance = chunk_config.collision_distance
-	_chunk_manager.chunk_data_source = chunked_data
-	_chunk_manager.load_strategy = _create_load_strategy(chunk_config)
-
-## Create chunk loading strategy from configuration
-func _create_load_strategy(chunk_config: ChunkConfiguration) -> ChunkLoadStrategy:
-	if not chunk_config or not chunk_config.load_strategy_config:
-		return null
-	var strategy_config := chunk_config.load_strategy_config
-	var strategy_type := strategy_config.get_strategy_type()
-	var strategy: ChunkLoadStrategy = null
-	match strategy_type:
-		"Grid":
-			var grid_strategy := GridLoadStrategy.new()
-			if strategy_config is GridLoadStrategyConfiguration:
-				grid_strategy.load_radius_chunks = strategy_config.load_radius
-				grid_strategy.unload_radius_chunks = strategy_config.unload_radius
-			strategy = grid_strategy
-		"FrustumCulling":
-			var frustum_strategy := FrustumCullingLoadStrategy.new()
-			if strategy_config is FrustumCullingStrategyConfiguration:
-				frustum_strategy.preload_margin = strategy_config.preload_margin
-				frustum_strategy.max_outside_frustum = strategy_config.max_outside_frustum
-				frustum_strategy.use_grid_fallback = strategy_config.use_grid_fallback
-				frustum_strategy.fallback_radius = strategy_config.fallback_radius
-			strategy = frustum_strategy
-		"QuadTree":
-			strategy = QuadTreeLoadStrategy.new()
-		_:
-			push_warning("TerrainPresenter: Unknown strategy type '%s', using Grid" % strategy_type)
-			strategy = GridLoadStrategy.new()
-	return strategy
-

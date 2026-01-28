@@ -2,6 +2,7 @@
 ##
 ## @details Hierarchical loading with adaptive subdivision based on distance.
 ## More complex but provides better performance for large view distances.
+@tool
 class_name QuadTreeLoadStrategyConfiguration extends ChunkLoadStrategyConfiguration
 
 ## Maximum view distance for chunk loading
