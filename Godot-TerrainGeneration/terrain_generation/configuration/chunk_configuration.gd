@@ -19,14 +19,36 @@ class_name ChunkConfiguration extends Resource
 			load_strategy_config = GridLoadStrategyConfiguration.new()
 
 @export_group("LOD Settings")
-## Enable Godot's automatic LOD generation per chunk
+## Enable LOD generation per chunk
 @export var enable_lod: bool = true
 
-## Normal merge angle for LOD generation (degrees)
-@export_range(0.0, 180.0) var lod_normal_merge_angle: float = 60.0
+## Number of LOD levels to generate (1 = no LOD)
+@export_range(1, 5) var lod_level_count: int = 3
 
-## Normal split angle for LOD generation (degrees)
-@export_range(0.0, 90.0) var lod_normal_split_angle: float = 25.0
+## Distance thresholds for LOD transitions (in world units)
+@export var lod_distances: Array[float] = [100.0, 200.0, 400.0, 800.0]
+
+## Mesh reduction ratios per LOD level (1.0 = full detail, 0.1 = 10% triangles)
+@export var lod_reduction_ratios: Array[float] = [1.0, 0.5, 0.25, 0.1]
+
+## LOD generation strategy configuration (determines which algorithm is used)
+@export var lod_generation_strategy_config: LODGenerationStrategyConfiguration = GridDecimationLODStrategyConfiguration.new():
+	set(value):
+		lod_generation_strategy_config = value
+		if lod_generation_strategy_config == null:
+			lod_generation_strategy_config = GridDecimationLODStrategyConfiguration.new()
+
+## Enable smooth LOD transitions (cross-fade or geomorphing)
+@export var smooth_lod_transitions: bool = false
+
+## LOD transition duration in seconds
+@export_range(0.0, 2.0) var lod_transition_time: float = 0.3
+
+## LOD hysteresis factor to prevent oscillation (1.0 = no hysteresis, 1.1 = 10% hysteresis)
+@export_range(1.0, 2.0) var lod_hysteresis_factor: float = 1.1
+
+## Memory budget for LOD meshes (MB)
+@export_range(50, 1000) var lod_memory_budget_mb: int = 200
 
 @export_group("Collision")
 ## Generate collision for chunks within this distance
@@ -47,3 +69,9 @@ func get_strategy() -> ChunkLoadStrategy:
 	if load_strategy_config:
 		return load_strategy_config.get_strategy()
 	return null
+
+func get_lod_strategy() -> LODGenerationStrategy:
+	if lod_generation_strategy_config:
+		return lod_generation_strategy_config.get_strategy()
+	return null
+

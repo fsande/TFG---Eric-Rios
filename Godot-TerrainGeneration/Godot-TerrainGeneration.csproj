@@ -173,8 +173,6 @@
     <Content Include="AGENT_NODE_FLOW_DOCUMENTATION.md" />
     <Content Include="ARCHITECTURE_EVALUATION.md" />
     <Content Include="ASYNC_NODE_CREATION_BUG_REPORT.md" />
-    <Content Include="CHUNK_SCENE_TREE_IMPLEMENTATION.md" />
-    <Content Include="COLLISION_CHUNKED_TERRAIN_REPORT.md" />
     <Content Include="CPU_GPU_EQUIVALENCE_ANALYSIS.md" />
     <Content Include="ENTRANCE_CAP_FIX_DETAILS.md" />
     <Content Include="ENTRANCE_CAP_QUICK_START.md" />
@@ -195,6 +193,7 @@
     <Content Include="gpu-cpu-comparison\mesh_comparison.tscn" />
     <Content Include="gpu-cpu-comparison\mesh_gen_comparer.gd" />
     <Content Include="gpu-cpu-comparison\mesh_gen_comparer.gd.uid" />
+    <Content Include="GRID_DECIMATION_REFACTORING.md" />
     <Content Include="heightmaps\españa-silueta.png" />
     <Content Include="heightmaps\españa-silueta.png.import" />
     <Content Include="heightmaps\Heightmap.ctex" />
@@ -210,7 +209,12 @@
     <Content Include="heightmaps\ultrapalma.png" />
     <Content Include="heightmaps\ultrapalma.png.import" />
     <Content Include="IMAGE_BASED_OPTIMIZATION.md" />
-    <Content Include="MEMORY_CLEANUP_ANALYSIS.md" />
+    <Content Include="LOD_FIXES_APPLIED.md" />
+    <Content Include="LOD_GRID_VALIDATION_ISSUE_REPORT.md" />
+    <Content Include="LOD_IMPLEMENTATION_PROGRESS.md" />
+    <Content Include="LOD_IMPLEMENTATION_REPORT.md" />
+    <Content Include="LOD_QUICK_START_GUIDE.md" />
+    <Content Include="LOD_REVIEW_REPORT.md" />
     <Content Include="NATURAL_CAVE_IMPLEMENTATION.md" />
     <Content Include="PHASE_1_COMPLETION_SUMMARY.md" />
     <Content Include="PHASE_1_FINAL_SUMMARY.md" />
@@ -237,6 +241,8 @@
     <Content Include="terrain_generation\chunking\chunked_terrain_data.gd.uid" />
     <Content Include="terrain_generation\chunking\chunked_terrain_presenter.gd" />
     <Content Include="terrain_generation\chunking\chunk_load_context.gd" />
+    <Content Include="terrain_generation\chunking\chunk_load_priority.gd" />
+    <Content Include="terrain_generation\chunking\chunk_lod_state.gd" />
     <Content Include="terrain_generation\chunking\chunk_manager.gd" />
     <Content Include="terrain_generation\chunking\chunk_manager.gd.uid" />
     <Content Include="terrain_generation\chunking\chunk_mesh_data.gd" />
@@ -254,6 +260,8 @@
     <Content Include="terrain_generation\configuration\chunk_load_strategy_configuration.gd" />
     <Content Include="terrain_generation\configuration\frustum_culling_strategy_configuration.gd" />
     <Content Include="terrain_generation\configuration\grid_load_strategy_configuration.gd" />
+    <Content Include="terrain_generation\configuration\importer_mesh_lod_strategy_configuration.gd" />
+    <Content Include="terrain_generation\configuration\lod_generation_strategy_configuration.gd" />
     <Content Include="terrain_generation\configuration\mesh_generator_parameters.gd" />
     <Content Include="terrain_generation\configuration\mesh_generator_parameters.gd.uid" />
     <Content Include="terrain_generation\configuration\quadtree_load_strategy_configuration.gd" />
@@ -316,12 +324,15 @@
     <Content Include="terrain_generation\mesh\data\slope_data.gd.uid" />
     <Content Include="terrain_generation\mesh\data\tangent_calculation_data.gd" />
     <Content Include="terrain_generation\mesh\data\tangent_calculation_data.gd.uid" />
+    <Content Include="terrain_generation\mesh\data\vertex_extraction_result.gd" />
     <Content Include="terrain_generation\mesh\generators\cpu_mesh_generator.gd" />
     <Content Include="terrain_generation\mesh\generators\cpu_mesh_generator.gd.uid" />
     <Content Include="terrain_generation\mesh\generators\gpu_mesh_generator.gd" />
     <Content Include="terrain_generation\mesh\generators\gpu_mesh_generator.gd.uid" />
     <Content Include="terrain_generation\mesh\generators\heightmap_mesh_generator.gd" />
     <Content Include="terrain_generation\mesh\generators\heightmap_mesh_generator.gd.uid" />
+    <Content Include="terrain_generation\mesh\generators\importer_mesh_lod_strategy.gd" />
+    <Content Include="terrain_generation\mesh\generators\lod_generation_strategy.gd" />
     <Content Include="terrain_generation\mesh\generators\mesh_generator_factory_instance_example.gd" />
     <Content Include="terrain_generation\mesh\generators\shaders\mesh_processor.glsl" />
     <Content Include="terrain_generation\mesh\generators\shaders\mesh_processor.glsl.import" />

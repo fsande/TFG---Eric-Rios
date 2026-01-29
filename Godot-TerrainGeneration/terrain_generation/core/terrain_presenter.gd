@@ -184,3 +184,4 @@ func _update_agent_nodes(terrain_data: TerrainData) -> void:
 		print("TerrainPresenter: Added %d agent-generated objects" % _agent_nodes_container.get_child_count())
 		agent_root.queue_free()
 		terrain_data.agent_node_root = null
+

@@ -19,6 +19,9 @@ var max_unloads_per_frame: int = 4
 ## Reference to chunk data source
 var _chunk_data_source: ChunkedTerrainData = null
 
+## Fallback LOD distances when chunk doesn't have configured distances
+var fallback_lod_distances: Array[float] = [100.0, 200.0, 400.0]
+
 ## Called when strategy is activated
 func on_activated(chunk_manager: ChunkManager) -> void:
 	if chunk_manager:
@@ -67,3 +70,11 @@ func _world_pos_to_chunk_coord(world_pos: Vector3) -> Vector2i:
 func _chunk_distance(a: Vector2i, b: Vector2i) -> int:
 	return abs(a.x - b.x) + abs(a.y - b.y)
 
+## Select LOD level based on distance (simple distance-based strategy)
+func select_lod_level(chunk: ChunkMeshData, camera_pos: Vector3, _camera: Camera3D) -> int:
+	var distance := chunk.distance_to(camera_pos)
+	var distances := chunk.lod_distances if not chunk.lod_distances.is_empty() else fallback_lod_distances
+	for i in range(distances.size()):
+		if distance < distances[i]:
+			return i
+	return min(distances.size(), max(chunk.lod_level_count - 1, 3))

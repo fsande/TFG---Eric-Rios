@@ -4,3 +4,6 @@
 ## closer chunks and enabling progressive detail refinement.
 ## Supports parent-child relationships for efficient culling.
 class_name QuadTreeLoadStrategy extends ChunkLoadStrategy
+
+func _init():
+	push_error("QuadTreeLoadStrategy: NOT IMPLEMENTED - Use GridLoadStrategy instead")

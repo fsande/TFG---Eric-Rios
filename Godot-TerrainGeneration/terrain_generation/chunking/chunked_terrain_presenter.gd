@@ -25,12 +25,92 @@ func partition_terrain(terrain_data: TerrainData) -> ChunkedTerrainData:
 	if not terrain_data:
 		return null
 	var chunk_config := _terrain_configuration.chunk_configuration
+	if chunk_config.enable_lod and chunk_config.lod_level_count > 1:
+		return _partition_terrain_with_pre_generated_lods(terrain_data, chunk_config)
+	else:
+		return _partition_terrain_simple(terrain_data, chunk_config)
+
+## Simple partitioning without pre-generated LODs
+func _partition_terrain_simple(terrain_data: TerrainData, chunk_config: ChunkConfiguration) -> ChunkedTerrainData:
 	var chunks := MeshPartitioner.partition_mesh(terrain_data.mesh_result, chunk_config.chunk_size)
 	var chunked_data := ChunkedTerrainData.new()
 	for chunk in chunks:
 		chunked_data.add_chunk(chunk)
 	chunked_data.terrain_data = terrain_data
 	chunked_data.chunk_size = chunk_config.chunk_size
+	return chunked_data
+
+## Advanced partitioning: Generate LODs before chunking for optimal quality
+func _partition_terrain_with_pre_generated_lods(terrain_data: TerrainData, chunk_config: ChunkConfiguration) -> ChunkedTerrainData:
+	print("ChunkedTerrainPresenter: Generating LODs before chunking for optimal quality")
+	var lod_strategy: LODGenerationStrategy = chunk_config.get_lod_strategy()
+	if not lod_strategy:
+		push_warning("ChunkedTerrainPresenter: No LOD strategy available, falling back to simple partitioning")
+		return _partition_terrain_simple(terrain_data, chunk_config)
+	var full_mesh_result := terrain_data.mesh_result
+	var full_mesh_data := full_mesh_result.mesh_data
+	var lod_meshes := lod_strategy.generate_lod_levels(
+		full_mesh_data,
+		chunk_config.lod_level_count,
+		chunk_config.lod_reduction_ratios
+	)
+	if lod_meshes.size() < 2:
+		push_warning("ChunkedTerrainPresenter: Failed to generate LOD levels, falling back to simple partitioning")
+		return _partition_terrain_simple(terrain_data, chunk_config)
+	print("ChunkedTerrainPresenter: Generated %d LOD levels for full terrain" % lod_meshes.size())
+	var lod_chunk_arrays: Array[Array] = []
+	for lod_level in range(lod_meshes.size()):
+		var lod_mesh_data := lod_meshes[lod_level]
+		var lod_result := MeshGenerationResult.new(
+			lod_mesh_data.vertices,
+			lod_mesh_data.indices,
+			lod_mesh_data.uvs,
+			0.0,
+			"LOD"
+		)
+		lod_result.width = lod_mesh_data.width
+		lod_result.height = lod_mesh_data.height
+		lod_result.mesh_size = lod_mesh_data.mesh_size
+		var lod_chunks := MeshPartitioner.partition_mesh(lod_result, chunk_config.chunk_size)
+		lod_chunk_arrays.append(lod_chunks)
+		print("ChunkedTerrainPresenter: LOD %d partitioned into %d chunks" % [lod_level, lod_chunks.size()])
+	var chunked_data := ChunkedTerrainData.new()
+	chunked_data.terrain_data = terrain_data
+	chunked_data.chunk_size = chunk_config.chunk_size
+	var base_chunks: Array = lod_chunk_arrays[0]
+	for base_chunk_idx in range(base_chunks.size()):
+		var base_chunk: ChunkMeshData = base_chunks[base_chunk_idx]
+		base_chunk.lod_meshes.clear()
+		base_chunk.lod_meshes.append(ArrayMeshBuilder.build_mesh(base_chunk.mesh_data))
+		for lod_level in range(1, lod_chunk_arrays.size()):
+			var lod_chunks: Array = lod_chunk_arrays[lod_level]
+			if base_chunk_idx < lod_chunks.size():
+				var lod_chunk: ChunkMeshData = lod_chunks[base_chunk_idx]
+				if lod_chunk.chunk_coord == base_chunk.chunk_coord:
+					var lod_mesh := ArrayMeshBuilder.build_mesh(lod_chunk.mesh_data)
+					if lod_mesh:
+						base_chunk.lod_meshes.append(lod_mesh)
+				else:
+					push_warning("ChunkedTerrainPresenter: LOD chunk coordinate mismatch at index %d" % base_chunk_idx)
+		base_chunk.lod_level_count = base_chunk.lod_meshes.size()
+		base_chunk.lod_distances = chunk_config.lod_distances.duplicate()
+		base_chunk.mesh = base_chunk.lod_meshes[0] if base_chunk.lod_meshes.size() > 0 else null
+		var total_triangles := 0
+		for lod_mesh in base_chunk.lod_meshes:
+			if lod_mesh and lod_mesh.get_surface_count() > 0:
+				var arrays := lod_mesh.surface_get_arrays(0)
+				var indices_arr: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+				total_triangles += int(indices_arr.size() / 3.0)
+		print("ChunkedTerrainPresenter: Chunk %v has %d LOD levels (Total triangles: %d)" % [
+			base_chunk.chunk_coord,
+			base_chunk.lod_level_count,
+			total_triangles
+		])
+		chunked_data.add_chunk(base_chunk)
+	print("ChunkedTerrainPresenter: Created %d chunks with %d LOD levels each" % [
+		chunked_data.chunks.size(),
+		lod_chunk_arrays.size()
+	])
 	return chunked_data
 
 ## Apply chunked terrain to the scene
@@ -61,7 +141,7 @@ func disable() -> void:
 ## Clear all chunk data from the chunk manager
 func clear_chunk_data(deep_clear: bool) -> void:
 	if _chunk_manager:
-		_chunk_manager._clear_all_chunks(deep_clear)
+		_chunk_manager.clear_all_chunks(deep_clear)
 
 ## Cleanup chunk manager
 func cleanup() -> void:

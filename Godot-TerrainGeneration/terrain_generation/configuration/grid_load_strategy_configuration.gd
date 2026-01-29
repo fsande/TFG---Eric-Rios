@@ -17,6 +17,9 @@ class_name GridLoadStrategyConfiguration extends ChunkLoadStrategyConfiguration
 ## Maximum chunks to unload per frame (optional, overrides parent config)
 @export_range(1, 20) var max_chunks_unload_per_frame: int = 4
 
+## Fallback LOD distances when chunk doesn't have configured distances (in world units)
+@export var fallback_lod_distances: Array[float] = [100.0, 200.0, 400.0]
+
 func get_strategy_type() -> String:
 	return "Grid"
 
@@ -26,6 +29,7 @@ func is_valid() -> bool:
 func get_strategy() -> ChunkLoadStrategy:
 	var strategy := GridLoadStrategy.new()
 	strategy.load_radius = load_radius
+	strategy.fallback_lod_distances = fallback_lod_distances
 	strategy.unload_radius = unload_radius
 	strategy.max_loads_per_frame = max_chunks_load_per_frame
 	strategy.max_unloads_per_frame = max_chunks_unload_per_frame
