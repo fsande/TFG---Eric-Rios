@@ -49,6 +49,7 @@ var terrain_material: Material = null
 var _update_timer: float = 0.0
 var _total_loads: int = 0
 var _total_unloads: int = 0
+var _enabled: bool = true
 
 func _ready() -> void:
 	if not camera:
@@ -57,7 +58,7 @@ func _ready() -> void:
 		_update_chunk_visibility()
 
 func _process(delta: float) -> void:
-	if not chunk_data_source or not load_strategy:
+	if not chunk_data_source or not load_strategy or not _enabled:
 		return
 	_update_timer += delta
 	if _update_timer >= update_interval:
@@ -69,6 +70,12 @@ func load_all_chunks() -> void:
 		return
 	for chunk in chunk_data_source.chunks:
 		_load_chunk(chunk, camera.global_position if camera else Vector3.ZERO)
+		
+func enable():
+	_enabled = true
+
+func disable():
+	_enabled = false
 
 ## Load a single chunk into the scene
 func _load_chunk(chunk: ChunkMeshData, camera_pos: Vector3) -> void:
@@ -95,6 +102,10 @@ func _load_chunk(chunk: ChunkMeshData, camera_pos: Vector3) -> void:
 	if generate_collision:
 		_add_chunk_collision(mesh_instance, chunk, camera_pos)
 	add_child(mesh_instance)
+	if Engine.is_editor_hint() and is_inside_tree():
+		var scene_root := get_tree().edited_scene_root
+		if scene_root:
+			NodeCreationHelper.set_node_owner_recursive(mesh_instance, scene_root)
 	loaded_chunks[chunk.chunk_coord] = mesh_instance
 	chunk.is_loaded = true
 	_total_loads += 1
@@ -111,7 +122,7 @@ func _get_chunk_configuration() -> ChunkConfiguration:
 	return null
 
 ## Unload a single chunk from the scene
-func _unload_chunk(chunk_coord: Vector2i) -> void:
+func _unload_chunk(chunk_coord: Vector2i, deep_clear: bool = false) -> void:
 	if not loaded_chunks.has(chunk_coord):
 		return
 	var mesh_instance: MeshInstance3D = loaded_chunks[chunk_coord]
@@ -121,15 +132,18 @@ func _unload_chunk(chunk_coord: Vector2i) -> void:
 	loaded_chunks.erase(chunk_coord)
 	var chunk := chunk_data_source.get_chunk_at(chunk_coord)
 	if chunk:
-		chunk.is_loaded = false
+		if deep_clear:
+			chunk.deep_cleanup()
+		else:
+			chunk.is_loaded = false
 	_total_unloads += 1
 	if debug_mode:
 		print("ChunkManager: Unloaded chunk %v" % chunk_coord)
 
 ## Clear all loaded chunks
-func _clear_all_chunks() -> void:
+func _clear_all_chunks(deep_clear: bool = false) -> void:
 	for coord in loaded_chunks.keys():
-		_unload_chunk(coord)
+		_unload_chunk(coord, deep_clear)
 
 ## Set material for all current and future chunks
 ## @param material Material to apply to chunk mesh instances
@@ -216,4 +230,3 @@ class ChunkLoadPriority:
 	func _init(p_chunk: ChunkMeshData, p_priority: float) -> void:
 		chunk = p_chunk
 		priority = p_priority
-

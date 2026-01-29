@@ -35,16 +35,6 @@ class_name ChunkConfiguration extends Resource
 ## Use simplified collision for distant chunks
 @export var use_simplified_collision: bool = true
 
-@export_group("Performance")
-## Maximum chunks to load per frame
-@export_range(1, 10) var max_chunks_load_per_frame: int = 2
-
-## Maximum chunks to unload per frame
-@export_range(1, 20) var max_chunks_unload_per_frame: int = 4
-
-## Chunk visibility update frequency (Hz)
-@export_range(1.0, 60.0) var update_frequency: float = 10.0
-
 ## Validate configuration settings
 func is_valid() -> bool:
 	if chunk_size.x <= 0.0 or chunk_size.y <= 0.0:

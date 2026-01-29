@@ -173,6 +173,8 @@
     <Content Include="AGENT_NODE_FLOW_DOCUMENTATION.md" />
     <Content Include="ARCHITECTURE_EVALUATION.md" />
     <Content Include="ASYNC_NODE_CREATION_BUG_REPORT.md" />
+    <Content Include="CHUNK_SCENE_TREE_IMPLEMENTATION.md" />
+    <Content Include="COLLISION_CHUNKED_TERRAIN_REPORT.md" />
     <Content Include="CPU_GPU_EQUIVALENCE_ANALYSIS.md" />
     <Content Include="ENTRANCE_CAP_FIX_DETAILS.md" />
     <Content Include="ENTRANCE_CAP_QUICK_START.md" />
@@ -208,6 +210,7 @@
     <Content Include="heightmaps\ultrapalma.png" />
     <Content Include="heightmaps\ultrapalma.png.import" />
     <Content Include="IMAGE_BASED_OPTIMIZATION.md" />
+    <Content Include="MEMORY_CLEANUP_ANALYSIS.md" />
     <Content Include="NATURAL_CAVE_IMPLEMENTATION.md" />
     <Content Include="PHASE_1_COMPLETION_SUMMARY.md" />
     <Content Include="PHASE_1_FINAL_SUMMARY.md" />

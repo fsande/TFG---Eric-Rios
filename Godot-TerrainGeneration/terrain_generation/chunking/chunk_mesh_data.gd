@@ -68,7 +68,23 @@ func build_mesh_with_lod(normal_merge_angle: float = 60.0, normal_split_angle: f
 ## @param use_simplified Use simplified collision (BoxShape3D vs ConcavePolygonShape3D)
 ## @return Generated collision shape
 func build_collision(use_simplified: bool = false) -> Shape3D:
-	return null
+	if not mesh_data or mesh_data.vertices.size() == 0:
+		push_warning("ChunkMeshData: Cannot build collision - no mesh data")
+		return null
+	if use_simplified:
+		var shape := BoxShape3D.new()
+		shape.size = Vector3(chunk_size.x, aabb.size.y, chunk_size.y)
+		collision_shape = shape
+	else:
+		if not mesh:
+			build_mesh_with_lod()
+		if mesh:
+			collision_shape = mesh.create_trimesh_shape()
+		else:
+			push_warning("ChunkMeshData: Failed to build mesh for collision")
+			return null
+	has_collision = true
+	return collision_shape
 
 ## Get distance from this chunk's center to a point
 func distance_to(point: Vector3) -> float:
@@ -81,7 +97,7 @@ func contains_point_xz(point: Vector3) -> bool:
 	var half_z := chunk_size.y / 2.0
 	return abs(local.x) <= half_x and abs(local.z) <= half_z
 
-## Cleanup resources
+## Cleanup GPU resources while preserving mesh_data for potential reload
 func cleanup() -> void:
 	if mesh:
 		mesh = null
@@ -90,3 +106,14 @@ func cleanup() -> void:
 	has_collision = false
 	is_loaded = false
 
+## Deep cleanup that also clears mesh_data (chunk cannot be reloaded after this)
+func deep_cleanup() -> void:
+	cleanup()
+	# Clear mesh data arrays to free memory
+	if mesh_data:
+		mesh_data.vertices.clear()
+		mesh_data.indices.clear()
+		mesh_data.uvs.clear()
+		mesh_data.cached_normals.clear()
+		mesh_data.cached_tangents.clear()
+		mesh_data = null

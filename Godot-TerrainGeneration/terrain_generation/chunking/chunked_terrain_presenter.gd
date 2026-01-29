@@ -47,6 +47,28 @@ func update_visuals(material: Material) -> void:
 		return
 	_chunk_manager.set_terrain_material(material)
 
+## Enable chunk manager
+func enable() -> void:
+	if _chunk_manager:
+		_chunk_manager.enable()
+
+## Disable chunk manager and clear chunk data
+func disable() -> void:
+	if _chunk_manager:
+		_chunk_manager.disable()
+	clear_chunk_data(true)
+
+## Clear all chunk data from the chunk manager
+func clear_chunk_data(deep_clear: bool) -> void:
+	if _chunk_manager:
+		_chunk_manager._clear_all_chunks(deep_clear)
+
+## Cleanup chunk manager
+func cleanup() -> void:
+	if _chunk_manager:
+		_chunk_manager.queue_free()
+		_chunk_manager = null
+
 ## Setup or update the chunk manager with new data
 func _setup_or_update_chunk_manager(chunked_data: ChunkedTerrainData) -> void:
 	var chunk_config := _terrain_configuration.chunk_configuration
@@ -55,6 +77,7 @@ func _setup_or_update_chunk_manager(chunked_data: ChunkedTerrainData) -> void:
 		"ChunkManager",
 		ChunkManager
 	) as ChunkManager
+	_chunk_manager.enable()
 	_chunk_manager.generate_collision = _terrain_configuration.generate_collision
 	_chunk_manager.collision_layers = _terrain_configuration.collision_layers
 	_chunk_manager.full_collision_distance = chunk_config.collision_distance
@@ -62,13 +85,3 @@ func _setup_or_update_chunk_manager(chunked_data: ChunkedTerrainData) -> void:
 	_chunk_manager.chunk_data_source = chunked_data
 	_chunk_manager.load_strategy = chunk_config.get_strategy()
 	_chunk_manager.load_all_chunks()
-
-## Cleanup chunk manager
-func cleanup() -> void:
-	if _chunk_manager:
-		_chunk_manager.queue_free()
-		_chunk_manager = null
-
-## Get chunk manager reference (for debugging/stats)
-func get_chunk_manager() -> ChunkManager:
-	return _chunk_manager

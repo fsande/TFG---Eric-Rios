@@ -53,7 +53,7 @@ func _ready() -> void:
 	_chunked_presenter = ChunkedTerrainPresenter.new(self, terrain_configuration)
 	_setup_scene_nodes()
 	_setup_collision()
-	if terrain_configuration and auto_generate:
+	if terrain_configuration:
 		regenerate()
 
 ## Setup required scene nodes (MeshInstance3D, agent nodes container).
@@ -132,12 +132,14 @@ func _update_presentation(terrain_data: TerrainData) -> void:
 		push_warning("TerrainPresenter: No terrain data to present")
 		return
 	if not _is_chunking_enabled():
+		_chunked_presenter.disable()
 		if _mesh_instance:
 			_mesh_instance.mesh = terrain_data.get_mesh()
 			_mesh_instance.visible = true
 		if terrain_configuration.generate_collision: 
 			_terrain_collision.update_collision(terrain_data, terrain_configuration.collision_layers)
 	else:
+		_chunked_presenter.enable()
 		if _mesh_instance:
 			_mesh_instance.visible = false
 	_update_visuals()
@@ -178,13 +180,7 @@ func _update_agent_nodes(terrain_data: TerrainData) -> void:
 			agent_root.remove_child(child)
 			_agent_nodes_container.add_child(child)
 			if Engine.is_editor_hint():
-				_set_owner_recursive(child, get_tree().edited_scene_root)
+				NodeCreationHelper.set_node_owner_recursive(child, get_tree().edited_scene_root)
 		print("TerrainPresenter: Added %d agent-generated objects" % _agent_nodes_container.get_child_count())
 		agent_root.queue_free()
 		terrain_data.agent_node_root = null
-
-## Recursively set owner for node and all descendants (needed for editor visibility).
-func _set_owner_recursive(node: Node, owner_node: Node) -> void:
-	node.owner = owner_node
-	for child in node.get_children():
-		_set_owner_recursive(child, owner_node)

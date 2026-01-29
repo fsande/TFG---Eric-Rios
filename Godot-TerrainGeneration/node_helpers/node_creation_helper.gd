@@ -26,3 +26,13 @@ static func _ensure_owner(node: Node) -> void:
 			var tree = node.get_tree()
 			if tree and tree.edited_scene_root:
 				node.owner = tree.edited_scene_root
+
+## Recursively set owner for node and all descendants (needed for editor visibility)
+## @param node The node to set ownership for
+## @param owner_node The owner to assign (typically scene root)
+static func set_node_owner_recursive(node: Node, owner_node: Node) -> void:
+	if not node or not owner_node:
+		return
+	node.owner = owner_node
+	for child in node.get_children():
+		set_node_owner_recursive(child, owner_node)
