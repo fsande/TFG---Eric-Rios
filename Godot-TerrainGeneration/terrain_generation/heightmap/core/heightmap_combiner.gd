@@ -46,17 +46,14 @@ func combine_gpu(images: Array[Image], context: ProcessingContext) -> Image:
 	var rd := context.get_rendering_device()
 	if not rd:
 		return combine_cpu(images, context)
-	
 	var shader_path := _get_shader_path()
 	if shader_path.is_empty():
 		push_warning("%s: No GPU shader path provided" % get_combiner_name())
 		return combine_cpu(images, context)
-	
 	var shader := context.get_or_create_shader(shader_path)
 	if not shader.is_valid():
 		push_warning("%s: GPU shader not available, using CPU" % get_combiner_name())
 		return combine_cpu(images, context)
-	
 	return _execute_gpu_combine(images, rd, shader)
 
 ## Returns a human-readable name for this combiner (for logging/UI)

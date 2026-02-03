@@ -15,6 +15,11 @@ run/main_scene="uid://dit0d404yierl"
 config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+GpuResourceManager="*res://terrain_generation/core/gpu_resource_manager.gd"
+GpuWorkQueue="*res://terrain_generation/core/gpu_work_queue.gd"
+
 [dotnet]
 
 project/assembly_name="Godot-TerrainGeneration"

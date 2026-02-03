@@ -185,14 +185,14 @@ static func create_box_mesh(size: Vector3 = Vector3(1, 1, 1)) -> MeshData:
 	])
 	return mesh
 
-## Create a flat terrain height querier for testing.
-static func create_flat_terrain_query(height: float = 10.0) -> TerrainHeightQuerier:
-	return FlatTerrainQuerier.new(height)
-
-## Create a cylindrical tunnel shape for testing.
-static func create_test_tunnel_shape(origin: Vector3 = Vector3.ZERO, 
-	direction: Vector3 = Vector3.FORWARD, radius: float = 3.0, length: float = 20.0) -> CylindricalTunnelShape:
-	return CylindricalTunnelShape.new(origin, direction, radius, length)
+### Create a flat terrain height querier for testing.
+#static func create_flat_terrain_query(height: float = 10.0) -> TerrainHeightQuerier:
+#	return FlatTerrainQuerier.new(height)
+#
+### Create a cylindrical tunnel shape for testing.
+#static func create_test_tunnel_shape(origin: Vector3 = Vector3.ZERO, 
+#	direction: Vector3 = Vector3.FORWARD, radius: float = 3.0, length: float = 20.0) -> CylindricalTunnelShape:
+#	return CylindricalTunnelShape.new(origin, direction, radius, length)
 
 ## Get the average value of all pixels in a heightmap.
 static func get_average_height(heightmap: Image) -> float:

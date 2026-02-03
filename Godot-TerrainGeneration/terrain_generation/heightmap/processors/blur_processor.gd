@@ -16,12 +16,10 @@ func process_gpu(input: Image, context: ProcessingContext) -> Image:
 	var rd := context.get_rendering_device()
 	if not rd:
 		return process_cpu(input, context)
-	
 	var shader := context.get_or_create_shader(SHADER_PATH)
 	if not shader.is_valid():
 		push_warning("BlurProcessor: GPU shader not available, using CPU")
 		return process_cpu(input, context)
-	
 	return _apply_blur_gpu(input, blur_radius, rd, shader)
 
 func get_processor_name() -> String:

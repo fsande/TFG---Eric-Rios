@@ -125,7 +125,6 @@ static func _compute_vertex_normal(vertex_idx: int, col: int, row: int, width: i
 			continue
 		if n2_col < 0 or n2_col >= width or n2_row < 0 or n2_row >= height:
 			continue
-		# Use inverted indexing to match the vertex_index calculation
 		var n1_idx: int = (height - 1 - n1_row) * width + (width - 1 - n1_col)
 		var n2_idx: int = (height - 1 - n2_row) * width + (width - 1 - n2_col)
 		if n1_idx >= vertices.size() or n2_idx >= vertices.size():

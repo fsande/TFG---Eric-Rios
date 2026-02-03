@@ -1,6 +1,6 @@
 # Interface for heightmap processors used in terrain generation.
 # Automatically dispatches to CPU or GPU implementation based on context.
-@tool
+@tool @abstract
 class_name HeightmapProcessor extends Resource  
 
 ## Process the input heightmap image based on the provided context.
@@ -11,15 +11,12 @@ func process(input: Image, context: ProcessingContext) -> Image:
 		return process_cpu(input, context)
 
 ## CPU implementation - must be overridden
-func process_cpu(input: Image, context: ProcessingContext) -> Image:  
-	push_error("process_cpu() must be implemented by subclass")    
-	return null
+@abstract func process_cpu(input: Image, context: ProcessingContext) -> Image
 
 ## GPU implementation - optional override
 func process_gpu(input: Image, context: ProcessingContext) -> Image:
-	push_warning("%s: GPU processing not implemented, falling back to CPU" % get_processor_name())
+	push_warning("HeightmapProcessor: GPU processing not implemented, falling back to CPU")
 	return process_cpu(input, context)
 
 ## Get the name of the processor
-func get_processor_name() -> String:  
-	return "Unknown Processor"
+@abstract func get_processor_name() -> String

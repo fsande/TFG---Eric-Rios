@@ -16,7 +16,7 @@ func generate_mesh(mesh_array: Array, heightmap: Image, context: ProcessingConte
 		return null
 	var shader := context.get_or_create_shader(SHADER_PATH)
 	if not shader.is_valid():
-		push_error("GPUMeshGenerator: Failed to load shader, falling back to CPU")
+		push_error("GPUMeshGenerator: Failed to load shader")
 		return null
 	var pipeline := rd.compute_pipeline_create(shader)
 	var start_time := Time.get_ticks_usec()
