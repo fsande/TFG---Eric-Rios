@@ -14,11 +14,13 @@ var _request_queue: ChunkRequestQueue
 var _base_resolution: int = 64
 var _use_threading: bool = false
 var _max_concurrent_requests: int = 4
+var _use_gpu: bool = false
 
-func _init(terrain_def: TerrainDefinition, base_resolution: int = 64, cache_size_mb: float = 200.0) -> void:
+func _init(terrain_def: TerrainDefinition, base_resolution: int = 64, cache_size_mb: float = 200.0, use_gpu: bool = false) -> void:
 	_terrain_definition = terrain_def
 	_base_resolution = base_resolution
-	_generator = ChunkGenerator.new(terrain_def, base_resolution)
+	_use_gpu = use_gpu
+	_generator = ChunkGenerator.new(terrain_def, base_resolution, _use_gpu)
 	_cache = ChunkCache.new(cache_size_mb)
 	_request_queue = ChunkRequestQueue.new(_generator, _cache, _max_concurrent_requests)
 	_request_queue.chunk_completed.connect(_on_queue_chunk_completed, ConnectFlags.CONNECT_DEFERRED)
@@ -88,7 +90,7 @@ func get_cache_stats() -> Dictionary:
 
 func set_terrain_definition(terrain_def: TerrainDefinition) -> void:
 	_terrain_definition = terrain_def
-	_generator = ChunkGenerator.new(terrain_def, _base_resolution)
+	_generator = ChunkGenerator.new(terrain_def, _base_resolution, _use_gpu)
 	_cache.clear()
 	_request_queue.cancel_all_pending()
 	_request_queue = ChunkRequestQueue.new(_generator, _cache, _max_concurrent_requests)
@@ -118,4 +120,3 @@ func get_generator() -> ChunkGenerator:
 
 func get_cache() -> ChunkCache:
 	return _cache
-

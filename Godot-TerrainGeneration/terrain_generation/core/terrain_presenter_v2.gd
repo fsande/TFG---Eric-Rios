@@ -99,7 +99,8 @@ func regenerate() -> void:
 	_generation_service = ChunkGenerationService.new(
 		_terrain_definition,
 		configuration.base_chunk_resolution,
-		configuration.cache_size_mb
+		configuration.cache_size_mb,
+		configuration.use_gpu_mesh_generation
 	)
 	_generation_service.set_use_threading(configuration.use_async_loading)
 	_generation_service.set_max_concurrent_requests(configuration.max_concurrent_chunk_requests)

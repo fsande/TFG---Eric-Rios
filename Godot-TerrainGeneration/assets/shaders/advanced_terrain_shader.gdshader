@@ -1,6 +1,7 @@
 shader_type spatial;
 
 const int MAX_TEXTURES = 3;
+const float BLEND_WIDTH = 0.2;
 
 uniform float height = 64.0;
 uniform sampler2D albedo_textures[MAX_TEXTURES];
@@ -24,7 +25,7 @@ void fragment() {
 	}
 	float blend = smoothstep(
 		blend_heights[lower_index],
-		blend_heights[lower_index] + 0.2,
+		blend_heights[lower_index] +BLEND_WIDTH,
 		height_percent
 	);
 	ALBEDO = mix(
@@ -32,6 +33,7 @@ void fragment() {
 		texture(albedo_textures[lower_index + 1], UV * uv_scale).rgb,
 		blend
 	);
+	// Normal map should be handled differently. Works for now
 	NORMAL_MAP = mix(
 		texture(normal_textures[lower_index], UV * uv_scale).xyz,
 		texture(normal_textures[lower_index + 1], UV * uv_scale).xyz,

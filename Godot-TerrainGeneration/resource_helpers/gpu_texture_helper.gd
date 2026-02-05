@@ -26,7 +26,7 @@ static func create_heightmap_texture(rd: RenderingDevice, heightmap: Image) -> R
 	fmt.usage_bits = RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT
 	var view := RDTextureView.new()
 	var image_data: PackedByteArray = converted_image.get_data()
-	print("GPU: Creating heightmap texture, data size: %d bytes" % image_data.size())
+#	print("GPU: Creating heightmap texture, data size: %d bytes" % image_data.size())
 	var texture := rd.texture_create(fmt, view, [image_data])
 	return texture
 	
