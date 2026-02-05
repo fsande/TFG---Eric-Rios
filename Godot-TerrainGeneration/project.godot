@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Godot-TerrainGeneration"
-run/main_scene="uid://dit0d404yierl"
+run/main_scene="uid://bvt8xqk5qp7m2"
 config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
