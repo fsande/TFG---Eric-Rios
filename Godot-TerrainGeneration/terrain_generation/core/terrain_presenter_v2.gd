@@ -98,6 +98,9 @@ func regenerate() -> void:
 		_is_generating = false
 		return
 	_terrain_definition.set_shared_processing_context(shared_context)
+	if configuration.use_gpu_mesh_generation and configuration.use_async_loading:
+		push_warning("TerrainPresenterV2: GPU mesh generation REQUIRES synchronous loading. Disabling async loading.")
+		configuration.use_async_loading = false
 	_generation_service = ChunkGenerationService.new(
 		_terrain_definition,
 		configuration.base_chunk_resolution,

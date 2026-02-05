@@ -2,7 +2,7 @@
 ##
 ## @details Creates chunk meshes on-demand by sampling the heightmap and
 ## applying height deltas and volume operations at LOD-appropriate resolution.
-## Uses the Strategy pattern to support CPU, GPU, or hybrid generation.
+## Supports two strategies: CPU (async/multithreaded) or GPU (sync/main thread only).
 class_name ChunkGenerator extends RefCounted
 
 const MIN_RESOLUTION := 4

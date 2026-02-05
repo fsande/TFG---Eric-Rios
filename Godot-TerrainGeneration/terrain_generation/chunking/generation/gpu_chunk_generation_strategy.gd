@@ -1,14 +1,13 @@
-## @brief GPU-accelerated chunk generation strategy.
+## @brief GPU-accelerated chunk generation strategy (synchronous only).
 ##
 ## @details Generates chunk meshes using compute shaders for parallel processing.
 ## Leverages GpuResourceManager for shared rendering device and shader caching.
-## All GPU operations are routed through GpuWorkQueue for thread safety.
+## MUST run on main thread - does not support async/multithreaded generation.
 @tool
 class_name GpuChunkGenerationStrategy extends ChunkGenerationStrategy
 
 const HEIGHT_GRID_SHADER := "res://terrain_generation/chunking/generation/shaders/chunk_height_grid.glsl"
 const MESH_BUILDER_SHADER := "res://terrain_generation/chunking/generation/shaders/chunk_mesh_builder.glsl"
-const NORMAL_CALC_SHADER := "res://terrain_generation/chunking/generation/shaders/chunk_normal_calculator.glsl"
 
 var _gpu_manager: GpuResourceManager = null
 var _fallback_strategy: CpuChunkGenerationStrategy = null
@@ -20,7 +19,7 @@ func get_processor_type() -> ProcessorType:
 	return ProcessorType.GPU
 
 func supports_async() -> bool:
-	return true
+	return false
 
 func generate_chunk(
 	terrain_definition: TerrainDefinition,
@@ -34,33 +33,18 @@ func generate_chunk(
 		return _fallback_strategy.generate_chunk(
 			terrain_definition, chunk_coord, chunk_size, lod_level, base_resolution
 		)
-	var work_queue := GpuWorkQueue.get_singleton()
-	if not work_queue:
-		return _fallback_strategy.generate_chunk(
-			terrain_definition, chunk_coord, chunk_size, lod_level, base_resolution
-		)
-	var generation_callable := _create_gpu_generation_callable(
+	var result := _generate_chunk_gpu(
 		terrain_definition, chunk_coord, chunk_size, lod_level, base_resolution
 	)
-	var result: ChunkMeshData = work_queue.execute_on_main_thread(generation_callable)
+	
 	if not result:
 		push_warning("GpuChunkGenerationStrategy: GPU generation failed, falling back to CPU")
 		return _fallback_strategy.generate_chunk(
 			terrain_definition, chunk_coord, chunk_size, lod_level, base_resolution
 		)
+	
 	return result
 
-func _create_gpu_generation_callable(
-	terrain_definition: TerrainDefinition,
-	chunk_coord: Vector2i,
-	chunk_size: Vector2,
-	lod_level: int,
-	base_resolution: int
-) -> Callable:
-	return func() -> ChunkMeshData:
-		return _generate_chunk_gpu(
-			terrain_definition, chunk_coord, chunk_size, lod_level, base_resolution
-		)
 
 func _generate_chunk_gpu(
 	terrain_definition: TerrainDefinition,
@@ -241,4 +225,3 @@ func dispose() -> void:
 	_gpu_manager = null
 	if _fallback_strategy:
 		_fallback_strategy.dispose()
-
