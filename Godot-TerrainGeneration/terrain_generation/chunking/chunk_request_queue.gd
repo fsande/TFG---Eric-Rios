@@ -9,13 +9,13 @@ signal chunk_failed(coord: Vector2i, lod: int, error: String)
 
 var _pending_requests: Dictionary[String, ChunkRequest] = {}
 var _request_mutex: Mutex = Mutex.new()
-var _max_concurrent_requests: int = 4
+var _max_concurrent_requests: int = 16
 var _active_request_count: int = 0
 var _generator: ChunkGenerator = null
 var _cache: ChunkCache = null
 var _is_processing: bool = false
 
-func _init(generator: ChunkGenerator, cache: ChunkCache, max_concurrent: int = 4) -> void:
+func _init(generator: ChunkGenerator, cache: ChunkCache, max_concurrent: int) -> void:
 	_generator = generator
 	_cache = cache
 	_max_concurrent_requests = max_concurrent
@@ -109,20 +109,21 @@ func clear_completed() -> void:
 	_request_mutex.unlock()
 
 func _try_process_next() -> void:
-	_request_mutex.lock()
-	if _active_request_count >= _max_concurrent_requests:
+	while true:
+		_request_mutex.lock()
+		if _active_request_count >= _max_concurrent_requests:
+			_request_mutex.unlock()
+			return
+		var next_request := _get_highest_priority_pending()
+		if next_request == null:
+			_request_mutex.unlock()
+			return
+		_active_request_count += 1
+		var task_id := WorkerThreadPool.add_task(
+			_generate_chunk_task.bind(next_request)
+		)
+		next_request.mark_in_progress(task_id)
 		_request_mutex.unlock()
-		return
-	var next_request := _get_highest_priority_pending()
-	if next_request == null:
-		_request_mutex.unlock()
-		return
-	_active_request_count += 1
-	var task_id := WorkerThreadPool.add_task(
-		_generate_chunk_task.bind(next_request)
-	)
-	next_request.mark_in_progress(task_id)
-	_request_mutex.unlock()
 
 func _get_highest_priority_pending() -> ChunkRequest:
 	var best_request: ChunkRequest = null

@@ -85,7 +85,12 @@ func _generate_chunk_gpu(
 		return null
 	var volumes := terrain_definition.get_volumes_for_chunk(chunk_bounds, lod_level)
 	if not volumes.is_empty():
-		mesh_result = _apply_volumes_cpu(mesh_result, volumes, chunk_bounds, resolution)
+		var cpu_strategy := CpuChunkGenerationStrategy.new()
+		mesh_result = cpu_strategy._apply_volumes(mesh_result, volumes, chunk_bounds, lod_level)
+	if mesh_result.cached_normals.is_empty():
+		mesh_result.cached_normals = MeshNormalCalculator.calculate_normals(mesh_result)
+	if mesh_result.cached_tangents.is_empty():
+		mesh_result.cached_tangents = MeshTangentCalculator.calculate_tangents(mesh_result, mesh_result.cached_normals)
 	var world_center := Vector3(
 		chunk_bounds.position.x + chunk_bounds.size.x / 2.0,
 		0,
@@ -180,11 +185,7 @@ func _build_mesh_gpu(
 	resolution: int
 ) -> MeshData:
 	var shader_rid := _gpu_manager.get_or_create_shader(MESH_BUILDER_SHADER)
-	if not shader_rid.is_valid():
-		return _build_mesh_cpu(height_grid, chunk_bounds, resolution)
 	var pipeline_rid := _gpu_manager.get_or_create_pipeline(shader_rid)
-	if not pipeline_rid.is_valid():
-		return _build_mesh_cpu(height_grid, chunk_bounds, resolution)
 	var height_buffer := rd.storage_buffer_create(
 		height_grid.size() * 4, height_grid.to_byte_array()
 	)
@@ -221,63 +222,20 @@ func _build_mesh_gpu(
 	mesh_data.mesh_size = Vector2(chunk_bounds.size.x, chunk_bounds.size.z)
 	return mesh_data
 
-func _build_mesh_cpu(
-	height_grid: PackedFloat32Array,
-	chunk_bounds: AABB,
-	resolution: int
-) -> MeshData:
-	var vertices := PackedVector3Array()
-	var uvs := PackedVector2Array()
-	var indices := PackedInt32Array()
-	vertices.resize(resolution * resolution)
-	uvs.resize(resolution * resolution)
-	for z in range(resolution):
-		for x in range(resolution):
-			var u := float(x) / float(resolution - 1) if resolution > 1 else 0.5
-			var v := float(z) / float(resolution - 1) if resolution > 1 else 0.5
-			var local_x := (u - 0.5) * chunk_bounds.size.x
-			var local_z := (v - 0.5) * chunk_bounds.size.z
-			var index := z * resolution + x
-			vertices[index] = Vector3(local_x, height_grid[index], local_z)
-			uvs[index] = Vector2(u, v)
-	for z in range(resolution - 1):
-		for x in range(resolution - 1):
-			var v0 := z * resolution + x
-			var v1 := v0 + 1
-			var v2 := v0 + resolution
-			var v3 := v2 + 1
-			indices.append(v0)
-			indices.append(v1)
-			indices.append(v2)
-			indices.append(v1)
-			indices.append(v3)
-			indices.append(v2)
-	var mesh_data := MeshData.new(vertices, indices, uvs)
-	mesh_data.width = resolution
-	mesh_data.height = resolution
-	mesh_data.mesh_size = Vector2(chunk_bounds.size.x, chunk_bounds.size.z)
-	return mesh_data
-
-func _apply_volumes_cpu(
-	mesh_data: MeshData,
-	volumes: Array[VolumeDefinition],
-	chunk_bounds: AABB,
-	resolution: int
-) -> MeshData:
-	return _fallback_strategy._apply_volumes(mesh_data, volumes, chunk_bounds, resolution)
-
 func _get_blend_mode_int(strategy: HeightBlendStrategy) -> int:
-	if strategy is AdditiveBlendStrategy:
-		return 0
-	elif strategy is MultiplicativeBlendStrategy:
-		return 1
-	elif strategy is MaxBlendStrategy:
-		return 2
-	elif strategy is MinBlendStrategy:
-		return 3
-	elif strategy is ReplaceBlendStrategy:
-		return 4
-	return 0
+	match strategy:
+		AdditiveBlendStrategy:
+			return 0
+		MultiplicativeBlendStrategy:
+			return 1
+		MaxBlendStrategy:
+			return 2
+		MinBlendStrategy:
+			return 3
+		ReplaceBlendStrategy:
+			return 4
+		_:
+			return 0
 
 func dispose() -> void:
 	_gpu_manager = null

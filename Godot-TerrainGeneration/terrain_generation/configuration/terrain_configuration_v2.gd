@@ -45,7 +45,7 @@ signal load_strategy_changed()
 @export_group("Async Loading")
 @export var use_async_loading: bool = true
 @export_range(1, 64) var max_concurrent_chunk_requests: int = 4
-@export_range(1, 64) var max_instantiations_per_frame: int = 2
+@export_range(1.0, 10.0, 0.5, "suffix:ms") var chunk_instantiation_budget_ms: float = 5.0
 
 @export_group("GPU Acceleration")
 @export var use_gpu_heightmap: bool = false

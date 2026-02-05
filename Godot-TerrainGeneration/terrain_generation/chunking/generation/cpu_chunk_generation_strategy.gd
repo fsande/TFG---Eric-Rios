@@ -32,7 +32,11 @@ func generate_chunk(
 		return null
 	var volumes := terrain_definition.get_volumes_for_chunk(chunk_bounds, lod_level)
 	if not volumes.is_empty():
-		mesh_data = _apply_volumes(mesh_data, volumes, chunk_bounds, resolution)
+		mesh_data = apply_volumes(mesh_data, volumes, chunk_bounds, resolution)
+	if mesh_data.cached_normals.is_empty():
+		mesh_data.cached_normals = MeshNormalCalculator.calculate_normals(mesh_data)
+	if mesh_data.cached_tangents.is_empty():
+		mesh_data.cached_tangents = MeshTangentCalculator.calculate_tangents(mesh_data, mesh_data.cached_normals)
 	var world_center := Vector3(
 		chunk_bounds.position.x + chunk_bounds.size.x / 2.0,
 		0,
@@ -109,7 +113,7 @@ func _build_mesh_from_height_grid(
 	mesh_data.mesh_size = Vector2(chunk_bounds.size.x, chunk_bounds.size.z)
 	return mesh_data
 
-func _apply_volumes(
+func apply_volumes(
 	mesh_data: MeshData,
 	volumes: Array[VolumeDefinition],
 	chunk_bounds: AABB,

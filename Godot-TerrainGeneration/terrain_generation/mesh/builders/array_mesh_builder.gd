@@ -10,8 +10,10 @@ static func build_mesh(mesh_data: MeshData) -> ArrayMesh:
 	if mesh_data.vertices.is_empty():
 		return ArrayMesh.new()
 	if mesh_data.cached_normals.is_empty():
+		push_warning("ArrayMeshBuilder: Normals not pre-calculated - computing on main thread (SLOW!)")
 		MeshNormalCalculator.calculate_and_cache(mesh_data)
 	if mesh_data.cached_tangents.is_empty():
+		push_warning("ArrayMeshBuilder: Tangents not pre-calculated - computing on main thread (SLOW!)")
 		MeshTangentCalculator.calculate_and_cache(mesh_data)
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)

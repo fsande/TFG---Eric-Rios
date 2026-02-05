@@ -35,7 +35,6 @@ var _update_timer: float = 0.0
 var _is_generating: bool = false
 var _camera: Camera3D
 var _load_context: ChunkLoadContextV2 = null
-var _max_instantiations_per_frame: int = 2
 
 func _ready() -> void:
 	if configuration.heightmap_source and configuration.auto_generate: 
@@ -54,16 +53,19 @@ func _process(delta: float) -> void:
 func _process_ready_chunks_queue() -> void:
 	if _ready_chunks_queue.is_empty():
 		return
-	var max_instantiations := configuration.max_instantiations_per_frame if configuration else _max_instantiations_per_frame
-	var instantiated := 0
-	while not _ready_chunks_queue.is_empty() and instantiated < max_instantiations:
+	var start_time_usec := Time.get_ticks_usec()
+	var budget_ms: float = configuration.chunk_instantiation_budget_ms if configuration else 5.0
+	var budget_usec: float = budget_ms * 1000.0
+	while not _ready_chunks_queue.is_empty():
+		var elapsed_usec := Time.get_ticks_usec() - start_time_usec
+		if elapsed_usec >= budget_usec:
+			break
 		var data: ChunkReadyData = _ready_chunks_queue.pop_front()
 		if _loaded_chunks.has(data.coord):
 			continue
 		if not _should_still_load_chunk(data.coord):
 			continue
 		_instantiate_chunk(data.coord, data.lod, data.chunk)
-		instantiated += 1
 
 func regenerate() -> void:
 	if _is_generating:
@@ -166,31 +168,22 @@ func _update_visible_chunks() -> void:
 		)
 	_load_context.loaded_chunks = _loaded_chunks
 	var chunks_to_unload: Array[Vector2i] = []
-	for coord in _loaded_chunks.keys():
-		if configuration.load_strategy.should_unload(coord, camera_pos, _load_context):
-			chunks_to_unload.append(coord)
-	var max_ops := configuration.load_strategy.get_max_operations_per_frame()
-	var unload_count := 0
-	for coord in chunks_to_unload:
-		if unload_count >= max_ops.y:
-			break
-		_unload_chunk(coord)
-		unload_count += 1
+	for chunk in _loaded_chunks.keys():
+		if configuration.load_strategy.should_unload(chunk, camera_pos, _load_context):
+			chunks_to_unload.append(chunk)
+	for chunk in chunks_to_unload:
+		_unload_chunk(chunk)
 	var chunks_to_load := configuration.load_strategy.get_chunks_to_load(camera_pos, _load_context, true)
-	var load_count := 0
-	for coord in chunks_to_load:
-		if load_count >= max_ops.x:
-			break
-		var base_lod := configuration.load_strategy.calculate_lod(coord, camera_pos, _load_context) if configuration.enable_lod else 0
-		var lod := _apply_lod_hysteresis(coord, base_lod, camera_pos)
-		var priority := configuration.load_strategy.get_load_priority(coord, camera_pos, _load_context)
-		if _loaded_chunks.has(coord):
-			update_chunk_lod(coord, lod, priority)
+	for chunk in chunks_to_load:
+		var base_lod := configuration.load_strategy.calculate_lod(chunk, camera_pos, _load_context) if configuration.enable_lod else 0
+		var lod := _apply_lod_hysteresis(chunk, base_lod, camera_pos)
+		var priority := configuration.load_strategy.get_load_priority(chunk, camera_pos, _load_context)
+		if _loaded_chunks.has(chunk):
+			update_chunk_lod(chunk, lod, priority)
 			continue
-		if _pending_chunk_requests.has(coord):
+		if _pending_chunk_requests.has(chunk):
 			continue
-		_request_chunk_load(coord, lod, priority)
-		load_count += 1
+		_request_chunk_load(chunk, lod, priority)
 	_cancel_out_of_range_requests(camera_pos)
 
 func _apply_lod_hysteresis(coord: Vector2i, target_lod: int, camera_pos: Vector3) -> int:
