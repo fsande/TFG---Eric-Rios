@@ -1,6 +1,6 @@
 ## @brief Helper utilities for unit tests.
 ## @details Provides factory methods for creating test data and comparison utilities.
-class_name TestHelpers
+class_name TestHelpers extends GutTest
 
 ## Test shader paths
 const SHADER_NONEXISTENT := "res://test/non_existent.glsl"
@@ -8,14 +8,14 @@ const SHADER_EXISTENT := "res://test/test_compute.glsl"
 
 ## Create a simple test heightmap with a horizontal gradient.
 ## Values increase from 0.0 (left) to 1.0 (right).
-static func create_test_heightmap(width: int, height: int) -> Image:
+static func create_horizontal_gradient_heightmap(width: int, height: int, vertical_multiplier: float = 0.0) -> Image:
 	var img := Image.create(width, height, false, Image.FORMAT_RF)
 	for y in height:
 		for x in width:
-			var value := float(x) / float(width - 1) if width > 1 else 0.5
+			var value := float(x) / float(width - 1) + vertical_multiplier * (float(y) / float(height - 1))
 			img.set_pixel(x, y, Color(value, 0, 0))
 	return img
-
+	
 ## Create a flat heightmap with uniform height value.
 static func create_flat_heightmap(width: int, height: int, value: float = 0.5) -> Image:
 	var img := Image.create(width, height, false, Image.FORMAT_RF)
@@ -23,6 +23,7 @@ static func create_flat_heightmap(width: int, height: int, value: float = 0.5) -
 		for x in width:
 			img.set_pixel(x, y, Color(value, 0, 0))
 	return img
+
 
 ## Create a noisy heightmap using NoiseHeightmapSource.
 static func create_noisy_heightmap(size: int) -> Image:

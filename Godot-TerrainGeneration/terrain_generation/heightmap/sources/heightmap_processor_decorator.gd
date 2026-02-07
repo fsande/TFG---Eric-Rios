@@ -27,7 +27,6 @@ func generate(context: ProcessingContext) -> Image:
 	if not source or not processor:
 		push_error("HeightmapProcessorDecorator: Missing source or processor")
 		return null
-	
 	var base_image := source.generate(context)
 	if not base_image:
 		return null

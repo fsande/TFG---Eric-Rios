@@ -34,7 +34,6 @@ func _blur_pass_cpu(img: Image, half_size: int, is_horizontal: bool) -> Image:
 	var width := img.get_width()
 	var height := img.get_height()
 	var result := Image.create(width, height, false, Image.FORMAT_RF)
-	
 	for y in height:
 		for x in width:
 			var sum := 0.0

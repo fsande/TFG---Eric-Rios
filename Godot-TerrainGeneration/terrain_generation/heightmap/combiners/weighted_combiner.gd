@@ -16,13 +16,14 @@ class_name WeightedCombiner extends HeightmapCombiner
 func combine_cpu(images: Array[Image], _context: ProcessingContext) -> Image:
 	if images.is_empty():
 		return null	
-	var resized_images := ImageHelper.resize_images_to_largest(images)	
+	var resized_images := ImageHelper.resize_images_to_largest(images)
 	var max_width := resized_images[0].get_width()
 	var max_height := resized_images[0].get_height()
 	var result := Image.create(max_width, max_height, false, Image.FORMAT_RF)
 	var total_weight: float = 0.0
-	for w in weights:
-		total_weight += w
+	for i in resized_images.size():
+		var weight: float = weights[i] if i < weights.size() else 1.0
+		total_weight += weight
 	if total_weight == 0.0:
 		total_weight = 1.0
 	for y in max_height:
