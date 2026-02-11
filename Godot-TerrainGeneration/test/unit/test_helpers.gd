@@ -60,6 +60,38 @@ static func create_diagonal_heightmap(width: int, height: int) -> Image:
 			img.set_pixel(x, y, Color(value, 0, 0))
 	return img
 
+## Create a test heightmap with a vertical gradient.
+## Values increase from 0.0 (top) to 1.0 (bottom).
+static func create_vertical_gradient_heightmap(width: int, height: int) -> Image:
+	var img := Image.create(width, height, false, Image.FORMAT_RF)
+	for y in height:
+		for x in width:
+			var value := float(y) / float(height - 1) if height > 1 else 0.5
+			img.set_pixel(x, y, Color(value, 0, 0))
+	return img
+
+## Create a test heightmap with a checkerboard pattern.
+static func create_checkerboard_heightmap(width: int, height: int, cell_size: int = 1) -> Image:
+	var img := Image.create(width, height, false, Image.FORMAT_RF)
+	for y in height:
+		for x in width:
+			var cell_x := int(x / cell_size)
+			var cell_y := int(y / cell_size)
+			var value := 1.0 if (cell_x + cell_y) % 2 == 0 else 0.0
+			img.set_pixel(x, y, Color(value, 0, 0))
+	return img
+
+## Create a sparse heightmap with isolated peaks at specified positions.
+static func create_sparse_heightmap(width: int, height: int, peaks: Array[Vector2i] = []) -> Image:
+	var img := Image.create(width, height, false, Image.FORMAT_RF)
+	for y in height:
+		for x in width:
+			img.set_pixel(x, y, Color(0.0, 0, 0))
+	for peak in peaks:
+		if peak.x >= 0 and peak.x < width and peak.y >= 0 and peak.y < height:
+			img.set_pixel(peak.x, peak.y, Color(1.0, 0, 0))
+	return img
+
 ## Create simple mesh data for testing with a regular grid.
 static func create_test_mesh_data(grid_size: int = 10) -> MeshData:
 	var vertices := PackedVector3Array()
