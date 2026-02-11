@@ -3,7 +3,6 @@
 var _combiner: HeightmapCombiner
 var _gpu_context: ProcessingContext
 var _cpu_context: ProcessingContext
-var ERROR_TOLERANCE := 0.001
 var _terrain_size := 32
 
 func after_each() -> void:

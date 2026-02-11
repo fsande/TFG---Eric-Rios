@@ -26,7 +26,7 @@ func test_different_seeds_produce_different_results() -> void:
 	var context2 := ProcessingContext.new(_terrain_size, ProcessingContext.ProcessorType.CPU, ProcessingContext.ProcessorType.CPU, 456)
 	var result1 := _noise_source.generate(context1)
 	var result2 := _noise_source.generate(context2)
-	assert_false(TestHelpers.images_are_similar(result1, result2, 0.01), "Different seeds should produce different results")
+	assert_true(are_images_different(result1, result2, 32, 50, ERROR_TOLERANCE), "Different seeds should produce different results")
 	context1.dispose()
 	context2.dispose()
 
@@ -36,7 +36,7 @@ func test_same_seed_produces_same_results() -> void:
 	var context2 := ProcessingContext.new(_terrain_size, ProcessingContext.ProcessorType.CPU, ProcessingContext.ProcessorType.CPU, 789)
 	var result1 := _noise_source.generate(context1)
 	var result2 := _noise_source.generate(context2)
-	assert_true(TestHelpers.images_are_similar(result1, result2, ERROR_TOLERANCE), "Same seed should produce same results")
+	assert_true(are_images_equivalent(result1, result2, 32, ERROR_TOLERANCE), "Same seeds should produce the same results")
 	context1.dispose()
 	context2.dispose()
 
@@ -52,7 +52,7 @@ func test_different_frequencies() -> void:
 	var result1 := _noise_source.generate(_context)
 	_noise_source.frequency = 10.0
 	var result2 := _noise_source.generate(_context)
-	assert_false(TestHelpers.images_are_similar(result1, result2, 0.1), "Different frequencies should produce different results")
+	assert_true(are_images_different(result1, result2, 32, 50, ERROR_TOLERANCE), "Different frequencies should produce different results")
 
 func test_metadata_contains_required_fields() -> void:
 	var metadata := _noise_source.get_metadata()

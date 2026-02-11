@@ -19,7 +19,7 @@ func test_returns_duplicate_of_input_image() -> void:
 	_image_source.heightmap_image = input_image
 	var result := _image_source.generate(_context)
 	assert_not_null(result, "Should return valid image")
-	assert_true(TestHelpers.images_are_similar(input_image, result, ERROR_TOLERANCE), "Should return duplicate of input")
+	assert_true(are_images_equivalent(input_image, result, 32, ERROR_TOLERANCE), "Should return an image equivalent to the input")
 
 func test_preserves_image_dimensions() -> void:
 	var input_image := TestHelpers.create_horizontal_gradient_heightmap(64, 32)
@@ -30,7 +30,7 @@ func test_with_gradient_image() -> void:
 	var input_image := TestHelpers.create_diagonal_heightmap(48, 48)
 	_image_source.heightmap_image = input_image
 	var result := _image_source.generate(_context)
-	assert_true(TestHelpers.images_are_similar(input_image, result, ERROR_TOLERANCE), "Should preserve gradient pattern")
+	assert_true(are_images_equivalent(input_image, result, 48, ERROR_TOLERANCE), "Should preserve gradient values")
 
 func test_with_flat_image() -> void:
 	var input_image := TestHelpers.create_flat_heightmap(32, 32, 0.7)

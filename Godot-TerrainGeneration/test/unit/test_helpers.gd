@@ -23,7 +23,13 @@ static func create_flat_heightmap(width: int, height: int, value: float = 0.5) -
 		for x in width:
 			img.set_pixel(x, y, Color(value, 0, 0))
 	return img
-
+	
+static func create_image(width: int, height: int, color: Color) -> Image:
+	var img := Image.create(width, height, false, Image.FORMAT_RGB8)
+	for y in height:
+		for x in width:
+			img.set_pixel(x, y, color)
+	return img
 
 ## Create a noisy heightmap using NoiseHeightmapSource.
 static func create_noisy_heightmap(size: int) -> Image:
