@@ -13,6 +13,7 @@ func test_generates_null_without_source() -> void:
 	_decorator.source = null
 	_decorator.processor = NormalizationProcessor.new()
 	var result := _decorator.generate(_context)
+	assert_push_error("HeightmapProcessorDecorator: Missing source or processor")
 	assert_null(result, "Should return null when no source provided")
 
 func test_generates_null_without_processor() -> void:
@@ -21,6 +22,7 @@ func test_generates_null_without_processor() -> void:
 	_decorator.source = img_source
 	_decorator.processor = null
 	var result := _decorator.generate(_context)
+	assert_push_error("HeightmapProcessorDecorator: Missing source or processor")
 	assert_null(result, "Should return null when no processor provided")
 
 func test_with_normalization_processor() -> void:

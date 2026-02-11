@@ -17,6 +17,7 @@ func test_normalize_flat_default_range() -> void:
 
 func test_normalize_flat_high_max() -> void:
 	var input_image := TestHelpers.create_flat_heightmap(_terrain_size, _terrain_size, 0.5)
+	_normalization_processor.min_value = 0.0
 	_normalization_processor.max_value = 2.0
 	processor_test(input_image, ERROR_TOLERANCE, 1.0)
 	assert_engine_error("HeightmapProcessor: GPU processing not implemented, falling back to CPU")
@@ -24,7 +25,8 @@ func test_normalize_flat_high_max() -> void:
 func test_normalize_flat_high_min() -> void:
 	var input_image := TestHelpers.create_flat_heightmap(_terrain_size, _terrain_size, 0.5)
 	_normalization_processor.min_value = 0.25
-	processor_test(input_image, ERROR_TOLERANCE, 0.75)
+	_normalization_processor.max_value = 1.0
+	processor_test(input_image, ERROR_TOLERANCE, 0.625)
 	assert_engine_error("HeightmapProcessor: GPU processing not implemented, falling back to CPU")
 
 func test_normalize_gradient_to_full_range() -> void:

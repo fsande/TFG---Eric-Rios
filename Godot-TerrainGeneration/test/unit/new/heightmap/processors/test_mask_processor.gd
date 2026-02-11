@@ -43,6 +43,7 @@ func test_mask_without_mask_image_returns_unchanged() -> void:
 	var input := TestHelpers.create_flat_heightmap(_terrain_size, _terrain_size, 0.6)
 	_mask_processor.mask_image = null
 	var cpu_result := _mask_processor.process_cpu(input, _cpu_context)
+	assert_engine_error("MaskProcessor: No mask image provided, returning input unchanged")
 	assert_true(TestHelpers.images_are_similar(input, cpu_result, ERROR_TOLERANCE), "Should return unchanged input when no mask")
 
 func test_mask_with_diagonal_gradient() -> void:

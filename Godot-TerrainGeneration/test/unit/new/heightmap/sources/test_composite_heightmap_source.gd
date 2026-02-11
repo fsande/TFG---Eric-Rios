@@ -12,6 +12,7 @@ func before_each() -> void:
 func test_generates_null_without_sources() -> void:
 	_composite_source.sources = []
 	var result := _composite_source.generate(_context)
+	assert_push_error("CompositeHeightmapSource: No sources provided")
 	assert_null(result, "Should return null when no sources provided")
 
 func test_with_single_source() -> void:

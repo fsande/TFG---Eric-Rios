@@ -28,6 +28,7 @@ class_name NormalizationProcessor extends HeightmapProcessor
 ## 1. Find current min/max values in the input heightmap
 ## 2. Calculate normalization: normalized = (value - current_min) / (current_max - current_min)
 ## 3. Remap to target range: remapped = normalized * (max_value - min_value) + min_value
+## If the current range is very small (to avoid division by zero), set all values to the midpoint of the target range.
 ##
 ## @param input: The input heightmap image (FORMAT_RF)
 ## @param _context: Processing context (unused for this processor)
@@ -52,6 +53,7 @@ func process_cpu(input: Image, _context: ProcessingContext) -> Image:
 				result.set_pixel(x, y, Color(remapped, 0, 0))
 	else:
 		var midpoint := (min_value + max_value) * 0.5
+		print("Could not normalize due to small range (%.5f), setting all values to midpoint calculated with min: %.2f and max: %.2f" % [range_current, min_value, max_value])
 		for y in input.get_height():
 			for x in input.get_width():
 				result.set_pixel(x, y, Color(midpoint, 0, 0))

@@ -15,7 +15,7 @@ func are_images_equivalent(cpu_image: Image, gpu_image: Image, expected_size: in
 				return false
 			if expected_value >= 0:
 				var matches_expected: bool = abs(cpu_value - expected_value) <= tolerance
-				assert_true(matches_expected, "CPU pixel value at (%d, %d) should be close to expected value" % [x, y])
+				assert_true(matches_expected, "CPU pixel value: %f should match expected value: %f at (%d, %d)" % [cpu_value, expected_value, x, y])
 				if not matches_expected:
 					return false
 	return true

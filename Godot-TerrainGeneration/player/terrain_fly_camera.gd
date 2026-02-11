@@ -63,4 +63,3 @@ func _process(delta: float) -> void:
 	var direction := (transform.basis * input_dir).normalized()
 	_velocity = direction * speed
 	position += _velocity * delta
-
