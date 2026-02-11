@@ -12,7 +12,7 @@
 [resource]
 render_priority = 0
 shader = ExtResource("1_bpjjn")
-shader_parameter/height = 128.0
+shader_parameter/height = 256.0
 shader_parameter/albedo_textures = Array[Texture2D]([ExtResource("2_1j4um"), ExtResource("3_vvhxn"), ExtResource("4_prum8")])
 shader_parameter/normal_textures = Array[Texture2D]([ExtResource("5_g3c2f"), ExtResource("5_g3c2f"), ExtResource("6_0elkf")])
 shader_parameter/roughness_textures = Array[Texture2D]([ExtResource("7_w3ia3"), ExtResource("7_w3ia3"), ExtResource("8_l6lnb")])

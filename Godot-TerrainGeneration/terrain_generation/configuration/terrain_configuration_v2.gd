@@ -30,7 +30,6 @@ signal load_strategy_changed()
 		configuration_changed.emit()
 
 @export_group("Pipeline Stages)")
-@export var use_stages: bool = false
 @export var modifier_stages: Array[TerrainModifierStage] = []
 
 @export_group("Chunking")
