@@ -1,0 +1,14 @@
+[gd_resource type="StandardMaterial3D" load_steps=5 format=3 uid="uid://ouaaqbirgtht"]
+
+[ext_resource type="Texture2D" uid="uid://blccv6mmqwpg8" path="res://assets/materials/rocky_rugged/rocky-rugged-terrain_1_albedo.png" id="1_dkqsj"]
+[ext_resource type="Texture2D" uid="uid://djo0e0bynh4vl" path="res://assets/materials/rocky_rugged/rocky-rugged-terrain_1_metallic.png" id="2_aebns"]
+[ext_resource type="Texture2D" uid="uid://b2epg2q62nl4s" path="res://assets/materials/rocky_rugged/rocky-rugged-terrain_1_normal-dx.png" id="3_v1yd5"]
+[ext_resource type="Texture2D" uid="uid://d2y2650e8jo36" path="res://assets/materials/rocky_rugged/rocky-rugged-terrain_1_roughness.png" id="4_pqsy1"]
+
+[resource]
+albedo_texture = ExtResource("1_dkqsj")
+metallic = 1.0
+metallic_texture = ExtResource("2_aebns")
+roughness_texture = ExtResource("4_pqsy1")
+normal_enabled = true
+normal_texture = ExtResource("3_v1yd5")

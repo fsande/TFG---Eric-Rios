@@ -1,0 +1,17 @@
+[gd_resource type="StandardMaterial3D" load_steps=6 format=3 uid="uid://dn16r5qbgjt82"]
+
+[ext_resource type="Texture2D" uid="uid://caau1oditkvsh" path="res://assets/materials/rock_snow_ice/rock-snow-ice1-2k_Base_Color.png" id="1_8fmcd"]
+[ext_resource type="Texture2D" uid="uid://dilj4ky2yxvg0" path="res://assets/materials/rock_snow_ice/rock-snow-ice1-2k_Ambient_Occlusion.png" id="2_py3af"]
+[ext_resource type="Texture2D" uid="uid://c7jky0bgohh4j" path="res://assets/materials/rock_snow_ice/rock-snow-ice1-2k_Metallic.png" id="3_bun4o"]
+[ext_resource type="Texture2D" uid="uid://cac4xfbkk116s" path="res://assets/materials/rock_snow_ice/rock-snow-ice1-2k_Normal-dx.png" id="4_bq1dd"]
+[ext_resource type="Texture2D" uid="uid://dcu75xnct1wit" path="res://assets/materials/rock_snow_ice/rock-snow-ice1-2k_Roughness.png" id="5_nvseg"]
+
+[resource]
+albedo_texture = ExtResource("1_8fmcd")
+metallic = 1.0
+metallic_texture = ExtResource("3_bun4o")
+roughness_texture = ExtResource("5_nvseg")
+normal_enabled = true
+normal_texture = ExtResource("4_bq1dd")
+ao_enabled = true
+ao_texture = ExtResource("2_py3af")

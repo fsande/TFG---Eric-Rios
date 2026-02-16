@@ -1,0 +1,16 @@
+[gd_resource type="StandardMaterial3D" load_steps=6 format=3 uid="uid://vpdbt1a33c2s"]
+
+[ext_resource type="Texture2D" uid="uid://bmyjk61kxc32g" path="res://assets/materials/mixed_moss/mixedmoss-albedo2.png" id="1_hgygx"]
+[ext_resource type="Texture2D" uid="uid://c1dwlg425hwkf" path="res://assets/materials/mixed_moss/mixedmoss-ao2.png" id="2_a0dfd"]
+[ext_resource type="Texture2D" uid="uid://b7i26cyy255kg" path="res://assets/materials/mixed_moss/mixedmoss-metalness.png" id="3_j3lpc"]
+[ext_resource type="Texture2D" uid="uid://d10su3x8f3iey" path="res://assets/materials/mixed_moss/mixedmoss-normal2.png" id="4_1ve8y"]
+[ext_resource type="Texture2D" uid="uid://dlrf2uauyir87" path="res://assets/materials/mixed_moss/mixedmoss-roughness.png" id="5_7dfuj"]
+
+[resource]
+albedo_texture = ExtResource("1_hgygx")
+metallic_texture = ExtResource("3_j3lpc")
+roughness_texture = ExtResource("5_7dfuj")
+normal_enabled = true
+normal_texture = ExtResource("4_1ve8y")
+ao_enabled = true
+ao_texture = ExtResource("2_a0dfd")

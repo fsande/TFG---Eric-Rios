@@ -29,6 +29,8 @@ metadata/_custom_type_script = "uid://bwv425wfhjywe"
 
 [sub_resource type="Resource" id="Resource_d13ii"]
 script = ExtResource("6_dvx1n")
+resolution = 2048
+frequency = 7.0
 noise = SubResource("FastNoiseLite_ryguw")
 metadata/_custom_type_script = "uid://dtbhsoo2ruv07"
 
@@ -38,6 +40,7 @@ fractal_type = 0
 
 [sub_resource type="Resource" id="Resource_0odxb"]
 script = ExtResource("6_dvx1n")
+resolution = 2048
 noise = SubResource("FastNoiseLite_1u8w0")
 metadata/_custom_type_script = "uid://dtbhsoo2ruv07"
 

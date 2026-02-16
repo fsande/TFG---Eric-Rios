@@ -29,7 +29,7 @@ class_name MountainAgentConfig extends Resource
 @export_range(0.0, 10.0) var height_variation: float = 1
 
 ## Noise used for height variation
-@export var height_variation_noise: FastNoiseLite = FastNoiseLite.new():
+@export var height_variation_noise: FastNoiseLite = FastNoiseLite.new()
 
 ## Width variation per wedge
 @export_range(0.0, 10.0) var width_variation: float = 0.2
