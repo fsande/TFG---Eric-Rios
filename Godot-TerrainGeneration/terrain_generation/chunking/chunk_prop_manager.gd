@@ -1,11 +1,17 @@
 ## @brief Manages prop spawning and despawning for terrain chunks.
 ##
 ## @details Spawns props based on placement rules when chunks load,
-## and cleans them up when chunks unload.
+## and cleans them up when chunks unload. Supports both regular node instancing
+## and MultiMesh batching for better performance.
 class_name ChunkPropManager extends RefCounted
 
+
 var _terrain_definition: TerrainDefinition
+## Dictionary[String, Array[PropPlacement]] - Maps chunk key to array of prop placements
 var _spawned_props: Dictionary = {}
+## Dictionary[String, Dictionary] - Maps chunk key to dict of rule_id -> PropMultiMeshGroup
+var _spawned_multimesh_groups: Dictionary = {}
+## Dictionary[String, Node3D] - Maps chunk key to prop container node
 var _prop_containers: Dictionary = {}
 var _parent_node: Node3D
 
@@ -28,10 +34,12 @@ func spawn_props_for_chunk(chunk: ChunkMeshData, lod_level: int) -> int:
 	container.position = chunk.world_position
 	_parent_node.add_child(container)
 	_prop_containers[key] = container
-	var placements: Array[PropPlacement] = []
 	var volumes := _terrain_definition.volume_definitions
 	var chunk_bounds := chunk.aabb
 	var terrain_sampler := _create_terrain_sampler(chunk)
+	var all_placements: Array[PropPlacement] = []
+	var multimesh_groups: Dictionary[String, PropMultiMeshGroup] = {}
+	var spawned_count := 0
 	for rule in rules:
 		var rule_placements := rule.get_placements_for_chunk(
 			chunk_bounds,
@@ -39,26 +47,60 @@ func spawn_props_for_chunk(chunk: ChunkMeshData, lod_level: int) -> int:
 			volumes,
 			_terrain_definition.generation_seed
 		)
-		placements.append_array(rule_placements)
-	var spawned_count := 0
-	for placement in placements:
-		var local_pos := placement.position - chunk.world_position
-		placement.position = local_pos
-		var node := placement.spawn(container)
-		if node:
-			spawned_count += 1
-	_spawned_props[key] = placements
+		if rule_placements.is_empty():
+			continue
+		for placement in rule_placements:
+			var local_pos := placement.position - chunk.world_position
+			placement.position = local_pos
+		if rule.use_multimesh:
+			var multimesh_group := PropMultiMeshGroup.new()
+			var success := multimesh_group.spawn(
+				container,
+				rule_placements,
+				rule.prop_scene,
+				rule.rule_id
+			)
+			if success:
+				multimesh_groups[rule.rule_id] = multimesh_group
+				spawned_count += rule_placements.size()
+			else:
+				push_warning("Failed to create MultiMesh group for rule '%s'" % rule.rule_id)
+		else:
+			for placement in rule_placements:
+				var node := placement.spawn(container)
+				if node:
+					spawned_count += 1
+		all_placements.append_array(rule_placements)
+	_spawned_props[key] = all_placements
+	if not multimesh_groups.is_empty():
+		_spawned_multimesh_groups[key] = multimesh_groups
 	return spawned_count
 
 func despawn_props_for_chunk(chunk_coord: Vector2i) -> void:
 	var key := _make_key(chunk_coord)
+	
 	if not _spawned_props.has(key):
 		return
+	
+	# Despawn regular props (only if they were not in a MultiMesh)
 	var placements: Array = _spawned_props[key]
 	for placement in placements:
 		if placement is PropPlacement:
-			placement.despawn()
+			# Only despawn if it has a spawned_node (wasn't in MultiMesh)
+			if placement.spawned_node:
+				placement.despawn()
+	
 	_spawned_props.erase(key)
+	
+	# Despawn MultiMesh groups
+	if _spawned_multimesh_groups.has(key):
+		var groups: Dictionary = _spawned_multimesh_groups[key]
+		for group in groups.values():
+			if group is PropMultiMeshGroup:
+				group.despawn()
+		_spawned_multimesh_groups.erase(key)
+	
+	# Remove container
 	if _prop_containers.has(key):
 		var container: Node3D = _prop_containers[key]
 		if is_instance_valid(container):
@@ -112,4 +154,3 @@ func _create_terrain_sampler(chunk: ChunkMeshData) -> Callable:
 		if not chunk.mesh_data.cached_normals.is_empty() and idx < chunk.mesh_data.cached_normals.size():
 			normal = chunk.mesh_data.cached_normals[idx]
 		return TerrainSample.new(vertex.y + chunk.world_position.y, normal, true)
-

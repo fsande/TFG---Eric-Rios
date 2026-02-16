@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3 uid="uid://dxeaepbn0e70i"]
+[gd_scene load_steps=35 format=3 uid="uid://dxeaepbn0e70i"]
 
 [ext_resource type="Script" uid="uid://bgpjvppda2u8x" path="res://terrain_generation/core/terrain_presenter_v2.gd" id="1_presenter"]
 [ext_resource type="Resource" uid="uid://wr2k3r0ty8xg" path="res://assets/generation_resources/españita_guay.tres" id="2_oqt66"]
@@ -13,7 +13,6 @@
 [ext_resource type="Script" uid="uid://c5ppavb1os4er" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="9_spfy5"]
 [ext_resource type="Resource" uid="uid://v5ie01qj4ft2" path="res://assets/generation_resources/tree_place1.tres" id="10_7f1po"]
 [ext_resource type="Material" uid="uid://dmlbneowgjfqy" path="res://assets/materials/terrain_mat2.tres" id="10_oqt66"]
-[ext_resource type="PackedScene" uid="uid://cq832o58evlgr" path="res://assets/models/environment/rock/rock1.tscn" id="11_215up"]
 [ext_resource type="Resource" uid="uid://dmjfm4v8myli7" path="res://assets/generation_resources/rock_place1.tres" id="11_a8qn4"]
 [ext_resource type="Script" uid="uid://c51qydcxes5yv" path="res://terrain_generation/chunking/strategies/grid_load_strategy_v2.gd" id="11_bqotf"]
 [ext_resource type="PackedScene" uid="uid://k5n4e67sj3xd" path="res://scenes/water_plane.tscn" id="19_obh5s"]
@@ -134,7 +133,7 @@ configuration = SubResource("Resource_oqt66")
 [node name="ChunksContainer" type="Node3D" parent="Terrain"]
 
 [node name="FlyCamera" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, -362.87543, 18.905792, 385.94843)
+transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, 87.16572, 18.905811, 174.16124)
 fov = 60.0
 far = 2000.0
 script = ExtResource("3_camera")
@@ -152,8 +151,4 @@ terrain_presenter_path = NodePath("../Terrain")
 
 [node name="WaterPlane" parent="." instance=ExtResource("19_obh5s")]
 transform = Transform3D(5000, 0, 0, 0, 5000, 0, 0, 0, 5000, -4.828, 4, 4.364)
-visible = false
 surface_material_override/0 = SubResource("ShaderMaterial_rr77w")
-
-[node name="Rock1" parent="." instance=ExtResource("11_215up")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -242.7028, 27.416016, 231.89688)

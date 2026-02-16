@@ -19,5 +19,6 @@ density_map = SubResource("NoiseTexture2D_7f1po")
 max_slope = 15.0
 scale_range = Vector2(0.1, 0.12)
 align_to_normal = false
+use_multimesh = true
 rule_id = "prop_rule_0"
 metadata/_custom_type_script = "uid://wlx5bsak37rn"

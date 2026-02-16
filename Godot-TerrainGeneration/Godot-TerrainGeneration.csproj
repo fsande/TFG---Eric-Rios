@@ -251,6 +251,7 @@
     <Content Include="terrain_generation\chunking\chunk_lod_state.gd" />
     <Content Include="terrain_generation\chunking\chunk_mesh_data.gd" />
     <Content Include="terrain_generation\chunking\chunk_mesh_data.gd.uid" />
+    <Content Include="terrain_generation\chunking\chunk_prop_data.gd" />
     <Content Include="terrain_generation\chunking\chunk_prop_manager.gd" />
     <Content Include="terrain_generation\chunking\chunk_ready_data.gd" />
     <Content Include="terrain_generation\chunking\chunk_request.gd" />
@@ -395,6 +396,9 @@
     <Content Include="terrain_generation\mesh_generators\tangent_calculation_data.gd" />
     <Content Include="terrain_generation\mesh_generators\tangent_calculation_data.gd.uid" />
     <Content Include="terrain_generation\mesh_generators\terrain_configuration.gd" />
+    <Content Include="terrain_generation\props\MULTIMESH_DOCUMENTATION.md" />
+    <Content Include="terrain_generation\props\prop_mesh_extractor.gd" />
+    <Content Include="terrain_generation\props\prop_multimesh_group.gd" />
     <Content Include="terrain_generation\props\prop_placement_rule.gd" />
     <Content Include="terrain_generation\visual_shaders\advanced_terrain_shader.gdshader" />
     <Content Include="terrain_generation\visual_shaders\terrain.gdshader" />

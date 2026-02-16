@@ -63,6 +63,13 @@ class_name PropPlacementRule extends Resource
 ## Distance at which to use billboard impostor (0 = no billboard)
 @export var billboard_distance: float = 0.0
 
+## Performance settings
+@export_group("Performance")
+
+## Use MultiMesh for rendering (better performance, no per-instance logic)
+## When enabled, all props from this rule in a chunk will be batched into a single draw call
+@export var use_multimesh: bool = false
+
 ## Metadata
 @export_group("Metadata")
 
