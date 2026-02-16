@@ -14,7 +14,7 @@ noise = SubResource("FastNoiseLite_ibtys")
 [resource]
 script = ExtResource("2_eewly")
 prop_scene = ExtResource("1_do4rr")
-density = 0.1
+density = 0.05
 density_map = SubResource("NoiseTexture2D_7f1po")
 max_slope = 15.0
 scale_range = Vector2(0.1, 0.12)

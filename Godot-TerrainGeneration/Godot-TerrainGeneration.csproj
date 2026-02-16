@@ -219,6 +219,7 @@
     <Content Include="player\player.gd" />
     <Content Include="player\player.gd.uid" />
     <Content Include="player\terrain_fly_camera.gd" />
+    <Content Include="PROP_PERFORMANCE_ANALYSIS.md" />
     <Content Include="REFACTORING_AGENT_NODE_ROOT.md" />
     <Content Include="resource_helpers\gpu_resource_helper.gd" />
     <Content Include="resource_helpers\gpu_resource_helper.gd.uid" />

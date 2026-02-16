@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://dxeaepbn0e70i"]
+[gd_scene load_steps=36 format=3 uid="uid://dxeaepbn0e70i"]
 
 [ext_resource type="Script" uid="uid://bgpjvppda2u8x" path="res://terrain_generation/core/terrain_presenter_v2.gd" id="1_presenter"]
 [ext_resource type="Resource" uid="uid://wr2k3r0ty8xg" path="res://assets/generation_resources/españita_guay.tres" id="2_oqt66"]
@@ -14,6 +14,7 @@
 [ext_resource type="Resource" uid="uid://v5ie01qj4ft2" path="res://assets/generation_resources/tree_place1.tres" id="10_7f1po"]
 [ext_resource type="Material" uid="uid://dmlbneowgjfqy" path="res://assets/materials/terrain_mat2.tres" id="10_oqt66"]
 [ext_resource type="PackedScene" uid="uid://cq832o58evlgr" path="res://assets/models/environment/rock/rock1.tscn" id="11_215up"]
+[ext_resource type="Resource" uid="uid://dmjfm4v8myli7" path="res://assets/generation_resources/rock_place1.tres" id="11_a8qn4"]
 [ext_resource type="Script" uid="uid://c51qydcxes5yv" path="res://terrain_generation/chunking/strategies/grid_load_strategy_v2.gd" id="11_bqotf"]
 [ext_resource type="PackedScene" uid="uid://k5n4e67sj3xd" path="res://scenes/water_plane.tscn" id="19_obh5s"]
 [ext_resource type="Shader" uid="uid://cxx0puljrol3k" path="res://assets/shaders/water.gdshader" id="20_dk27i"]
@@ -64,29 +65,13 @@ script = ExtResource("8_7f1po")
 agents = Array[ExtResource("5_oqt66")]([SubResource("Resource_ibtys")])
 metadata/_custom_type_script = "uid://d1uj11l5nqaog"
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_a8qn4"]
-frequency = 0.0221
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_obh5s"]
-noise = SubResource("FastNoiseLite_a8qn4")
-
-[sub_resource type="Resource" id="Resource_dk27i"]
-script = ExtResource("9_b4i1g")
-prop_scene = ExtResource("11_215up")
-density = 0.001
-density_map = SubResource("NoiseTexture2D_obh5s")
-scale_range = Vector2(0.6, 1.4)
-max_tilt = 45.0
-rule_id = "prop_rule_1"
-metadata/_custom_type_script = "uid://wlx5bsak37rn"
-
 [sub_resource type="Resource" id="Resource_oqt66"]
 script = ExtResource("6_4puc5")
 heightmap_source = ExtResource("2_oqt66")
 terrain_size = Vector2(1828, 1828)
 height_scale = 256.0
 modifier_stages = Array[ExtResource("9_spfy5")]([SubResource("Resource_bqotf")])
-prop_placement_rules = Array[ExtResource("9_b4i1g")]([ExtResource("10_7f1po"), SubResource("Resource_dk27i")])
+prop_placement_rules = Array[ExtResource("9_b4i1g")]([ExtResource("10_7f1po"), ExtResource("11_a8qn4")])
 base_chunk_resolution = 1024
 load_strategy = SubResource("Resource_4fayk")
 max_concurrent_chunk_requests = 1
@@ -138,7 +123,7 @@ shader_parameter/uv_scale = 100.0
 environment = SubResource("Environment_bqotf")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.055089504, 4.364501e-08, -0.99848145, 0.99848145, -2.4080384e-09, 0.055089504, 0, -1, -4.3711392e-08, 0, 142.29492, 0)
+transform = Transform3D(0.052730184, 0.28951627, -0.95571953, 0.9984814, -2.3574411e-09, 0.055089504, 0.01594931, -0.957173, -0.2890767, 0, 142.29492, 0)
 
 [node name="Terrain" type="Node3D" parent="."]
 script = ExtResource("1_presenter")

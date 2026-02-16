@@ -1,14 +1,14 @@
 shader_type spatial;
-render_mode specular_schlick_ggx, depth_draw_opaque, cull_back, diffuse_burley;
+//render_mode specular_schlick_ggx, depth_draw_opaque, cull_back, diffuse_burley;
 
 uniform float terrain_height = 64.0;
 uniform float blend_width = 0.2;
 uniform int texture_count;
-uniform sampler2DArray albedo_array;
-uniform sampler2DArray normal_array;
-uniform sampler2DArray roughness_array;
-uniform sampler2DArray metallic_array;
-uniform sampler2DArray ao_array;
+uniform sampler2DArray albedo_array : source_color;
+uniform sampler2DArray normal_array : hint_normal;
+uniform sampler2DArray roughness_array : hint_default_white;
+uniform sampler2DArray metallic_array : hint_default_white;
+uniform sampler2DArray ao_array : hint_default_white;
 uniform float blend_heights[32];
 uniform vec2 uv_scale = vec2(1.0);
 uniform float triplanar_sharpness = 4.0;
@@ -96,7 +96,7 @@ void fragment() {
     float triplanar_scale = avg_uv_scale / terrain_height;
     vec2 scaled_uv = UV * uv_scale;
     TriplanarWeights tri_weights = calculate_triplanar_weights(model_vertex, world_normal, triplanar_scale);
-    ALBEDO = blend_layer_vec3(albedo_array, lower_index, upper_index, blend, scaled_uv, tri_weights, triplanar_factor);
+ 	ALBEDO = blend_layer_vec3(albedo_array, lower_index, upper_index, blend, scaled_uv, tri_weights, triplanar_factor);
     vec3 normal1_uv = texture(normal_array, vec3(scaled_uv, float(lower_index))).rgb;
     vec3 normal2_uv = texture(normal_array, vec3(scaled_uv, float(upper_index))).rgb;
     vec3 normal_uv = blend_normals_rnm(normal1_uv, normal2_uv, blend);

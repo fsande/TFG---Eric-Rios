@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="PropPlacementRule" load_steps=5 format=3 uid="uid://dmjfm4v8myli7"]
+
+[ext_resource type="PackedScene" uid="uid://cq832o58evlgr" path="res://assets/models/environment/rock/rock1.tscn" id="1_75m4m"]
+[ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="2_f37b3"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_a8qn4"]
+frequency = 0.0221
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_obh5s"]
+noise = SubResource("FastNoiseLite_a8qn4")
+
+[resource]
+script = ExtResource("2_f37b3")
+prop_scene = ExtResource("1_75m4m")
+density = 0.003
+density_map = SubResource("NoiseTexture2D_obh5s")
+scale_range = Vector2(0.6, 1.4)
+max_tilt = 45.0
+rule_id = "prop_rule_1"
+metadata/_custom_type_script = "uid://wlx5bsak37rn"
