@@ -181,7 +181,7 @@ void accumulate_pass() {
     vec3 vertex_position_2 = load_vertex(vertex_index_2);
     vec3 edge_vector_1 = vertex_position_1 - vertex_position_0;
     vec3 edge_vector_2 = vertex_position_2 - vertex_position_0;
-    vec3 face_normal = normalize(cross(edge_vector_1, edge_vector_2));
+    vec3 face_normal = normalize(cross(edge_vector_2, edge_vector_1));
     accumulate_normal(vertex_index_0, face_normal);
     accumulate_normal(vertex_index_1, face_normal);
     accumulate_normal(vertex_index_2, face_normal);

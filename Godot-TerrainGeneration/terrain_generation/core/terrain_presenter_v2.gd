@@ -90,7 +90,8 @@ func regenerate() -> void:
 		configuration.height_scale,
 		configuration.modifier_stages,
 		configuration.generation_seed,
-		shared_context
+		shared_context,
+		configuration.prop_placement_rules
 	)
 	if not _terrain_definition:
 		push_error("TerrainPresenterV2: Failed to generate terrain definition")
@@ -334,7 +335,7 @@ func _instantiate_chunk(coord: Vector2i, lod_level: int, chunk: ChunkMeshData) -
 	if configuration.generate_collision and lod_level == 0:
 		_create_collision_for_chunk(coord, chunk, mesh_instance)
 	if _prop_manager and lod_level <= 1:
-		_prop_manager.spawn_props_for_chunk(chunk, lod_level)
+		var spawned := _prop_manager.spawn_props_for_chunk(chunk, lod_level)
 	chunk_loaded.emit(coord, lod_level)
 
 func _unload_chunk(coord: Vector2i) -> void:

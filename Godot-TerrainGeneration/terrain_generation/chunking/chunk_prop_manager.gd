@@ -90,29 +90,26 @@ func _make_key(coord: Vector2i) -> String:
 	return "%d,%d" % [coord.x, coord.y]
 
 func _create_terrain_sampler(chunk: ChunkMeshData) -> Callable:
-	return func(world_pos: Vector2) -> Dictionary:
+	return func(world_pos: Vector2) -> TerrainSample:
 		if not chunk.mesh_data or chunk.mesh_data.vertices.is_empty():
-			return {}
+			return TerrainSample.invalid()
 		var local_x := world_pos.x - chunk.world_position.x
 		var local_z := world_pos.y - chunk.world_position.z
 		var half_size := chunk.chunk_size / 2.0
 		var u := (local_x + half_size.x) / chunk.chunk_size.x
 		var v := (local_z + half_size.y) / chunk.chunk_size.y
 		if u < 0 or u > 1 or v < 0 or v > 1:
-			return {}
+			return TerrainSample.invalid()
 		var grid_x := int(u * (chunk.mesh_data.width - 1))
 		var grid_z := int(v * (chunk.mesh_data.height - 1))
 		grid_x = clampi(grid_x, 0, chunk.mesh_data.width - 1)
 		grid_z = clampi(grid_z, 0, chunk.mesh_data.height - 1)
 		var idx := grid_z * chunk.mesh_data.width + grid_x
 		if idx >= chunk.mesh_data.vertices.size():
-			return {}
+			return TerrainSample.invalid()
 		var vertex := chunk.mesh_data.vertices[idx]
 		var normal := Vector3.UP
 		if not chunk.mesh_data.cached_normals.is_empty() and idx < chunk.mesh_data.cached_normals.size():
 			normal = chunk.mesh_data.cached_normals[idx]
-		return {
-			"height": vertex.y + chunk.world_position.y,
-			"normal": normal
-		}
+		return TerrainSample.new(vertex.y + chunk.world_position.y, normal, true)
 

@@ -21,7 +21,8 @@ func generate(
 	height_scale: float,
 	stages: Array[TerrainModifierStage],
 	generation_seed: int = 0,
-	shared_context: ProcessingContext = null
+	shared_context: ProcessingContext = null,
+	prop_rules: Array[PropPlacementRule] = []
 ) -> TerrainDefinition:
 	var start_time := Time.get_ticks_msec()
 	if verbose:
@@ -68,7 +69,18 @@ func generate(
 		stage_completed.emit(stage._get_display_name(), stage_elapsed)
 		if not success:
 			push_error("TerrainDefinitionGenerator: Stage '%s' failed" % stage._get_display_name())
-			break
+	if not prop_rules.is_empty():
+		if verbose:
+			print("\n=== Adding Prop Placement Rules ===")
+		for rule in prop_rules:
+			if rule:
+				if rule.rule_id.is_empty():
+					rule.rule_id = "prop_rule_%d" % definition.prop_placement_rules.size()
+				if rule.seed_offset == 0:
+					rule.seed_offset = generation_seed
+				definition.add_prop_rule(rule)
+				if verbose:
+					print("Added rule: %s (density: %.3f)" % [rule.rule_id, rule.density])
 	if owns_context:
 		context.dispose()
 	var total_time := Time.get_ticks_msec() - start_time

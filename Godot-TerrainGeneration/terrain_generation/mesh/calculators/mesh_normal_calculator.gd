@@ -18,7 +18,8 @@ static func calculate_normals(mesh_data: MeshData) -> PackedVector3Array:
 		var v0 := mesh_data.vertices[i0]
 		var v1 := mesh_data.vertices[i1]
 		var v2 := mesh_data.vertices[i2]
-		var face_normal := (v1 - v0).cross(v2 - v0).normalized()
+		# Fixed: Swap cross product order to produce correct upward-facing normals
+		var face_normal := (v2 - v0).cross(v1 - v0).normalized()
 		normals[i0] += face_normal
 		normals[i1] += face_normal
 		normals[i2] += face_normal

@@ -32,6 +32,10 @@ signal load_strategy_changed()
 @export_group("Pipeline Stages)")
 @export var modifier_stages: Array[TerrainModifierStage] = []
 
+@export_group("Props")
+## Prop placement rules to apply to the terrain
+@export var prop_placement_rules: Array[PropPlacementRule] = []
+
 @export_group("Chunking")
 @export var chunk_size: Vector2 = Vector2(64, 64)
 @export var base_chunk_resolution: int = 64

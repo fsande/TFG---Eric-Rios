@@ -234,8 +234,6 @@
     <Content Include="terrain_generation\agents\config\mountain_agent_config.gd" />
     <Content Include="terrain_generation\agents\mountain_agent_v2.gd" />
     <Content Include="terrain_generation\agents\mountain_agent_v2.gd.uid" />
-    <Content Include="terrain_generation\agents\props\prop_placement_rule.gd" />
-    <Content Include="terrain_generation\agents\props\prop_placing_agent.gd" />
     <Content Include="terrain_generation\agents\terrain_modifier_agent.gd" />
     <Content Include="terrain_generation\agents\terrain_raise_agent_v2.gd" />
     <Content Include="terrain_generation\agents\terrain_raise_agent_v2.gd.uid" />
@@ -307,6 +305,7 @@
     <Content Include="terrain_generation\core\terrain_mesh_builder.gd" />
     <Content Include="terrain_generation\core\terrain_modifier_result.gd" />
     <Content Include="terrain_generation\core\terrain_presenter_v2.gd" />
+    <Content Include="terrain_generation\core\terrain_sample.gd" />
     <Content Include="terrain_generation\debug\chunk_debug_overlay.gd" />
     <Content Include="terrain_generation\debug\debug_image_exporter.gd" />
     <Content Include="terrain_generation\debug\terrain_debug_hud.gd" />
@@ -395,6 +394,7 @@
     <Content Include="terrain_generation\mesh_generators\tangent_calculation_data.gd" />
     <Content Include="terrain_generation\mesh_generators\tangent_calculation_data.gd.uid" />
     <Content Include="terrain_generation\mesh_generators\terrain_configuration.gd" />
+    <Content Include="terrain_generation\props\prop_placement_rule.gd" />
     <Content Include="terrain_generation\visual_shaders\advanced_terrain_shader.gdshader" />
     <Content Include="terrain_generation\visual_shaders\terrain.gdshader" />
     <Content Include="terrain_generation\visual_shaders\terrain.gdshader.uid" />
