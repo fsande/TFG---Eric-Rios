@@ -133,7 +133,7 @@ configuration = SubResource("Resource_oqt66")
 [node name="ChunksContainer" type="Node3D" parent="Terrain"]
 
 [node name="FlyCamera" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, 87.16572, 18.905811, 174.16124)
+transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, 158.50397, 18.905811, 218.17113)
 fov = 60.0
 far = 2000.0
 script = ExtResource("3_camera")

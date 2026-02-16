@@ -5,6 +5,11 @@
 ## and MultiMesh batching for better performance.
 class_name ChunkPropManager extends RefCounted
 
+## Distance for normal calculation as a fraction of terrain size (0.1% of terrain size)
+const NORMAL_SAMPLE_DISTANCE_FRACTION: float = 0.001
+
+## Minimum delta value to consider for height blending (avoids floating point noise)
+const DELTA_EPSILON: float = 0.0001
 
 var _terrain_definition: TerrainDefinition
 ## Dictionary[String, Array[PropPlacement]] - Maps chunk key to array of prop placements
@@ -36,7 +41,7 @@ func spawn_props_for_chunk(chunk: ChunkMeshData, lod_level: int) -> int:
 	_prop_containers[key] = container
 	var volumes := _terrain_definition.volume_definitions
 	var chunk_bounds := chunk.aabb
-	var terrain_sampler := _create_terrain_sampler(chunk)
+	var terrain_sampler := _create_terrain_sampler(chunk_bounds)
 	var all_placements: Array[PropPlacement] = []
 	var multimesh_groups: Dictionary[String, PropMultiMeshGroup] = {}
 	var spawned_count := 0
@@ -131,26 +136,51 @@ func has_props_for_chunk(chunk_coord: Vector2i) -> bool:
 func _make_key(coord: Vector2i) -> String:
 	return "%d,%d" % [coord.x, coord.y]
 
-func _create_terrain_sampler(chunk: ChunkMeshData) -> Callable:
+## Create a heightmap-based terrain sampler for prop placement.
+## Samples directly from the terrain heightmap, ensuring consistent results across all LOD levels.
+## @param chunk_bounds The world-space bounds of the chunk
+## @return Callable that takes Vector2 world position and returns TerrainSample
+func _create_terrain_sampler(chunk_bounds: AABB) -> Callable:
+	var base_heightmap := _terrain_definition.get_base_heightmap()
+	if not base_heightmap:
+		push_error("ChunkPropManager: Failed to get base heightmap for terrain sampling")
+		return func(_pos: Vector2) -> TerrainSample: return TerrainSample.invalid()
+	var terrain_size := _terrain_definition.terrain_size.x
+	var height_scale := _terrain_definition.height_scale
+	var deltas := _terrain_definition.get_deltas_for_chunk(chunk_bounds)
+	var normal_sample_distance := terrain_size * NORMAL_SAMPLE_DISTANCE_FRACTION
 	return func(world_pos: Vector2) -> TerrainSample:
-		if not chunk.mesh_data or chunk.mesh_data.vertices.is_empty():
-			return TerrainSample.invalid()
-		var local_x := world_pos.x - chunk.world_position.x
-		var local_z := world_pos.y - chunk.world_position.z
-		var half_size := chunk.chunk_size / 2.0
-		var u := (local_x + half_size.x) / chunk.chunk_size.x
-		var v := (local_z + half_size.y) / chunk.chunk_size.y
-		if u < 0 or u > 1 or v < 0 or v > 1:
-			return TerrainSample.invalid()
-		var grid_x := int(u * (chunk.mesh_data.width - 1))
-		var grid_z := int(v * (chunk.mesh_data.height - 1))
-		grid_x = clampi(grid_x, 0, chunk.mesh_data.width - 1)
-		grid_z = clampi(grid_z, 0, chunk.mesh_data.height - 1)
-		var idx := grid_z * chunk.mesh_data.width + grid_x
-		if idx >= chunk.mesh_data.vertices.size():
-			return TerrainSample.invalid()
-		var vertex := chunk.mesh_data.vertices[idx]
-		var normal := Vector3.UP
-		if not chunk.mesh_data.cached_normals.is_empty() and idx < chunk.mesh_data.cached_normals.size():
-			normal = chunk.mesh_data.cached_normals[idx]
-		return TerrainSample.new(vertex.y + chunk.world_position.y, normal, true)
+		var base_height := HeightmapSampler.sample_height_at(base_heightmap, world_pos, terrain_size)
+		var height := base_height * height_scale
+		for delta_map in deltas:
+			var delta_value := delta_map.sample_at(world_pos)
+			if absf(delta_value) >= DELTA_EPSILON:
+				height = delta_map.apply_blend(height, delta_value)
+		var pos_x_plus := world_pos + Vector2(normal_sample_distance, 0)
+		var pos_x_minus := world_pos - Vector2(normal_sample_distance, 0)
+		var pos_z_plus := world_pos + Vector2(0, normal_sample_distance)
+		var pos_z_minus := world_pos - Vector2(0, normal_sample_distance)
+		var h_x_plus := HeightmapSampler.sample_height_at(base_heightmap, pos_x_plus, terrain_size) * height_scale
+		var h_x_minus := HeightmapSampler.sample_height_at(base_heightmap, pos_x_minus, terrain_size) * height_scale
+		var h_z_plus := HeightmapSampler.sample_height_at(base_heightmap, pos_z_plus, terrain_size) * height_scale
+		var h_z_minus := HeightmapSampler.sample_height_at(base_heightmap, pos_z_minus, terrain_size) * height_scale
+		for delta_map in deltas:
+			var delta_x_plus := delta_map.sample_at(pos_x_plus)
+			if absf(delta_x_plus) >= DELTA_EPSILON:
+				h_x_plus = delta_map.apply_blend(h_x_plus, delta_x_plus)
+			var delta_x_minus := delta_map.sample_at(pos_x_minus)
+			if absf(delta_x_minus) >= DELTA_EPSILON:
+				h_x_minus = delta_map.apply_blend(h_x_minus, delta_x_minus)
+			var delta_z_plus := delta_map.sample_at(pos_z_plus)
+			if absf(delta_z_plus) >= DELTA_EPSILON:
+				h_z_plus = delta_map.apply_blend(h_z_plus, delta_z_plus)
+			var delta_z_minus := delta_map.sample_at(pos_z_minus)
+			if absf(delta_z_minus) >= DELTA_EPSILON:
+				h_z_minus = delta_map.apply_blend(h_z_minus, delta_z_minus)
+		var dx := (h_x_plus - h_x_minus) / (2.0 * normal_sample_distance)
+		var dz := (h_z_plus - h_z_minus) / (2.0 * normal_sample_distance)
+		var tangent_x := Vector3(1, dx, 0).normalized()
+		var tangent_z := Vector3(0, dz, 1).normalized()
+		var normal := tangent_z.cross(tangent_x).normalized()
+		return TerrainSample.new(height, normal, true)
+		
