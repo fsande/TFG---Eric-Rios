@@ -328,8 +328,8 @@ func _instantiate_chunk(coord: Vector2i, lod_level: int, chunk: ChunkMeshData) -
 		mesh_instance.material_override = configuration.terrain_material
 	mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	_chunks_container.add_child(mesh_instance)
-	if Engine.is_editor_hint():
-		mesh_instance.owner = get_tree().edited_scene_root
+#	if Engine.is_editor_hint():
+#		mesh_instance.owner = get_tree().edited_scene_root
 	_chunk_instances[coord] = mesh_instance
 	_loaded_chunks[coord] = LoadedChunkState.new(lod_level, chunk)
 	if configuration.generate_collision and lod_level == 0:

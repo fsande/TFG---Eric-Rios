@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://cq832o58evlgr"]
+
+[ext_resource type="Material" uid="uid://b60ijipg364h4" path="res://assets/materials/badlands_boulders/badlands_boulders.tres" id="1_p3mnw"]
+[ext_resource type="ArrayMesh" uid="uid://bhqydk3tsblqf" path="res://assets/models/environment/rock/rock_02.obj" id="2_0cuuu"]
+
+[node name="Rock1" type="Node3D"]
+
+[node name="Rock02" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
+material_override = ExtResource("1_p3mnw")
+mesh = ExtResource("2_0cuuu")
