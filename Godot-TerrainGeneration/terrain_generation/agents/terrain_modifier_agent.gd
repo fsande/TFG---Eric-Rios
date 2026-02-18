@@ -53,9 +53,7 @@ func validate(_context: TerrainGenerationContext) -> bool:
 ## Generate modifications. Called by TerrainDefinitionGenerator.
 ## @param context Generation context with terrain info
 ## @return TerrainModifierResult with generated data
-func generate(_context: TerrainGenerationContext) -> TerrainModifierResult:
-	push_error("TerrainModifierAgent.generate() must be overridden")
-	return TerrainModifierResult.create_failure("Not implemented")
+@abstract func generate(_context: TerrainGenerationContext) -> TerrainModifierResult
 
 ## Get metadata about this agent.
 func get_metadata() -> Dictionary:

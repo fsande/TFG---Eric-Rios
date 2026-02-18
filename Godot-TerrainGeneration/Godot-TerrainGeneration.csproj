@@ -209,6 +209,7 @@
     <Content Include="heightmaps\ultrapalma.png.import" />
     <Content Include="IMAGE_BASED_OPTIMIZATION.md" />
     <Content Include="NATURAL_CAVE_IMPLEMENTATION.md" />
+    <Content Include="PHASE1_IMPLEMENTATION_SUMMARY.md" />
     <Content Include="PHASE_1_COMPLETION_SUMMARY.md" />
     <Content Include="PHASE_1_FINAL_SUMMARY.md" />
     <Content Include="PHASE_1_REFACTORING_SUMMARY.md" />
@@ -220,7 +221,9 @@
     <Content Include="player\player.gd.uid" />
     <Content Include="player\terrain_fly_camera.gd" />
     <Content Include="PROP_PERFORMANCE_ANALYSIS.md" />
+    <Content Include="QUICK_REFERENCE_TERRAIN_ANALYSIS.md" />
     <Content Include="REFACTORING_AGENT_NODE_ROOT.md" />
+    <Content Include="REFACTORING_TERRAIN_CONTEXT_SRP.md" />
     <Content Include="resource_helpers\gpu_resource_helper.gd" />
     <Content Include="resource_helpers\gpu_resource_helper.gd.uid" />
     <Content Include="resource_helpers\gpu_texture_helper.gd" />
@@ -306,6 +309,7 @@
     <Content Include="terrain_generation\core\terrain_definition.gd" />
     <Content Include="terrain_generation\core\terrain_definition_generator.gd" />
     <Content Include="terrain_generation\core\terrain_generation_context.gd" />
+    <Content Include="terrain_generation\core\terrain_generation_context_CLEAN.gd" />
     <Content Include="terrain_generation\core\terrain_mesh_builder.gd" />
     <Content Include="terrain_generation\core\terrain_modifier_result.gd" />
     <Content Include="terrain_generation\core\terrain_presenter_v2.gd" />

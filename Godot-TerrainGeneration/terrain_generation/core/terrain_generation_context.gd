@@ -2,6 +2,7 @@
 ##
 ## @details Contains all information agents need to generate their modifications,
 ## including terrain parameters, reference heightmap, and utility functions.
+## Delegates specialized analysis to focused helper classes (SRP).
 class_name TerrainGenerationContext extends RefCounted
 
 ## Terrain size in world units
@@ -25,6 +26,11 @@ var terrain_definition: TerrainDefinition = null
 ## Processing context (for GPU access if needed)
 var processing_context: ProcessingContext = null
 
+## Helper classes for terrain analysis
+var _coastline_detector: CoastlineDetector = null
+var _point_finder: TerrainPointFinder = null
+var _gradient_calculator: TerrainGradientCalculator = null
+
 ## Initialize context with terrain parameters.
 func _init(
 	p_terrain_size: Vector2,
@@ -36,6 +42,9 @@ func _init(
 	height_scale = p_height_scale
 	generation_seed = p_seed
 	reference_heightmap = p_reference_heightmap
+	_coastline_detector = CoastlineDetector.new()
+	_point_finder = TerrainPointFinder.new(self)
+	_gradient_calculator = TerrainGradientCalculator.new(self)
 
 ## Get terrain bounds as AABB.
 func get_terrain_bounds() -> AABB:
@@ -60,11 +69,10 @@ func sample_height_at_uv(uv: Vector2) -> float:
 	if not reference_heightmap:
 		return 0.0
 	var px := int(uv.x * (reference_heightmap.get_width() - 1))
-	var py := int(uv.y * (reference_heightmap.get_height() - 1))
+	var py := int(uv.y * (reference_heightmap.get_width() - 1))
 	px = clampi(px, 0, reference_heightmap.get_width() - 1)
 	py = clampi(py, 0, reference_heightmap.get_height() - 1)
 	return reference_heightmap.get_pixel(px, py).r
-
 
 ## Get scaled height at world position.
 func get_scaled_height_at(world_pos: Vector2) -> float:
@@ -112,28 +120,78 @@ func create_rng(offset: int = 0) -> RandomNumberGenerator:
 	return rng
 
 ## Find cliff positions (steep slopes) for tunnel/cave placement.
+## Delegates to TerrainPointFinder.
 ## @param min_slope Minimum slope in degrees
 ## @param sample_count Number of samples to take
 ## @return Array of cliff positions with normals
 func find_cliff_positions(min_slope: float, sample_count: int = 100) -> Array[Dictionary]:
-	var cliffs: Array[Dictionary] = []
-	var rng := create_rng(12345)
-	for i in range(sample_count * 3):  # Oversample
-		if cliffs.size() >= sample_count:
-			break
-		var uv := Vector2(rng.randf(), rng.randf())
-		var world_pos := uv_to_world(uv)
-		var slope := calculate_slope_at(world_pos)
-		if slope >= min_slope:
-			var height := get_scaled_height_at(world_pos)
-			var normal := calculate_normal_at(world_pos)
-			cliffs.append({
-				"position": Vector3(world_pos.x, height, world_pos.y),
-				"normal": normal,
-				"slope": slope
-			})
-	return cliffs
+	return _point_finder.find_cliff_positions(min_slope, sample_count)
 
+## Get or generate binary coastline map (0=land, 1=water).
+## Delegates to CoastlineDetector.
+## @return Image where pixels below sea level are 1.0, above are 0.0
+func get_coastline_binary_map() -> Image:
+	if not reference_heightmap or not terrain_definition:
+		push_warning("TerrainGenerationContext: Cannot generate coastline without heightmap and terrain definition")
+		return null
+	var sea_level_normalized := terrain_definition.sea_level / height_scale
+	return _coastline_detector.get_or_generate_binary_map(reference_heightmap, sea_level_normalized)
+
+## Get or generate coastline edge map using edge detection.
+## Delegates to CoastlineDetector.
+## @return Image where coastline edge pixels are 1.0, others are 0.0
+func get_coastline_edge_map() -> Image:
+	var binary := get_coastline_binary_map()
+	if not binary:
+		return null
+	return _coastline_detector.get_or_detect_edges(binary, processing_context)
+
+## Set edge detection strategy (default is Sobel CPU).
+## Delegates to CoastlineDetector.
+## @param strategy Edge detection strategy to use
+func set_edge_detection_strategy(strategy: EdgeDetectionStrategy) -> void:
+	_coastline_detector.set_edge_detection_strategy(strategy)
+
+## Find coastline edge points for river endpoints or other features.
+## Delegates to TerrainPointFinder.
+## @param count Number of points desired
+## @param seed_offset Seed for randomization
+## @return Array of world-space Vector2 positions on coastline
+func find_coastline_points(count: int, seed_offset: int = 0) -> Array[Vector2]:
+	var edge_map := get_coastline_edge_map()
+	if not edge_map:
+		return []
+	return _point_finder.find_coastline_points(edge_map, count, seed_offset)
+
+## Find points above a height threshold (for river sources, etc.).
+## Delegates to TerrainPointFinder.
+## @param min_height_norm Minimum height (normalized 0-1)
+## @param count Number of points desired
+## @param seed_offset Seed for randomization
+## @return Array of world-space Vector2 positions
+func find_points_above_height(min_height_norm: float, count: int, seed_offset: int = 0) -> Array[Vector2]:
+	return _point_finder.find_points_above_height(min_height_norm, count, seed_offset)
+
+## Calculate 2D gradient (XZ plane) at a world position.
+## Delegates to TerrainGradientCalculator.
+## @param world_pos World position (XZ)
+## @return Vector2 gradient in XZ plane (not normalized)
+func calculate_gradient_at(world_pos: Vector2) -> Vector2:
+	return _gradient_calculator.calculate_gradient_at(world_pos)
+
+## Get downhill direction (negative gradient, normalized).
+## Delegates to TerrainGradientCalculator.
+## @param world_pos World position (XZ)
+## @return Normalized Vector2 pointing downhill, or ZERO if flat
+func calculate_downhill_direction(world_pos: Vector2) -> Vector2:
+	return _gradient_calculator.calculate_downhill_direction(world_pos)
+
+## Get uphill direction (positive gradient, normalized).
+## Delegates to TerrainGradientCalculator.
+## @param world_pos World position (XZ)
+## @return Normalized Vector2 pointing uphill, or ZERO if flat
+func calculate_uphill_direction(world_pos: Vector2) -> Vector2:
+	return _gradient_calculator.calculate_uphill_direction(world_pos)
 
 ## Dispose of any resources.
 func dispose() -> void:
@@ -141,4 +199,9 @@ func dispose() -> void:
 		processing_context.dispose()
 		processing_context = null
 	reference_heightmap = null
+	if _coastline_detector:
+		_coastline_detector.clear_cache()
+		_coastline_detector = null
+	_point_finder = null
+	_gradient_calculator = null
 

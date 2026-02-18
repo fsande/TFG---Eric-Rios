@@ -19,6 +19,10 @@
 @tool
 class_name RiverAgent extends TerrainModifierAgent
 
+@export var river_width: float = 5.0
+@export var min_origin_height: float = 40.0
+
+
 func _init() -> void:
 	agent_name = "River"
 	tokens = 25
@@ -26,6 +30,11 @@ func _init() -> void:
 func get_modifier_type() -> ModifierType:
 	return ModifierType.COMPOSITE   # Will carve riverbed and place water. 
 									# Might also extend to other river-related features in the future.
+
+func generate(_context: TerrainGenerationContext) -> TerrainModifierResult:
+	var sea_level = _context.terrain_definition.sea_level
+	return null
+	
 
 func get_agent_type() -> String:
 	return "River"
