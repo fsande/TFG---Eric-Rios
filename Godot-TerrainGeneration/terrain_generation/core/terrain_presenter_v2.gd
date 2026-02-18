@@ -138,9 +138,6 @@ func clear_all_chunks() -> void:
 		_generation_service.clear_cache()
 	if _prop_manager:
 		_prop_manager.despawn_all_props()
-	if _sea_presenter:
-		_sea_presenter.remove_sea_plane()
-		_sea_presenter = null
 
 func get_terrain_definition() -> TerrainDefinition:
 	return _terrain_definition
@@ -388,8 +385,6 @@ func _get_camera_position() -> Vector3:
 	return Vector3.ZERO
 
 func _create_sea_plane() -> void:
-	if _sea_presenter:
-		_sea_presenter.remove_sea_plane()
 	_sea_presenter = SeaPresenter.new()
 	var sea_size := configuration.terrain_size * configuration.size_relative_to_terrain
 	_sea_presenter.create_sea_plane(

@@ -54,13 +54,23 @@ func get_terrain_bounds() -> AABB:
 		Vector3(terrain_size.x, height_scale * 2, terrain_size.y)
 	)
 
-## Sample height at a world position from reference heightmap.
+## Sample height at a world position from reference heightmap + deltas.
 ## @param world_pos World position (XZ)
-## @return Height value (0-1 range, not scaled)
+## @return Height value (0-1 range, not scaled) including all delta modifications
 func sample_height_at(world_pos: Vector2) -> float:
 	if not reference_heightmap:
 		return 0.0
-	return HeightmapSampler.sample_height_at(reference_heightmap, world_pos, terrain_size.x)
+	var base_height := HeightmapSampler.sample_height_at(reference_heightmap, world_pos, terrain_size.x)
+	if terrain_definition and not terrain_definition.height_delta_maps.is_empty():
+		var total_delta := 0.0
+		for delta_map in terrain_definition.height_delta_maps:
+			if delta_map and delta_map.world_bounds.has_point(Vector3(world_pos.x, 0, world_pos.y)):
+				var delta_value := delta_map.sample_at(world_pos)
+				total_delta += delta_value
+		var normalized_delta := total_delta / height_scale
+		base_height += normalized_delta
+		base_height = clampf(base_height, 0.0, 1.0)
+	return base_height
 
 ## Sample height at UV coordinates from reference heightmap.
 ## @param uv UV coordinates (0-1 range)
@@ -204,4 +214,3 @@ func dispose() -> void:
 		_coastline_detector = null
 	_point_finder = null
 	_gradient_calculator = null
-

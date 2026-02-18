@@ -6,7 +6,7 @@
 class_name TerrainPointFinder extends RefCounted
 
 ## How much to oversample when searching for points
-const OVERSAMPLE_FACTOR := 3
+const OVERSAMPLE_FACTOR := 6
 ## Reference to the context for heightmap access
 var _context: TerrainGenerationContext
 

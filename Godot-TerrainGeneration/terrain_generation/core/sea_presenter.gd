@@ -42,10 +42,3 @@ func _generate_subdivided_plane(size: Vector2, subdivisions: int) -> ArrayMesh:
 	var array_mesh := ArrayMesh.new()
 	array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return array_mesh
-
-## Removes the sea plane
-func remove_sea_plane() -> void:
-	if _mesh_instance and _mesh_instance.is_inside_tree():
-		_mesh_instance.queue_free()
-		_mesh_instance = null
-

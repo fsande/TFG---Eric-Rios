@@ -57,6 +57,17 @@ func sample_at(world_pos: Vector2) -> float:
 		raw_value *= falloff_factor
 	return raw_value * intensity
 
+func sample_at_uv(uv: Vector2) -> float:
+	if not delta_texture:
+		return 0.0
+	if uv.x < 0.0 or uv.x > 1.0 or uv.y < 0.0 or uv.y > 1.0:
+		return 0.0
+	var raw_value := _sample_bilinear(uv)
+	if edge_falloff > 0.0:
+		var falloff_factor := _calculate_edge_falloff(uv)
+		raw_value *= falloff_factor
+	return raw_value * intensity
+
 ## Sample delta values for an entire region at specified resolution.
 ## @param bounds Region bounds to sample
 ## @param resolution Output resolution
@@ -176,5 +187,3 @@ func _calculate_edge_falloff(uv: Vector2) -> float:
 	var dist_edge := minf(dist_x, dist_y)
 	var t := clampf(dist_edge / edge_falloff, 0.0, 1.0)
 	return t * t * (3.0 - 2.0 * t)
-
-

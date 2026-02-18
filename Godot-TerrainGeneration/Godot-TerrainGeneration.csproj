@@ -209,7 +209,6 @@
     <Content Include="heightmaps\ultrapalma.png.import" />
     <Content Include="IMAGE_BASED_OPTIMIZATION.md" />
     <Content Include="NATURAL_CAVE_IMPLEMENTATION.md" />
-    <Content Include="PHASE1_IMPLEMENTATION_SUMMARY.md" />
     <Content Include="PHASE_1_COMPLETION_SUMMARY.md" />
     <Content Include="PHASE_1_FINAL_SUMMARY.md" />
     <Content Include="PHASE_1_REFACTORING_SUMMARY.md" />
@@ -220,10 +219,8 @@
     <Content Include="player\player.gd" />
     <Content Include="player\player.gd.uid" />
     <Content Include="player\terrain_fly_camera.gd" />
-    <Content Include="PROP_PERFORMANCE_ANALYSIS.md" />
-    <Content Include="QUICK_REFERENCE_TERRAIN_ANALYSIS.md" />
+    <Content Include="QUICK_START_RIVER_AGENT.md" />
     <Content Include="REFACTORING_AGENT_NODE_ROOT.md" />
-    <Content Include="REFACTORING_TERRAIN_CONTEXT_SRP.md" />
     <Content Include="resource_helpers\gpu_resource_helper.gd" />
     <Content Include="resource_helpers\gpu_resource_helper.gd.uid" />
     <Content Include="resource_helpers\gpu_texture_helper.gd" />
@@ -232,10 +229,12 @@
     <Content Include="resource_helpers\image_helper.gd.uid" />
     <Content Include="resource_helpers\orphan_node_detector.gd" />
     <Content Include="RESTORATION_SUMMARY.md" />
+    <Content Include="RIVER_AGENT_IMPLEMENTATION_COMPLETE.md" />
     <Content Include="SIMPLE_VERTEX_SNAPPING_COMPLETE.md" />
     <Content Include="SIMPLE_VERTEX_SNAPPING_PLAN.md" />
     <Content Include="SPLINE_TUNNEL_IMPLEMENTATION.md" />
     <Content Include="terrain_generation\agents\config\mountain_agent_config.gd" />
+    <Content Include="terrain_generation\agents\config\river_agent_config.gd" />
     <Content Include="terrain_generation\agents\mountain_agent_v2.gd" />
     <Content Include="terrain_generation\agents\mountain_agent_v2.gd.uid" />
     <Content Include="terrain_generation\agents\river_agent.gd" />

@@ -5,6 +5,8 @@
 ## Follows Single Responsibility Principle - only handles gradient calculations.
 class_name TerrainGradientCalculator extends RefCounted
 
+const THRESHOLD_FLATNESS := 0.000001  
+
 ## Reference to the context for heightmap access
 var _context: TerrainGenerationContext
 
@@ -18,36 +20,30 @@ func _init(context: TerrainGenerationContext) -> void:
 func calculate_gradient_at(world_pos: Vector2) -> Vector2:
 	if not _context.reference_heightmap:
 		return Vector2.ZERO
-	
-	# Use finite differences with small epsilon
 	var epsilon := _context.terrain_size.x / float(_context.reference_heightmap.get_width())
-	
 	var h_center := _context.sample_height_at(world_pos)
 	var h_right := _context.sample_height_at(world_pos + Vector2(epsilon, 0))
 	var h_forward := _context.sample_height_at(world_pos + Vector2(0, epsilon))
-	
-	# Gradient in XZ plane (world space)
 	var dx := (h_right - h_center) / epsilon
 	var dz := (h_forward - h_center) / epsilon
-	
 	return Vector2(dx, dz)
 
 ## Get downhill direction (negative gradient, normalized).
 ## @param world_pos World position (XZ)
 ## @return Normalized Vector2 pointing downhill, or ZERO if flat
-func calculate_downhill_direction(world_pos: Vector2) -> Vector2:
+func calculate_downhill_direction(world_pos: Vector2, threshold := THRESHOLD_FLATNESS) -> Vector2:
 	var gradient := calculate_gradient_at(world_pos)
-	if gradient.length_squared() < 0.0001:
-		return Vector2.ZERO  # Flat terrain
+	if gradient.length_squared() < threshold:
+		return Vector2.ZERO 
 	return -gradient.normalized()
 
 ## Get uphill direction (positive gradient, normalized).
 ## @param world_pos World position (XZ)
 ## @return Normalized Vector2 pointing uphill, or ZERO if flat
-func calculate_uphill_direction(world_pos: Vector2) -> Vector2:
+func calculate_uphill_direction(world_pos: Vector2, threshold := THRESHOLD_FLATNESS) -> Vector2:
 	var gradient := calculate_gradient_at(world_pos)
-	if gradient.length_squared() < 0.0001:
-		return Vector2.ZERO  # Flat terrain
+	if gradient.length_squared() < threshold:
+		return Vector2.ZERO
 	return gradient.normalized()
 
 ## Calculate gradient magnitude (steepness) at a position.

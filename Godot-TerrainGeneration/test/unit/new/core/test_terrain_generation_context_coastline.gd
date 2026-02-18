@@ -130,7 +130,7 @@ func test_find_points_above_height() -> void:
 	assert_gt(points.size(), 0, "Should find some high elevation points")
 	for point in points:
 		var height_norm := _context.sample_height_at(point)
-		assert_ge(height_norm, 0.5 - ERROR_TOLERANCE, 
+		assert_gte(height_norm, 0.5 - ERROR_TOLERANCE, 
 			"Point at (%f, %f) should be above threshold" % [point.x, point.y])
 
 ## Test find points above height with impossible threshold
