@@ -1,7 +1,19 @@
-[gd_resource type="Resource" script_class="PropPlacementRule" load_steps=5 format=3 uid="uid://dmjfm4v8myli7"]
+[gd_resource type="Resource" script_class="PropPlacementRule" load_steps=10 format=3 uid="uid://dmjfm4v8myli7"]
 
 [ext_resource type="PackedScene" uid="uid://cq832o58evlgr" path="res://assets/models/environment/rock/rock1.tscn" id="1_75m4m"]
+[ext_resource type="Script" uid="uid://cu0sy48pu3x7x" path="res://terrain_generation/props/constraints/prop_placement_constraint.gd" id="1_d6vfu"]
+[ext_resource type="Script" uid="uid://2kq5pkuiluj8" path="res://terrain_generation/props/constraints/volume_exclusion_constraint.gd" id="1_ic555"]
+[ext_resource type="Script" uid="uid://coaoelv6m43ad" path="res://terrain_generation/props/constraints/spacing_constraint.gd" id="2_d6vfu"]
 [ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="2_f37b3"]
+
+[sub_resource type="Resource" id="Resource_fk7lr"]
+script = ExtResource("1_ic555")
+metadata/_custom_type_script = "uid://2kq5pkuiluj8"
+
+[sub_resource type="Resource" id="Resource_8s1o8"]
+script = ExtResource("2_d6vfu")
+min_distance = 5.0
+metadata/_custom_type_script = "uid://coaoelv6m43ad"
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_a8qn4"]
 frequency = 0.0221
@@ -14,6 +26,7 @@ script = ExtResource("2_f37b3")
 prop_scene = ExtResource("1_75m4m")
 density = 0.003
 density_map = SubResource("NoiseTexture2D_obh5s")
+constraints = Array[ExtResource("1_d6vfu")]([SubResource("Resource_fk7lr"), SubResource("Resource_8s1o8")])
 scale_range = Vector2(0.6, 1.4)
 max_tilt = 45.0
 use_multimesh = true

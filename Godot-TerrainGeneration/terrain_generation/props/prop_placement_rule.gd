@@ -18,23 +18,7 @@ class_name PropPlacementRule extends Resource
 ## Placement constraints
 @export_group("Constraints")
 
-## Minimum terrain slope in degrees (0 = flat)
-@export_range(0.0, 90.0) var min_slope: float = 0.0
-
-## Maximum terrain slope in degrees
-@export_range(0.0, 90.0) var max_slope: float = 45.0
-
-## Minimum terrain height
-@export var min_height: float = -1000.0
-
-## Maximum terrain height
-@export var max_height: float = 1000.0
-
-## Minimum distance between props of this type
-@export var min_spacing: float = 1.0
-
-## Whether to avoid placing props inside volumes (tunnels, caves)
-@export var exclude_from_volumes: bool = true
+@export var constraints: Array[PropPlacementConstraint] = [HeightRangeConstraint.new(), SlopeRangeConstraint.new(), SpacingConstraint.new(), VolumeExclusionConstraint.new()]
 
 ## Variation parameters
 @export_group("Variation")
@@ -53,6 +37,9 @@ class_name PropPlacementRule extends Resource
 
 ## Sink props into ground by this amount
 @export var ground_offset: float = 0.0
+
+## Seed offset for variation
+@export var seed_offset: int = 0
 
 ## LOD settings
 @export_group("LOD")
@@ -79,8 +66,6 @@ class_name PropPlacementRule extends Resource
 ## Priority (higher = placed first, can block lower priority)
 @export var priority: int = 0
 
-## Seed offset for variation
-@export var seed_offset: int = 0
 
 ## Generate prop placements for a chunk.
 ## @param chunk_bounds World-space bounds of the chunk
@@ -92,7 +77,7 @@ func get_placements_for_chunk(
 	chunk_bounds: AABB,
 	terrain_sampler: Callable,  # Callable[[Vector2], TerrainSample]
 	volumes: Array[VolumeDefinition],
-	seed: int
+	terrain_definition: TerrainDefinition
 ) -> Array[PropPlacement]:
 	var placements: Array[PropPlacement] = []
 	if not prop_scene:
@@ -100,7 +85,8 @@ func get_placements_for_chunk(
 	if density <= 0:
 		return placements
 	var rng := RandomNumberGenerator.new()
-	rng.seed = seed + seed_offset + hash(rule_id)
+	var generation_seed = terrain_definition.generation_seed
+	rng.seed = generation_seed + seed_offset + hash(rule_id)
 	var chunk_area := chunk_bounds.size.x * chunk_bounds.size.z
 	var base_count := int(chunk_area * density)
 	var attempts := base_count * 3
@@ -110,46 +96,36 @@ func get_placements_for_chunk(
 		var x := rng.randf_range(chunk_bounds.position.x, chunk_bounds.position.x + chunk_bounds.size.x)
 		var z := rng.randf_range(chunk_bounds.position.z, chunk_bounds.position.z + chunk_bounds.size.z)
 		var pos_2d := Vector2(x, z)
-		if density_map:
+		var terrain_sample: TerrainSample = terrain_sampler.call(pos_2d)
+		if not terrain_sample or not terrain_sample.is_valid:
+			continue
+		if density_map: 
 			var uv := _world_to_density_uv(pos_2d, chunk_bounds)
 			var density_sample := _sample_density_map(uv)
 			if rng.randf() > density_sample:
 				continue
-		var terrain_sample: TerrainSample = terrain_sampler.call(pos_2d)
-		if not terrain_sample or not terrain_sample.is_valid:
-			continue
-		var height: float = terrain_sample.height
-		var normal: Vector3 = terrain_sample.normal
-		if height < min_height or height > max_height:
-			continue
-		var slope := rad_to_deg(acos(normal.dot(Vector3.UP)))
-		if slope < min_slope or slope > max_slope:
-			continue
-		if exclude_from_volumes:
-			var world_pos := Vector3(x, height, z)
-			var inside_volume := false
-			for volume in volumes:
-				if volume.volume_type == VolumeDefinition.VolumeType.SUBTRACTIVE:
-					if volume.point_is_inside(world_pos):
-						inside_volume = true
-						break
-			if inside_volume:
-				continue
-		var too_close := false
-		for existing in placements:
-			var dist := Vector2(existing.position.x, existing.position.z).distance_to(pos_2d)
-			if dist < min_spacing:
-				too_close = true
+		var valid: bool = true
+		for constraint in constraints:
+			if not constraint.validate(PropPlacementContext.new(
+				Vector2(x, z),
+				terrain_sample,
+				terrain_definition.sea_level,
+				placements,
+				volumes,
+				rng
+			)):
+				valid = false
 				break
-		if too_close:
+		if not valid:
 			continue
 		var placement := PropPlacement.new()
-		placement.position = Vector3(x, height + ground_offset, z)
+		placement.position = Vector3(x, terrain_sample.height + ground_offset, z)
 		placement.prop_scene = prop_scene
 		placement.rule_id = rule_id
+		var slope = rad_to_deg(acos(terrain_sample.normal.dot(Vector3.UP)))
 		if align_to_normal and max_tilt > 0:
 			var tilt_angle := minf(slope, max_tilt)
-			var tilt_axis := Vector3.UP.cross(normal).normalized()
+			var tilt_axis := Vector3.UP.cross(terrain_sample.normal).normalized()
 			if tilt_axis.length_squared() > 0.01:
 				placement.rotation = Vector3(
 					tilt_axis.x * deg_to_rad(tilt_angle),

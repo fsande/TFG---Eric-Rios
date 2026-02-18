@@ -1,7 +1,24 @@
-[gd_resource type="Resource" script_class="PropPlacementRule" load_steps=5 format=3 uid="uid://v5ie01qj4ft2"]
+[gd_resource type="Resource" script_class="PropPlacementRule" load_steps=12 format=3 uid="uid://v5ie01qj4ft2"]
 
 [ext_resource type="PackedScene" uid="uid://hva4ls0dvrrb" path="res://assets/models/environment/tree/tree.glb" id="1_do4rr"]
+[ext_resource type="Script" uid="uid://cu0sy48pu3x7x" path="res://terrain_generation/props/constraints/prop_placement_constraint.gd" id="1_eewly"]
+[ext_resource type="Script" uid="uid://bcic8hhde3pp6" path="res://terrain_generation/props/constraints/sea_level_constraint.gd" id="2_3lhjx"]
 [ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="2_eewly"]
+[ext_resource type="Script" uid="uid://c6mv7i4kfpatp" path="res://terrain_generation/props/constraints/slope_range_constraint.gd" id="3_ih7yn"]
+[ext_resource type="Script" uid="uid://2kq5pkuiluj8" path="res://terrain_generation/props/constraints/volume_exclusion_constraint.gd" id="5_1yskx"]
+
+[sub_resource type="Resource" id="Resource_skfwi"]
+script = ExtResource("2_3lhjx")
+metadata/_custom_type_script = "uid://bcic8hhde3pp6"
+
+[sub_resource type="Resource" id="Resource_swklc"]
+script = ExtResource("3_ih7yn")
+max_slope = 15.0
+metadata/_custom_type_script = "uid://c6mv7i4kfpatp"
+
+[sub_resource type="Resource" id="Resource_3lhjx"]
+script = ExtResource("5_1yskx")
+metadata/_custom_type_script = "uid://2kq5pkuiluj8"
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_ibtys"]
 noise_type = 4
@@ -14,11 +31,12 @@ noise = SubResource("FastNoiseLite_ibtys")
 [resource]
 script = ExtResource("2_eewly")
 prop_scene = ExtResource("1_do4rr")
-density = 0.05
+density = 0.025
 density_map = SubResource("NoiseTexture2D_7f1po")
-max_slope = 15.0
+constraints = Array[ExtResource("1_eewly")]([SubResource("Resource_skfwi"), SubResource("Resource_swklc"), SubResource("Resource_3lhjx")])
 scale_range = Vector2(0.1, 0.12)
 align_to_normal = false
+max_lod_level = 1
 use_multimesh = true
 rule_id = "prop_rule_0"
 metadata/_custom_type_script = "uid://wlx5bsak37rn"

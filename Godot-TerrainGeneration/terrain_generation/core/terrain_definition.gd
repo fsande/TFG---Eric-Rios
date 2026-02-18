@@ -21,6 +21,9 @@ class_name TerrainDefinition extends Resource
 ## Generation seed
 @export var generation_seed: int = 0
 
+## Sea level for water plane and underwater props
+@export var sea_level: float = 0.0
+
 ## Layer 1: Height Modifications
 @export_group("Height Deltas")
 

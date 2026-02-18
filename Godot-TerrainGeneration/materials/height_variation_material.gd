@@ -34,15 +34,10 @@ func _update_shader():
 	if count == 0:
 		return
 	var albedo_array = _create_texture_array(albedo_images)
-	print("albedo")
 	var normal_array = _create_texture_array(normal_images)
-	print("normal")
 	var roughness_array = _create_texture_array(roughness_images)
-	print("roughness")
 	var metallic_array = _create_texture_array(metallic_images)
-	print("metallic")
 	var ao_array = _create_texture_array(ao_images)
-	print("ao")
 	set_shader_parameter("albedo_array", albedo_array)
 	set_shader_parameter("normal_array", normal_array)
 	set_shader_parameter("roughness_array", roughness_array)

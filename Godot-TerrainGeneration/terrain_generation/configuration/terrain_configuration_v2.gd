@@ -59,6 +59,13 @@ signal load_strategy_changed()
 @export var lod_distances: Array[float] = [50.0, 100.0, 200.0, 400.0]
 @export_range(0.0, 0.5) var lod_hysteresis: float = 0.1
 
+@export_group("Sea")
+@export var enable_sea: bool = true
+@export var sea_level: float = 0.0
+@export var sea_material: Material
+@export var size_relative_to_terrain: float = 1.2
+@export var sea_subdivisions: int = 512
+
 @export_group("Visuals")
 @export var terrain_material: Material
 

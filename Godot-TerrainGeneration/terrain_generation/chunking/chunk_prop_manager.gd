@@ -50,7 +50,7 @@ func spawn_props_for_chunk(chunk: ChunkMeshData, lod_level: int) -> int:
 			chunk_bounds,
 			terrain_sampler,
 			volumes,
-			_terrain_definition.generation_seed
+			_terrain_definition
 		)
 		if rule_placements.is_empty():
 			continue

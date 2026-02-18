@@ -31,13 +31,14 @@ var _pending_chunk_requests: Dictionary[Vector2i, int] = {}
 var _ready_chunks_queue: Array[ChunkReadyData] = []
 var _chunks_container: Node3D
 var _props_container: Node3D
+var _sea_presenter: SeaPresenter
 var _update_timer: float = 0.0
 var _is_generating: bool = false
 var _camera: Camera3D
 var _load_context: ChunkLoadContextV2 = null
 
 func _ready() -> void:
-	if configuration.heightmap_source and configuration.auto_generate: 
+	if (configuration.heightmap_source and configuration.auto_generate) or Engine.is_editor_hint(): 
 		print("Auto-generating terrain on ready")
 		regenerate()
 
@@ -98,6 +99,7 @@ func regenerate() -> void:
 		shared_context.dispose()
 		_is_generating = false
 		return
+	_terrain_definition.sea_level = configuration.sea_level
 	_terrain_definition.set_shared_processing_context(shared_context)
 	if configuration.use_gpu_mesh_generation and configuration.use_async_loading:
 		push_warning("TerrainPresenterV2: GPU mesh generation REQUIRES synchronous loading. Disabling async loading.")
@@ -115,6 +117,8 @@ func regenerate() -> void:
 	_load_context = null
 	if _props_container:
 		_prop_manager = ChunkPropManager.new(_terrain_definition, _props_container)
+	if configuration.enable_sea:
+		_create_sea_plane()
 	if configuration.show_debug_info:
 		print("TerrainPresenterV2: %s" % _terrain_definition.get_summary())
 	_update_visible_chunks()
@@ -134,6 +138,9 @@ func clear_all_chunks() -> void:
 		_generation_service.clear_cache()
 	if _prop_manager:
 		_prop_manager.despawn_all_props()
+	if _sea_presenter:
+		_sea_presenter.remove_sea_plane()
+		_sea_presenter = null
 
 func get_terrain_definition() -> TerrainDefinition:
 	return _terrain_definition
@@ -335,7 +342,7 @@ func _instantiate_chunk(coord: Vector2i, lod_level: int, chunk: ChunkMeshData) -
 	if configuration.generate_collision and lod_level == 0:
 		_create_collision_for_chunk(coord, chunk, mesh_instance)
 	if _prop_manager and lod_level <= 1:
-		var spawned := _prop_manager.spawn_props_for_chunk(chunk, lod_level)
+		_prop_manager.spawn_props_for_chunk(chunk, lod_level)
 	chunk_loaded.emit(coord, lod_level)
 
 func _unload_chunk(coord: Vector2i) -> void:
@@ -379,3 +386,19 @@ func _get_camera_position() -> Vector3:
 		if _camera:
 			return _camera.global_position
 	return Vector3.ZERO
+
+func _create_sea_plane() -> void:
+	if _sea_presenter:
+		_sea_presenter.remove_sea_plane()
+	_sea_presenter = SeaPresenter.new()
+	var sea_size := configuration.terrain_size * configuration.size_relative_to_terrain
+	_sea_presenter.create_sea_plane(
+		self,
+		sea_size,
+		configuration.sea_level,
+		configuration.sea_subdivisions,
+		configuration.sea_material
+	)
+	if configuration.show_debug_info:
+		print("TerrainPresenterV2: Created sea plane - Size: %s, Level: %.2f, Subdivisions: %d" % 
+			[sea_size, configuration.sea_level, configuration.sea_subdivisions])

@@ -235,6 +235,7 @@
     <Content Include="terrain_generation\agents\config\mountain_agent_config.gd" />
     <Content Include="terrain_generation\agents\mountain_agent_v2.gd" />
     <Content Include="terrain_generation\agents\mountain_agent_v2.gd.uid" />
+    <Content Include="terrain_generation\agents\river_agent.gd" />
     <Content Include="terrain_generation\agents\terrain_modifier_agent.gd" />
     <Content Include="terrain_generation\agents\terrain_raise_agent_v2.gd" />
     <Content Include="terrain_generation\agents\terrain_raise_agent_v2.gd.uid" />
@@ -293,6 +294,7 @@
     <Content Include="terrain_generation\core\overhang_volume_definition.gd" />
     <Content Include="terrain_generation\core\processing_context.gd" />
     <Content Include="terrain_generation\core\prop_placement.gd" />
+    <Content Include="terrain_generation\core\sea_presenter.gd" />
     <Content Include="terrain_generation\core\stages\conditional_modifier_stage.gd" />
     <Content Include="terrain_generation\core\stages\conditional_modifier_stage.gd.uid" />
     <Content Include="terrain_generation\core\stages\parallel_modifier_stage.gd" />
@@ -396,10 +398,11 @@
     <Content Include="terrain_generation\mesh_generators\tangent_calculation_data.gd" />
     <Content Include="terrain_generation\mesh_generators\tangent_calculation_data.gd.uid" />
     <Content Include="terrain_generation\mesh_generators\terrain_configuration.gd" />
-    <Content Include="terrain_generation\props\MULTIMESH_DOCUMENTATION.md" />
     <Content Include="terrain_generation\props\prop_mesh_extractor.gd" />
     <Content Include="terrain_generation\props\prop_multimesh_group.gd" />
+    <Content Include="terrain_generation\props\prop_placement_context.gd" />
     <Content Include="terrain_generation\props\prop_placement_rule.gd" />
+    <Content Include="terrain_generation\props\prop_placement_rule_backup.gd" />
     <Content Include="terrain_generation\visual_shaders\advanced_terrain_shader.gdshader" />
     <Content Include="terrain_generation\visual_shaders\terrain.gdshader" />
     <Content Include="terrain_generation\visual_shaders\terrain.gdshader.uid" />
