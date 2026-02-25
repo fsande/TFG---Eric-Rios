@@ -223,7 +223,7 @@ func _calculate_path_length(path: Array[Vector2]) -> float:
 		length += path[i].distance_to(path[i - 1])
 	return length
 
-## Carve riverbed downstream (mountain → coast) with increasing width and depth.
+## Carve riverbed downstream (mountain -> coast) with increasing width and depth.
 func _carve_riverbed_downstream(path: Array[Vector2], _context: TerrainGenerationContext) -> HeightDeltaMap:
 	var bounds := _calculate_river_bounds(path)
 	var delta := HeightDeltaMap.create(config.delta_resolution, config.delta_resolution, bounds)
@@ -233,6 +233,15 @@ func _carve_riverbed_downstream(path: Array[Vector2], _context: TerrainGeneratio
 	delta.zone_tags = [&"river"]
 	var path_downstream: Array[Vector2] = path.duplicate()
 	path_downstream.reverse()
+	# Compute the hard boundary plane at the mountain source.
+	# The plane normal points downstream; any pixel behind it is rejected
+	# regardless of which path point is being processed.
+	var start_point := path_downstream[0]
+	var start_flow_dir: Vector2
+	if path_downstream.size() > 1:
+		start_flow_dir = (path_downstream[1] - path_downstream[0]).normalized()
+	else:
+		start_flow_dir = Vector2(0, 1)
 	for i in range(path_downstream.size()):
 		var position := path_downstream[i]
 		var progress := float(i) / float(path_downstream.size())
@@ -248,18 +257,25 @@ func _carve_riverbed_downstream(path: Array[Vector2], _context: TerrainGeneratio
 			flow_dir = (path_downstream[i] - path_downstream[i - 1]).normalized()
 		else:
 			flow_dir = Vector2(0, 1)
-		_apply_river_carving(delta, bounds, position, flow_dir, width, depth)
+		_apply_river_carving(delta, bounds, position, flow_dir, width, depth, start_point, start_flow_dir, i == path_downstream.size() - 1)
 	return delta
 
-## Apply river carving at a specific position (optimized version).
+## Apply river carving at a specific position.
 ## Instead of iterating the entire delta map, only process pixels near the river.
+## start_boundary_point / start_boundary_dir define a hard plane at the mountain
+## source: any pixel behind that plane is unconditionally skipped.
+## When is_end is true, pixels past the coast terminus use radial distance
+## so the carving forms a rounded cap.
 func _apply_river_carving(
 	delta: HeightDeltaMap,
 	bounds: AABB,
 	position: Vector2,
 	flow_direction: Vector2,
 	width: float,
-	depth: float
+	depth: float,
+	start_boundary_point: Vector2,
+	start_boundary_dir: Vector2,
+	is_end: bool = false
 ) -> void:
 	var perpendicular := Vector2(-flow_direction.y, flow_direction.x)
 	var max_distance := width / 2.0 #+ config.edge_falloff_distance
@@ -282,14 +298,29 @@ func _apply_river_carving(
 			var world_z := bounds.position.z + v * bounds.size.z
 			var pixel_pos := Vector2(world_x, world_z)
 			var relative := pixel_pos - position
-			var dist_perp: float = abs(relative.dot(perpendicular))
-			if dist_perp < width / 2.0:
+			# Hard boundary at the mountain source: reject any pixel that
+			# lies upstream of the start point, regardless of which path
+			# point is doing the carving.
+			var to_pixel_from_start := pixel_pos - start_boundary_point
+			if to_pixel_from_start.dot(start_boundary_dir) < 0.0:
+				continue
+			# At the coast mouth, use radial distance so the carving
+			# forms a rounded cap and doesn't extend past the terminus.
+			# Interior points keep the perpendicular-only metric.
+			var dist_along: float = relative.dot(flow_direction)
+			var use_radial := is_end and dist_along > 0.0
+			var dist: float
+			if use_radial:
+				dist = relative.length()
+			else:
+				dist = absf(relative.dot(perpendicular))
+			if dist < width / 2.0:
 				var current_value := delta.sample_at_uv(Vector2(u, v))
 				var new_depth := -depth
 				if current_value > new_depth:
 					delta.set_at_uv(Vector2(u, v), new_depth)
-			elif dist_perp < width / 2.0 + config.edge_falloff_distance:
-				var falloff_dist: float = dist_perp - width / 2.0
+			elif dist < width / 2.0 + config.edge_falloff_distance:
+				var falloff_dist: float = dist - width / 2.0
 				var falloff_factor := 1.0 - (falloff_dist / config.edge_falloff_distance)
 				var current_value := delta.sample_at_uv(Vector2(u, v))
 				var new_depth := -depth * falloff_factor

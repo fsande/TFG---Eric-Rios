@@ -96,6 +96,21 @@ static func _build_ribbon_surface(
 	uvs.resize(total_verts)
 	colors.resize(total_verts)
 	var cumulative_lengths := _compute_cumulative_lengths(path)
+	var centre_levels := PackedFloat32Array()
+	centre_levels.resize(point_count)
+	for i in range(point_count):
+		var terrain_height: float = height_sampler.call(path[i])
+		centre_levels[i] = terrain_height + water_offset
+	var stable_level: float = centre_levels[0]
+	var stable_index: int = 0
+	for i in range(1, point_count):
+		if centre_levels[i] < stable_level:
+			stable_level = centre_levels[i]
+			stable_index = i
+		else:
+			break
+	for i in range(stable_index):
+		centre_levels[i] = stable_level
 	for i in range(point_count):
 		var downstream_fraction := float(i) / float(point_count - 1)
 		var flow_dir := _compute_flow_direction(path, i)
@@ -104,14 +119,12 @@ static func _build_ribbon_surface(
 		var half_width: float = local_width / 2.0
 		var encoded_flow := _encode_direction_as_color(flow_dir)
 		var uv_along_path: float = cumulative_lengths[i] / local_width
-		var world_pos_2d: Vector2 = path[i]
-		var terrain_height: float = height_sampler.call(world_pos_2d)
-		var desired_level: float = terrain_height + water_offset
+		var desired_level: float = centre_levels[i]
 		for s in range(verts_per_section):
 			var cross_fraction: float = float(s) / float(verts_per_section - 1)
 			var lateral_offset: Vector2 = perpendicular * lerpf(-half_width, half_width, cross_fraction)
 			var vert_idx := i * verts_per_section + s
-			world_pos_2d = path[i] + lateral_offset
+			var world_pos_2d: Vector2 = path[i] + lateral_offset
 			var desired_2: float = height_sampler.call(world_pos_2d) + water_offset
 			var vertex_height: float = minf(desired_2, desired_level)
 			vertices[vert_idx] = Vector3(world_pos_2d.x, vertex_height, world_pos_2d.y)
