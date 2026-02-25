@@ -46,7 +46,17 @@ static func select_pairs(
 			var score := _score_pair(coast, mountain, dist, context)
 			if score > 0.0:
 				pairs.append(ScoredPair.new(coast, mountain, score))
-	pairs.sort_custom(func(a: ScoredPair, b: ScoredPair) -> bool: return a.score > b.score)
+	pairs.sort_custom(func(a: ScoredPair, b: ScoredPair) -> bool:
+		if a.score != b.score:
+			return a.score > b.score
+		if a.coast_point.x != b.coast_point.x:
+			return a.coast_point.x < b.coast_point.x
+		if a.coast_point.y != b.coast_point.y:
+			return a.coast_point.y < b.coast_point.y
+		if a.mountain_point.x != b.mountain_point.x:
+			return a.mountain_point.x < b.mountain_point.x
+		return a.mountain_point.y < b.mountain_point.y
+	)
 	if pairs.size() > max_pairs:
 		pairs.resize(max_pairs)
 	return pairs

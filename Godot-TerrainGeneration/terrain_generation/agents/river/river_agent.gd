@@ -44,14 +44,15 @@ func validate(context: TerrainGenerationContext) -> bool:
 
 func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 	var start_time := Time.get_ticks_msec()
+	var seed_base := config.placement_seed
 	progress_updated.emit(0.0, "Finding coastline points")
-	var coastline_points := context.find_coastline_points(20, 1000)
+	var coastline_points := context.find_coastline_points(20, seed_base + 1000)
 	if coastline_points.is_empty():
 		var elapsed := Time.get_ticks_msec() - start_time
 		return TerrainModifierResult.create_failure("No coastline found", elapsed)
 	progress_updated.emit(0.1, "Finding mountain points")
 	var min_height_norm := config.min_origin_height / context.height_scale
-	var mountain_points := context.find_points_above_height(min_height_norm, 20, 2000)
+	var mountain_points := context.find_points_above_height(min_height_norm, 20, seed_base + 2000)
 	if mountain_points.is_empty():
 		var elapsed := Time.get_ticks_msec() - start_time
 		return TerrainModifierResult.create_failure(
@@ -98,7 +99,7 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 	if config.place_water:
 		_place_water(path, context, result)
 	progress_updated.emit(0.95, "Creating debug spheres")
-	_spawn_debug_trail(path, context)
+#	_spawn_debug_trail(path, context)
 	progress_updated.emit(1.0, "Complete")
 	var elapsed := Time.get_ticks_msec() - start_time
 	result.elapsed_time_ms = elapsed
@@ -298,15 +299,9 @@ func _apply_river_carving(
 			var world_z := bounds.position.z + v * bounds.size.z
 			var pixel_pos := Vector2(world_x, world_z)
 			var relative := pixel_pos - position
-			# Hard boundary at the mountain source: reject any pixel that
-			# lies upstream of the start point, regardless of which path
-			# point is doing the carving.
 			var to_pixel_from_start := pixel_pos - start_boundary_point
 			if to_pixel_from_start.dot(start_boundary_dir) < 0.0:
 				continue
-			# At the coast mouth, use radial distance so the carving
-			# forms a rounded cap and doesn't extend past the terminus.
-			# Interior points keep the perpendicular-only metric.
 			var dist_along: float = relative.dot(flow_direction)
 			var use_radial := is_end and dist_along > 0.0
 			var dist: float

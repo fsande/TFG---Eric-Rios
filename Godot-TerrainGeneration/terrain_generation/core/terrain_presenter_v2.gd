@@ -38,7 +38,7 @@ var _camera: Camera3D
 var _load_context: ChunkLoadContextV2 = null
 
 func _ready() -> void:
-	if (configuration.heightmap_source and configuration.auto_generate) or Engine.is_editor_hint(): 
+	if (configuration.heightmap_source and configuration.auto_generate) or not Engine.is_editor_hint(): 
 		print("Auto-generating terrain on ready")
 		regenerate()
 
