@@ -96,24 +96,7 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 	var result := TerrainModifierResult.create_success()
 	result.add_height_delta(riverbed_delta)
 	if config.place_water:
-		progress_updated.emit(0.85, "Building river water mesh")
-		var downstream_path: Array[Vector2] = path.duplicate()
-		downstream_path.reverse()
-		var visual := RiverMeshBuilder.build(
-			downstream_path,
-			context,
-			config.river_width + config.water_mesh_extra_width,
-			config.width_multiplier_downstream,
-			config.water_surface_offset,
-			config.ribbon_cross_subdivisions,
-			config.ribbon_resample_spacing
-		)
-		if visual:
-			visual.display_name = get_display_name()
-			visual.material_override = config.water_material
-			result.add_river_visual(visual)
-		else:
-			push_warning("RiverAgent: Failed to build river water mesh")
+		_place_water(path, context, result)
 	progress_updated.emit(0.95, "Creating debug spheres")
 	_spawn_debug_trail(path, context)
 	progress_updated.emit(1.0, "Complete")
@@ -124,6 +107,24 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 		_calculate_path_length(path)
 	]
 	return result
+
+func _place_water(path: Array[Vector2], _context: TerrainGenerationContext, result: TerrainModifierResult) -> void:
+	progress_updated.emit(0.85, "Building river water feature")
+	var downstream_path: Array[Vector2] = path.duplicate()
+	downstream_path.reverse()
+	var river_feature := RiverWaterFeature.create(
+		downstream_path,
+		_calculate_river_bounds(path),
+		config.river_width,
+		config.width_multiplier_downstream,
+		config.water_surface_offset,
+		config.ribbon_cross_subdivisions,
+		config.ribbon_resample_spacing,
+		config.water_material,
+		get_display_name()
+	)
+	print("Added river feature")
+	result.add_chunk_feature(river_feature)
 
 ## Generate river path from coast to mountain following uphill gradient.
 func _generate_river_path_uphill(

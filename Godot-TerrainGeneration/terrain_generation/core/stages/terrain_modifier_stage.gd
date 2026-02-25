@@ -56,9 +56,6 @@ func _apply_result_to_definition(result: TerrainModifierResult, definition: Terr
 		definition.add_volume(volume)
 	for feature in result.chunk_features:
 		definition.add_chunk_feature(feature)
-	for visual in result.river_visuals:
-		visual.source_agent = agent_name
-		definition.add_river_visual(visual)
 
 func _get_display_name() -> String:
 	if stage_name != "":

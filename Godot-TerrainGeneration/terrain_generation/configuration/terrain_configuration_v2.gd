@@ -66,12 +66,6 @@ signal load_strategy_changed()
 @export var size_relative_to_terrain: float = 1.2
 @export var sea_subdivisions: int = 512
 
-@export_group("Rivers")
-## Enable river water surface rendering
-@export var enable_rivers: bool = true
-## Default material applied to all river water surfaces (overridden by per-agent material)
-@export var river_water_material: Material
-
 @export_group("Visuals")
 @export var terrain_material: Material
 

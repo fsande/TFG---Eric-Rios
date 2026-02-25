@@ -8,6 +8,6 @@ script = ExtResource("1_h7nw2")
 max_slope_degrees = 80.0
 min_river_length = 80.0
 step_size = 5.0
+downhill_tolerance = 0.0
 edge_falloff_distance = 1.0
-water_surface_offset = 0.0
 water_material = ExtResource("2_qbx2l")

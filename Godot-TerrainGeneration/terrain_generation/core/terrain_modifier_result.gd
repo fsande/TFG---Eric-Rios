@@ -22,12 +22,6 @@ var volumes: Array[VolumeDefinition] = []
 ## Generated chunk features
 var chunk_features: Array[ChunkFeature] = []
 
-## Generated prop placement rules
-var prop_rules: Array[PropPlacementRule] = []
-
-## Generated river visual data (water surface meshes)
-var river_visuals: Array[RiverVisualData] = []
-
 ## Additional metadata
 var metadata: Dictionary = {}
 
@@ -65,10 +59,10 @@ func add_volume(volume: VolumeDefinition) -> void:
 	if volume:
 		volumes.append(volume)
 
-## Add a river visual to the result.
-func add_river_visual(visual: RiverVisualData) -> void:
-	if visual:
-		river_visuals.append(visual)
+## Add a chunk feature to the result.
+func add_chunk_feature(feature: ChunkFeature) -> void:
+	if feature:
+		chunk_features.append(feature)
 
 ## Get summary string.
 func get_summary() -> String:
@@ -81,8 +75,6 @@ func get_summary() -> String:
 		parts.append("%d volume(s)" % volumes.size())
 	if not chunk_features.is_empty():
 		parts.append("%d chunk feature(s)" % chunk_features.size())
-	if not river_visuals.is_empty():
-		parts.append("%d river visual(s)" % river_visuals.size())
 	if parts.is_empty():
 		return "Success (no output)"
 	return "Success: %s in %.1f ms" % [", ".join(parts), elapsed_time_ms]

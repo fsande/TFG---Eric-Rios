@@ -103,6 +103,7 @@ func add_volume(volume: VolumeDefinition) -> void:
 ## Add a chunk feature.
 func add_chunk_feature(feature: ChunkFeature) -> void:
 	if feature:
+		print("Added feature: %s (priority %d, max LOD %d)" % [feature.rule_id, feature.priority, feature.max_lod_level])
 		chunk_features.append(feature)
 
 ## Add a river visual data.

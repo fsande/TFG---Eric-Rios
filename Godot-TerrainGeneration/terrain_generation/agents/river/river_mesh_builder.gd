@@ -124,3 +124,154 @@ static func build(
 	data.downstream_path = path
 	data.bounds = AABB(min_pos, max_pos - min_pos)
 	return data
+
+## Build an ArrayMesh from a downstream path using TerrainDefinition for sampling.
+##
+## This is the Option B builder: the mesh is constructed lazily at spawn time
+## using the TerrainDefinition (which outlives TerrainGenerationContext).
+##
+## @param downstream_path   Ordered Array[Vector2] from mountain to coast.
+## @param terrain_def       TerrainDefinition for height / gradient sampling.
+## @param river_width       Base river width in world units.
+## @param width_multiplier  Width multiplier at the downstream end (coast).
+## @param water_offset      Height offset above the carved riverbed.
+## @param cross_subdivisions Number of extra vertices across the width.
+## @param resample_spacing  If > 0, resample the path to this spacing first.
+## @return ArrayMesh ready to assign to a MeshInstance3D, or null on failure.
+static func build_from_definition(
+	downstream_path: Array[Vector2],
+	terrain_def: TerrainDefinition,
+	river_width: float,
+	width_multiplier: float,
+	water_offset: float,
+	cross_subdivisions: int = 0,
+	resample_spacing: float = 0.0
+) -> ArrayMesh:
+	if downstream_path.size() < 2:
+		push_error("RiverMeshBuilder: Path must have at least 2 points")
+		return null
+
+	# --- 1. Optionally resample ------------------------------------------------
+	var path := downstream_path
+	if resample_spacing > 0.0:
+		path = RiverPathResampler.resample(downstream_path, resample_spacing)
+	if path.size() < 2:
+		push_error("RiverMeshBuilder: Resampled path has fewer than 2 points")
+		return null
+
+	var point_count := path.size()
+	var verts_per_section: int = 2 + cross_subdivisions
+
+	# --- 2. Allocate arrays -----------------------------------------------------
+	var total_verts := point_count * verts_per_section
+	var vertices := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var colors := PackedColorArray()
+	var indices := PackedInt32Array()
+
+	vertices.resize(total_verts)
+	normals.resize(total_verts)
+	uvs.resize(total_verts)
+	colors.resize(total_verts)
+
+	# Pre-calculate total path length for UV.v
+	var cumulative_lengths := PackedFloat32Array()
+	cumulative_lengths.resize(point_count)
+	cumulative_lengths[0] = 0.0
+	for i in range(1, point_count):
+		cumulative_lengths[i] = cumulative_lengths[i - 1] + path[i].distance_to(path[i - 1])
+	var total_length: float = cumulative_lengths[point_count - 1]
+	if total_length < 0.001:
+		total_length = 1.0
+
+	# Gradient sampling epsilon (same logic as TerrainGenerationContext).
+	var epsilon: float = terrain_def.terrain_size.x / 512.0
+
+	# --- 3. Generate vertices per cross-section --------------------------------
+	for i in range(point_count):
+		var t := float(i) / float(point_count - 1)
+		var uv_v: float = cumulative_lengths[i] / total_length
+
+		# Flow direction along the path (tangent).
+		var flow_dir: Vector2
+		if i == 0:
+			flow_dir = (path[1] - path[0]).normalized()
+		elif i == point_count - 1:
+			flow_dir = (path[i] - path[i - 1]).normalized()
+		else:
+			flow_dir = (path[i + 1] - path[i - 1]).normalized()
+
+		var perp := Vector2(-flow_dir.y, flow_dir.x)
+		var half_w: float = (river_width * lerpf(1.0, width_multiplier, t)) / 2.0
+
+		# Terrain gradient for shader flow direction (computed from TerrainDefinition).
+		var gradient := _calculate_downhill_from_definition(path[i], terrain_def, epsilon)
+		if gradient.length_squared() < 0.0001:
+			gradient = flow_dir
+		else:
+			gradient = gradient.normalized()
+
+		var encoded_color := Color(
+			gradient.x * 0.5 + 0.5,
+			gradient.y * 0.5 + 0.5,
+			0.0,
+			1.0
+		)
+
+		for s in range(verts_per_section):
+			var frac: float = float(s) / float(verts_per_section - 1)
+			var offset_2d: Vector2 = perp * lerpf(-half_w, half_w, frac)
+			var world_2d: Vector2 = path[i] + offset_2d
+			var height: float = terrain_def.sample_height_at(world_2d) + water_offset
+
+			var idx := i * verts_per_section + s
+			vertices[idx] = Vector3(world_2d.x, height, world_2d.y)
+			normals[idx] = Vector3.UP
+			uvs[idx] = Vector2(frac, uv_v)
+			colors[idx] = encoded_color
+
+	# --- 4. Build index buffer --------------------------------------------------
+	var quad_count := (point_count - 1) * (verts_per_section - 1)
+	indices.resize(quad_count * 6)
+	var idx_write := 0
+	for i in range(point_count - 1):
+		for s in range(verts_per_section - 1):
+			var v0 := i * verts_per_section + s
+			var v1 := v0 + 1
+			var v2 := v0 + verts_per_section
+			var v3 := v2 + 1
+			indices[idx_write] = v0;     idx_write += 1
+			indices[idx_write] = v2;     idx_write += 1
+			indices[idx_write] = v1;     idx_write += 1
+			indices[idx_write] = v1;     idx_write += 1
+			indices[idx_write] = v2;     idx_write += 1
+			indices[idx_write] = v3;     idx_write += 1
+
+	# --- 5. Pack into ArrayMesh -------------------------------------------------
+	var surface := []
+	surface.resize(Mesh.ARRAY_MAX)
+	surface[Mesh.ARRAY_VERTEX] = vertices
+	surface[Mesh.ARRAY_NORMAL] = normals
+	surface[Mesh.ARRAY_TEX_UV] = uvs
+	surface[Mesh.ARRAY_COLOR] = colors
+	surface[Mesh.ARRAY_INDEX] = indices
+
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface)
+	return mesh
+
+## Calculate the downhill direction at a world position using TerrainDefinition.
+## Uses finite-difference gradient on composed height (base + deltas).
+static func _calculate_downhill_from_definition(
+	world_pos: Vector2,
+	terrain_def: TerrainDefinition,
+	epsilon: float
+) -> Vector2:
+	var h_center := terrain_def.sample_height_at(world_pos)
+	var h_right := terrain_def.sample_height_at(world_pos + Vector2(epsilon, 0))
+	var h_forward := terrain_def.sample_height_at(world_pos + Vector2(0, epsilon))
+	var grad := Vector2(h_right - h_center, h_forward - h_center) / epsilon
+	if grad.length_squared() < 0.0001:
+		return Vector2.ZERO
+	return -grad.normalized()
