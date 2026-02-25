@@ -102,7 +102,7 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 		var visual := RiverMeshBuilder.build(
 			downstream_path,
 			context,
-			config.river_width,
+			config.river_width + config.water_mesh_extra_width,
 			config.width_multiplier_downstream,
 			config.water_surface_offset,
 			config.ribbon_cross_subdivisions,

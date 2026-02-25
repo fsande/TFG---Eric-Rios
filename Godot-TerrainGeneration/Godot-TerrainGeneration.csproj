@@ -230,7 +230,9 @@
     <Content Include="RESTORATION_SUMMARY.md" />
     <Content Include="RIVER_AGENT_IMPLEMENTATION_COMPLETE.md" />
     <Content Include="RIVER_PATH_GENERATION_EVALUATION.md" />
+    <Content Include="RIVER_WATER_DESIGN_ALTERNATIVES.md" />
     <Content Include="RIVER_WATER_PROP_MIGRATION_REPORT.md" />
+    <Content Include="RIVER_WATER_VISUALS_REPORT.md" />
     <Content Include="SIMPLE_VERTEX_SNAPPING_COMPLETE.md" />
     <Content Include="SIMPLE_VERTEX_SNAPPING_PLAN.md" />
     <Content Include="SPLINE_TUNNEL_IMPLEMENTATION.md" />

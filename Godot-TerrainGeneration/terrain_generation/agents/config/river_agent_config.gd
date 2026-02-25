@@ -86,6 +86,9 @@ class_name RiverAgentConfig extends Resource
 
 @export_group("Water Placement")
 
+## Extra width added to the river mesh beyond the carved riverbed (for water visuals).
+@export var water_mesh_extra_width: float = 2.0
+
 ## Place water in river
 @export var place_water: bool = true
 
