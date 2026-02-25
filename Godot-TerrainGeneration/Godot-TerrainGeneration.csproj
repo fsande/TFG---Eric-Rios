@@ -219,7 +219,6 @@
     <Content Include="player\player.gd" />
     <Content Include="player\player.gd.uid" />
     <Content Include="player\terrain_fly_camera.gd" />
-    <Content Include="QUICK_START_RIVER_AGENT.md" />
     <Content Include="REFACTORING_AGENT_NODE_ROOT.md" />
     <Content Include="resource_helpers\gpu_resource_helper.gd" />
     <Content Include="resource_helpers\gpu_resource_helper.gd.uid" />
@@ -232,7 +231,6 @@
     <Content Include="RIVER_AGENT_IMPLEMENTATION_COMPLETE.md" />
     <Content Include="RIVER_PATH_GENERATION_EVALUATION.md" />
     <Content Include="RIVER_WATER_PROP_MIGRATION_REPORT.md" />
-    <Content Include="RIVER_WATER_VISUALS_REPORT.md" />
     <Content Include="SIMPLE_VERTEX_SNAPPING_COMPLETE.md" />
     <Content Include="SIMPLE_VERTEX_SNAPPING_PLAN.md" />
     <Content Include="SPLINE_TUNNEL_IMPLEMENTATION.md" />

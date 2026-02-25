@@ -143,14 +143,17 @@ func _generate_river_path_uphill(
 			var backoff_steps := mini(config.backoff_distance, path.size() - 1)
 			if backoff_steps > 0:
 				path.resize(path.size() - backoff_steps)
+#			print("TOO HIGH")
 			break
 		var slope := context.calculate_slope_at(current_pos)
 		if slope > config.max_slope_degrees:
 			var backoff_steps := mini(config.backoff_distance, path.size() - 1)
 			if backoff_steps > 0:
 				path.resize(path.size() - backoff_steps)
+#			print("TOO STEEP: %.1f degrees" % slope)
 			break
 		if current_pos.distance_to(target_pos) < config.step_size * 2:
+#			print("REACHED TARGET")
 			break
 		var height_range := config.max_altitude - start_height_scaled
 		var height_progress: float
@@ -168,6 +171,7 @@ func _generate_river_path_uphill(
 			uphill = to_target
 		var move_dir := (uphill * gradient_weight + to_target * target_weight)
 		if move_dir.length_squared() < 0.0001:
+#			print("NO DIRECTION")
 			break
 		move_dir = move_dir.normalized()
 		var next_pos := current_pos + move_dir * config.step_size
@@ -182,6 +186,7 @@ func _generate_river_path_uphill(
 				var backoff := mini(consecutive_downhill, path.size() - 1)
 				if backoff > 0:
 					path.resize(path.size() - backoff)
+#				print("TOO MUCH DOWNHILL")
 				break
 		else:
 			consecutive_downhill = 0
@@ -323,6 +328,8 @@ func _spawn_debug_trail(path: Array[Vector2], context: TerrainGenerationContext)
 		debug_container = Node3D.new()
 		debug_container.name = "RiverDebugSpheres"
 		scene_root.add_child(debug_container)
+	for child in debug_container.get_children():
+		child.queue_free()
 	var red_material := StandardMaterial3D.new()
 	red_material.albedo_color = Color(1.0, 0.0, 0.0, 1.0)
 	red_material.emission_enabled = true
@@ -365,5 +372,3 @@ func _spawn_debug_trail(path: Array[Vector2], context: TerrainGenerationContext)
 			elif direction.dot(up) < 0:
 				mesh_instance.rotate(Vector3.RIGHT, PI)
 		debug_container.add_child(mesh_instance)
-		if i < 3 or i >= path.size() - 3:
-			print("Debug cone %d at position: %s (height: %.2f, direction: %s)" % [i, cone_pos, height, direction])

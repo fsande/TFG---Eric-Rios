@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RiverAgentConfig" load_steps=3 format=3 uid="uid://hi4rsujbbul2"]
+
+[ext_resource type="Script" uid="uid://birb17b0dkd41" path="res://terrain_generation/agents/config/river_agent_config.gd" id="1_h7nw2"]
+[ext_resource type="Material" uid="uid://bebs1xgkmteua" path="res://assets/materials/water/water_mat.tres" id="2_qbx2l"]
+
+[resource]
+script = ExtResource("1_h7nw2")
+max_slope_degrees = 80.0
+min_river_length = 80.0
+step_size = 5.0
+edge_falloff_distance = 1.0
+water_surface_offset = 0.0
+water_material = ExtResource("2_qbx2l")

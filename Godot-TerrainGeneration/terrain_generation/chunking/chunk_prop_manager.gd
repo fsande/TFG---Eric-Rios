@@ -83,29 +83,20 @@ func spawn_props_for_chunk(chunk: ChunkMeshData, lod_level: int) -> int:
 
 func despawn_props_for_chunk(chunk_coord: Vector2i) -> void:
 	var key := _make_key(chunk_coord)
-	
 	if not _spawned_props.has(key):
 		return
-	
-	# Despawn regular props (only if they were not in a MultiMesh)
 	var placements: Array = _spawned_props[key]
 	for placement in placements:
 		if placement is PropPlacement:
-			# Only despawn if it has a spawned_node (wasn't in MultiMesh)
 			if placement.spawned_node:
 				placement.despawn()
-	
 	_spawned_props.erase(key)
-	
-	# Despawn MultiMesh groups
 	if _spawned_multimesh_groups.has(key):
 		var groups: Dictionary = _spawned_multimesh_groups[key]
 		for group in groups.values():
 			if group is PropMultiMeshGroup:
 				group.despawn()
 		_spawned_multimesh_groups.erase(key)
-	
-	# Remove container
 	if _prop_containers.has(key):
 		var container: Node3D = _prop_containers[key]
 		if is_instance_valid(container):
@@ -183,4 +174,3 @@ func _create_terrain_sampler(chunk_bounds: AABB) -> Callable:
 		var tangent_z := Vector3(0, dz, 1).normalized()
 		var normal := tangent_z.cross(tangent_x).normalized()
 		return TerrainSample.new(height, normal, true)
-		

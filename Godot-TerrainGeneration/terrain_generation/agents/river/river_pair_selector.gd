@@ -70,36 +70,15 @@ static func _score_pair(
 	const ALIGNMENT_WEIGHT := 0.30
 	const HEIGHT_WEIGHT := 0.20
 	const LAND_WEIGHT := 0.30
-	var terrain_diagonal := context.terrain_size.length()
-	var normalised_dist := dist / terrain_diagonal 
-	var dist_score: float
-	if normalised_dist < 0.05:
-		dist_score = 0.0
-	elif normalised_dist < 0.10:
-		dist_score = (normalised_dist - 0.05) / 0.05 
-	elif normalised_dist < 0.40:
-		dist_score = 1.0 
-	elif normalised_dist < 0.60:
-		dist_score = 1.0 - (normalised_dist - 0.40) / 0.20 
-	else:
-		dist_score = 0.0  
-	var to_mountain := (mountain - coast).normalized()
-	var uphill := context.calculate_uphill_direction(coast)
-	var alignment_score: float
-	if uphill.length_squared() < 0.0001:
-		alignment_score = 0.5
-	else:
-		alignment_score = clampf(uphill.dot(to_mountain) * 0.5 + 0.5, 0.0, 1.0)
 	var coast_height := context.get_scaled_height_at(coast)
 	var mountain_height := context.get_scaled_height_at(mountain)
-	var height_diff := mountain_height - coast_height
-	var height_score: float
-	if height_diff <= 0.0:
-		height_score = 0.0
-	else:
-		height_score = clampf(height_diff / (context.height_scale * 0.5), 0.0, 1.0)
+	var height_score := _score_height_difference(coast_height, mountain_height, context.height_scale)
 	if height_score <= 0.0:
 		return 0.0
+	var dist_score := _score_distance(dist, context.terrain_size.length())
+	var to_mountain := (mountain - coast).normalized()
+	var uphill := context.calculate_uphill_direction(coast)
+	var alignment_score := _score_alignment(uphill, to_mountain)
 	var land_score := _compute_land_ratio(coast, mountain, context)
 	var score := (
 		dist_score * DIST_WEIGHT
@@ -108,6 +87,32 @@ static func _score_pair(
 		+ land_score * LAND_WEIGHT
 	)
 	return score
+
+static func _score_distance(distance: float, terrain_diagonal: float) -> float:
+	var normalised_dist := distance / terrain_diagonal
+	if normalised_dist < 0.05:
+		return 0.0
+	elif normalised_dist < 0.10:
+		return (normalised_dist - 0.05) / 0.05 
+	elif normalised_dist < 0.40:
+		return 1.0 
+	elif normalised_dist < 0.60:
+		return 1.0 - (normalised_dist - 0.40) / 0.20 
+	else:
+		return 0.0
+
+static func _score_alignment(uphill: Vector2, to_mountain: Vector2) -> float:
+	if uphill.length_squared() < 0.0001:
+		return 0.5
+	else:
+		return clampf(uphill.dot(to_mountain) * 0.5 + 0.5, 0.0, 1.0)
+
+static func _score_height_difference(coast_height: float, mountain_height: float, height_scale: float) -> float:
+	var height_diff := mountain_height - coast_height
+	if height_diff <= 0.0:
+		return 0.0
+	else:
+		return clampf(height_diff / (height_scale * 0.5), 0.0, 1.0)
 
 ## Compute the fraction of straight-line samples above sea level,
 ## skipping the first 15% (coast is always near water).
