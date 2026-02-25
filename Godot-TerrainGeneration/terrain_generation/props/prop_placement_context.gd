@@ -6,6 +6,7 @@ var sea_level: float
 var existing_placements: Array[ChunkFeatureInstance] = []
 var volumes: Array[VolumeDefinition] = []
 var rng: RandomNumberGenerator
+var terrain_definition: TerrainDefinition = null
 
 func _init(
 	p_position_2d: Vector2,
@@ -13,7 +14,8 @@ func _init(
 	p_sea_level: float,
 	p_existing_placements: Array[ChunkFeatureInstance],
 	p_volumes: Array[VolumeDefinition],
-	p_rng: RandomNumberGenerator
+	p_rng: RandomNumberGenerator,
+	p_terrain_definition: TerrainDefinition = null
 ) -> void:
 	position_2d = p_position_2d
 	terrain_sample = p_terrain_sample
@@ -21,3 +23,4 @@ func _init(
 	existing_placements = p_existing_placements
 	volumes = p_volumes
 	rng = p_rng
+	terrain_definition = p_terrain_definition

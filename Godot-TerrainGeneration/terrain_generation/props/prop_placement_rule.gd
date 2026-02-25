@@ -105,7 +105,8 @@ func build_for_chunk(
 				terrain_definition.sea_level,
 				placements,
 				volumes,
-				rng
+				rng,
+				terrain_definition
 			)):
 				valid = false
 				break

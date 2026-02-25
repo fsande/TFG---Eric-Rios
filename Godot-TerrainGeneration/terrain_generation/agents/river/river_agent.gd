@@ -124,7 +124,6 @@ func _place_water(path: Array[Vector2], _context: TerrainGenerationContext, resu
 		config.water_material,
 		get_display_name()
 	)
-	print("Added river feature")
 	result.add_chunk_feature(river_feature)
 
 ## Generate river path from coast to mountain following uphill gradient.
@@ -231,6 +230,7 @@ func _carve_riverbed_downstream(path: Array[Vector2], _context: TerrainGeneratio
 	delta.blend_strategy = AdditiveBlendStrategy.new()
 	delta.intensity = 1.0
 	delta.source_agent = get_display_name()
+	delta.zone_tags = [&"river"]
 	var path_downstream: Array[Vector2] = path.duplicate()
 	path_downstream.reverse()
 	for i in range(path_downstream.size()):

@@ -29,6 +29,11 @@ class_name HeightDeltaMap extends Resource
 @export var source_agent: String = ""
 @export var creation_timestamp: int = 0
 
+## Semantic zone identifiers (e.g. &"river", &"mountain").
+## Set by agents that want their deltas to be queryable as named zones.
+## Empty means "untagged" (behaves as before).
+@export var zone_tags: Array[StringName] = []
+
 ## Create a new HeightDeltaMap with specified dimensions.
 ## @param width Width in pixels
 ## @param height Height in pixels
@@ -67,6 +72,20 @@ func sample_at_uv(uv: Vector2) -> float:
 		var falloff_factor := _calculate_edge_falloff(uv)
 		raw_value *= falloff_factor
 	return raw_value * intensity
+
+## Check if this delta has a non-zero modification at a world position.
+## Useful for zone-based queries (e.g. "is this point inside a river?").
+## @param world_pos World position (XZ plane)
+## @param threshold Minimum absolute value to consider active
+## @return True if the delta is actively modifying this position
+func is_active_at(world_pos: Vector2, threshold: float = 0.0001) -> bool:
+	return absf(sample_at(world_pos)) >= threshold
+
+## Check if this delta carries a specific zone tag.
+## @param tag The zone tag to check for
+## @return True if this delta has the given tag
+func has_zone_tag(tag: StringName) -> bool:
+	return tag in zone_tags
 
 ## Sample delta values for an entire region at specified resolution.
 ## @param bounds Region bounds to sample

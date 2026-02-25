@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="PropPlacementRule" load_steps=12 format=3 uid="uid://v5ie01qj4ft2"]
+[gd_resource type="Resource" script_class="PropPlacementRule" load_steps=14 format=3 uid="uid://v5ie01qj4ft2"]
 
 [ext_resource type="PackedScene" uid="uid://hva4ls0dvrrb" path="res://assets/models/environment/tree/tree.glb" id="1_do4rr"]
 [ext_resource type="Script" uid="uid://cu0sy48pu3x7x" path="res://terrain_generation/props/constraints/prop_placement_constraint.gd" id="1_eewly"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="2_eewly"]
 [ext_resource type="Script" uid="uid://c6mv7i4kfpatp" path="res://terrain_generation/props/constraints/slope_range_constraint.gd" id="3_ih7yn"]
 [ext_resource type="Script" uid="uid://2kq5pkuiluj8" path="res://terrain_generation/props/constraints/volume_exclusion_constraint.gd" id="5_1yskx"]
+[ext_resource type="Script" uid="uid://0hd1s1iaj40t" path="res://terrain_generation/props/constraints/zone_constraint.gd" id="5_3lhjx"]
 
 [sub_resource type="Resource" id="Resource_skfwi"]
 script = ExtResource("2_3lhjx")
@@ -20,6 +21,11 @@ metadata/_custom_type_script = "uid://c6mv7i4kfpatp"
 script = ExtResource("5_1yskx")
 metadata/_custom_type_script = "uid://2kq5pkuiluj8"
 
+[sub_resource type="Resource" id="Resource_ih7yn"]
+script = ExtResource("5_3lhjx")
+zone_tag = &"river"
+metadata/_custom_type_script = "uid://0hd1s1iaj40t"
+
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_ibtys"]
 noise_type = 4
 seed = 54645
@@ -33,7 +39,7 @@ script = ExtResource("2_eewly")
 prop_scene = ExtResource("1_do4rr")
 density = 0.025
 density_map = SubResource("NoiseTexture2D_7f1po")
-constraints = Array[ExtResource("1_eewly")]([SubResource("Resource_skfwi"), SubResource("Resource_swklc"), SubResource("Resource_3lhjx")])
+constraints = Array[ExtResource("1_eewly")]([SubResource("Resource_skfwi"), SubResource("Resource_swklc"), SubResource("Resource_3lhjx"), SubResource("Resource_ih7yn")])
 scale_range = Vector2(0.1, 0.12)
 align_to_normal = false
 use_multimesh = true

@@ -103,7 +103,6 @@ func add_volume(volume: VolumeDefinition) -> void:
 ## Add a chunk feature.
 func add_chunk_feature(feature: ChunkFeature) -> void:
 	if feature:
-		print("Added feature: %s (priority %d, max LOD %d)" % [feature.rule_id, feature.priority, feature.max_lod_level])
 		chunk_features.append(feature)
 
 ## Add a river visual data.
@@ -143,6 +142,28 @@ func get_chunk_features_for_lod(lod_level: int) -> Array[ChunkFeature]:
 		if rule.should_apply_at_lod(lod_level):
 			result.append(rule)
 	result.sort_custom(func(a, b): return a.priority > b.priority)
+	return result
+
+## Check if a world position falls inside any delta tagged with the given zone.
+## Returns true if at least one matching delta has a non-zero value at that point.
+## @param world_pos World position (XZ)
+## @param tag Zone tag to check (e.g. &"river")
+## @param threshold Minimum absolute delta value to consider active
+## @return True if position is inside a zone with the given tag
+func is_in_zone(world_pos: Vector2, tag: StringName, threshold: float = 0.0001) -> bool:
+	for delta in height_delta_maps:
+		if delta.has_zone_tag(tag) and delta.is_active_at(world_pos, threshold):
+			return true
+	return false
+
+## Get all height delta maps matching a zone tag.
+## @param tag Zone tag to filter by
+## @return Array of matching delta maps
+func get_deltas_by_zone(tag: StringName) -> Array[HeightDeltaMap]:
+	var result: Array[HeightDeltaMap] = []
+	for delta in height_delta_maps:
+		if delta.has_zone_tag(tag):
+			result.append(delta)
 	return result
 
 ## Generate or get cached base heightmap at specified resolution.
