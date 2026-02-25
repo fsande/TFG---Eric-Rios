@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://b1i8ah5vyfa7y"]
+
+[ext_resource type="Shader" uid="uid://cxx0puljrol3k" path="res://assets/shaders/water.gdshader" id="1_nqjhx"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_nqjhx")
+shader_parameter/albedo = Color(0, 0, 0, 1)
+shader_parameter/metallic = 0.25
+shader_parameter/roughness = 0.04
+shader_parameter/wave_direction = Vector2(2, 0)
+shader_parameter/wave_direction2 = Vector2(0, 1)
+shader_parameter/time_scale = 0.0
+shader_parameter/uv_scale = 1.0

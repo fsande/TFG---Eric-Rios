@@ -174,7 +174,6 @@
     <Content Include="ARCHITECTURE_EVALUATION.md" />
     <Content Include="ASYNC_NODE_CREATION_BUG_REPORT.md" />
     <Content Include="CPU_GPU_EQUIVALENCE_ANALYSIS.md" />
-    <Content Include="DESIGN_D_CHUNK_FEATURE_MANAGER.md" />
     <Content Include="ENTRANCE_CAP_FIX_DETAILS.md" />
     <Content Include="ENTRANCE_CAP_QUICK_START.md" />
     <Content Include="FIX_NESTED_NODES_VISIBILITY.md" />
@@ -230,9 +229,9 @@
     <Content Include="resource_helpers\orphan_node_detector.gd" />
     <Content Include="RESTORATION_SUMMARY.md" />
     <Content Include="RIVER_AGENT_IMPLEMENTATION_COMPLETE.md" />
-    <Content Include="RIVER_PATH_GENERATION_EVALUATION.md" />
-    <Content Include="RIVER_WATER_DESIGN_ALTERNATIVES.md" />
-    <Content Include="RIVER_WATER_PROP_MIGRATION_REPORT.md" />
+    <Content Include="RIVER_MESH_EMBEDDING_REPORT.md" />
+    <Content Include="RIVER_SHADER_DESIGN_REPORT.md" />
+    <Content Include="RIVER_SHADER_FLOW_FIX_REPORT.md" />
     <Content Include="RIVER_WATER_VISUALS_REPORT.md" />
     <Content Include="SIMPLE_VERTEX_SNAPPING_COMPLETE.md" />
     <Content Include="SIMPLE_VERTEX_SNAPPING_PLAN.md" />
@@ -241,7 +240,7 @@
     <Content Include="terrain_generation\agents\config\river_agent_config.gd" />
     <Content Include="terrain_generation\agents\mountain_agent_v2.gd" />
     <Content Include="terrain_generation\agents\mountain_agent_v2.gd.uid" />
-    <Content Include="terrain_generation\agents\river_agent.gd" />
+    <Content Include="terrain_generation\agents\river\river_agent.gd" />
     <Content Include="terrain_generation\agents\terrain_modifier_agent.gd" />
     <Content Include="terrain_generation\agents\terrain_raise_agent_v2.gd" />
     <Content Include="terrain_generation\agents\terrain_raise_agent_v2.gd.uid" />
