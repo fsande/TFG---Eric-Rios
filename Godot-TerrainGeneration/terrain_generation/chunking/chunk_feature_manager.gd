@@ -127,6 +127,9 @@ func _spawn_per_chunk_feature(feature: ChunkFeature, chunk: ChunkMeshData, _lod_
 	var chunk_bounds := chunk.aabb
 	var volumes := _terrain_definition.volume_definitions
 	var terrain_sampler := _create_terrain_sampler(chunk_bounds)
+	var prop_rule := feature as PropPlacementRule
+	if prop_rule:
+		prop_rule._current_lod = _lod_level
 	var instances := feature.build_for_chunk(
 		chunk_bounds,
 		terrain_sampler,
@@ -138,7 +141,6 @@ func _spawn_per_chunk_feature(feature: ChunkFeature, chunk: ChunkMeshData, _lod_
 	for instance in instances:
 		instance.position = instance.position - chunk.world_position
 	var spawned_count := 0
-	var prop_rule := feature as PropPlacementRule
 	if prop_rule and prop_rule.use_multimesh:
 		var prop_placements: Array[PropPlacement] = []
 		for instance in instances:

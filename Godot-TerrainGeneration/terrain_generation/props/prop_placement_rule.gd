@@ -54,6 +54,14 @@ class_name PropPlacementRule extends ChunkFeature
 ## When enabled, all props from this rule in a chunk will be batched into a single draw call
 @export var use_multimesh: bool = false
 
+## Density multiplier per LOD level increase.
+## At LOD 0 density is full (1.0×). At LOD 1 density is multiplied by this factor,
+## at LOD 2 by factor², etc. Set to 1.0 to keep full density at all LODs.
+@export_range(0.0, 1.0, 0.05) var lod_density_factor: float = 0.5
+
+## Current LOD level (set by ChunkFeatureManager before build_for_chunk)
+var _current_lod: int = 0
+
 func get_bounds() -> AABB:
 	return AABB(Vector3.INF, Vector3.INF)
 
@@ -81,7 +89,8 @@ func build_for_chunk(
 	var generation_seed = terrain_definition.generation_seed
 	rng.seed = generation_seed + seed_offset + hash(rule_id)
 	var chunk_area := chunk_bounds.size.x * chunk_bounds.size.z
-	var base_count := int(chunk_area * density)
+	var effective_density := density * pow(lod_density_factor, _current_lod)
+	var base_count := int(chunk_area * effective_density)
 	var attempts := base_count * 3
 	for i in range(attempts):
 		if placements.size() >= base_count * 2:

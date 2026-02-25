@@ -138,6 +138,7 @@ func clear_all_chunks() -> void:
 		_generation_service.clear_cache()
 	if _feature_manager:
 		_feature_manager.despawn_all_features()
+	PropMultiMeshGroup.clear_mesh_cache()
 
 func get_terrain_definition() -> TerrainDefinition:
 	return _terrain_definition

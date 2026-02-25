@@ -5,6 +5,14 @@
 ## individual node instances.
 class_name PropMultiMeshGroup extends RefCounted
 
+## Cache of already-extracted meshes keyed by prop scene resource path.
+## Shared across all instances so the same scene is only processed once.
+static var _mesh_cache: Dictionary = {}  # { String: Mesh }
+
+## Clear the mesh cache (e.g. on regeneration).
+static func clear_mesh_cache() -> void:
+	_mesh_cache.clear()
+
 ## The MultiMeshInstance3D node in the scene
 var multimesh_instance: MultiMeshInstance3D = null
 
@@ -43,14 +51,19 @@ func spawn(
 		return false
 	rule_id = p_rule_id
 	placements = prop_placements
-	var extracted := PropMeshExtractor.extract_from_scene(prop_scene)
-	if not extracted.success:
-		push_error("PropMultiMeshGroup: Failed to extract mesh - %s" % extracted.error_message)
-		return false
-	mesh = PropMeshExtractor.create_merged_mesh(extracted)
-	if not mesh:
-		push_error("PropMultiMeshGroup: Failed to create merged mesh")
-		return false
+	var cache_key := prop_scene.resource_path
+	if _mesh_cache.has(cache_key):
+		mesh = _mesh_cache[cache_key]
+	else:
+		var extracted := PropMeshExtractor.extract_from_scene(prop_scene)
+		if not extracted.success:
+			push_error("PropMultiMeshGroup: Failed to extract mesh - %s" % extracted.error_message)
+			return false
+		mesh = PropMeshExtractor.create_merged_mesh(extracted)
+		if not mesh:
+			push_error("PropMultiMeshGroup: Failed to create merged mesh")
+			return false
+		_mesh_cache[cache_key] = mesh
 	multimesh = MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh.instance_count = placements.size()
