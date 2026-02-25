@@ -23,4 +23,3 @@ func is_pair_valid(
 ## Get the name of this validation strategy.
 func get_strategy_name() -> String:
 	return "Unknown"
-

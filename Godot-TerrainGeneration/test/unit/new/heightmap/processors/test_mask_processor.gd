@@ -1,4 +1,4 @@
-﻿## Tests for MaskProcessor. Verifies masking operations with and without transitions.
+## Tests for MaskProcessor. Verifies masking operations with and without transitions.
 class_name TestMaskProcessor extends TestProcessor
 
 var _mask_processor: MaskProcessor
@@ -60,4 +60,3 @@ func test_mask_with_sparse_peaks() -> void:
 	_mask_processor.mask_image = mask
 	processor_test(input, ERROR_TOLERANCE)
 	assert_engine_error("HeightmapProcessor: GPU processing not implemented, falling back to CPU")
-

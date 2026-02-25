@@ -13,7 +13,7 @@ enum ModifierType {
 	VOLUME_SUBTRACTIVE, 
 	VOLUME_ADDITIVE,    
 	PROP_PLACEMENT,     
-	COMPOSITE           ## Produces multiple types
+	COMPOSITE
 }
 
 ## Emitted during generation to report progress

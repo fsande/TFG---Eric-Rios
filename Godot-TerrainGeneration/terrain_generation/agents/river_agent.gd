@@ -11,8 +11,8 @@
 ## 5. Carve riverbed downstream (mountain → coast) with increasing width
 ## 6. Place water volume/props
 ##
-## The agent follows the gradient uphill (coast → mountain) for natural meandering,
-## then carves the riverbed downhill (mountain → coast) with proper flow dynamics.
+## The agent follows the gradient uphill (coast -> mountain) for natural meandering,
+## then carves the riverbed downhill (mountain -> coast) with proper flow dynamics.
 @tool
 class_name RiverAgent extends TerrainModifierAgent
 
@@ -23,7 +23,7 @@ func _init() -> void:
 	tokens = 25
 
 func get_modifier_type() -> ModifierType:
-	return ModifierType.COMPOSITE  # Carves riverbed (height delta) and places water (props)
+	return ModifierType.COMPOSITE
 
 func get_agent_type() -> String:
 	return "River"
@@ -44,54 +44,50 @@ func validate(context: TerrainGenerationContext) -> bool:
 
 func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 	var start_time := Time.get_ticks_msec()
-	var rng := RandomNumberGenerator.new()
-	rng.seed = config.placement_seed if config.placement_seed != 0 else context.generation_seed
 	progress_updated.emit(0.0, "Finding coastline points")
-	var coastline_points := context.find_coastline_points(10, 1000)
+	var coastline_points := context.find_coastline_points(20, 1000)
 	if coastline_points.is_empty():
 		var elapsed := Time.get_ticks_msec() - start_time
 		return TerrainModifierResult.create_failure("No coastline found", elapsed)
 	progress_updated.emit(0.1, "Finding mountain points")
 	var min_height_norm := config.min_origin_height / context.height_scale
-	var mountain_points := context.find_points_above_height(min_height_norm, 10, 2000)
+	var mountain_points := context.find_points_above_height(min_height_norm, 20, 2000)
 	if mountain_points.is_empty():
 		var elapsed := Time.get_ticks_msec() - start_time
 		return TerrainModifierResult.create_failure(
-			"No mountain points above %.1fm" % config.min_origin_height, 
+			"No mountain points above %.1fm" % config.min_origin_height,
 			elapsed
 		)
-	progress_updated.emit(0.2, "Generating river path")
-	var validator := config.pair_validator
-	if not validator:
-		validator = HeuristicRiverPairValidator.new()
-		print("Using default validator: %s" % validator.get_strategy_name())
-	else:
-		print("Using configured validator: %s" % validator.get_strategy_name())
+	progress_updated.emit(0.2, "Scoring coast-mountain pairs")
+	var scored_pairs := RiverPairSelector.select_pairs(
+		coastline_points,
+		mountain_points,
+		context,
+		config.min_coast_to_mountain_distance,
+		config.max_coast_to_mountain_distance,
+		config.max_attempts
+	)
+	if scored_pairs.is_empty():
+		var elapsed := Time.get_ticks_msec() - start_time
+		return TerrainModifierResult.create_failure(
+			"No feasible coast-mountain pairs found (tried %d×%d candidates)" % [
+				coastline_points.size(), mountain_points.size()
+			], elapsed
+		)
+	progress_updated.emit(0.3, "Generating river path (%d candidate pairs)" % scored_pairs.size())
 	var path: Array[Vector2] = []
-	var coast_point: Vector2
-	var mountain_point: Vector2
-	var validation_rejections := 0
-	for attempt in range(config.max_attempts):
-		var coast_idx := rng.randi_range(0, coastline_points.size() - 1)
-		var mountain_idx := rng.randi_range(0, mountain_points.size() - 1)
-		coast_point = coastline_points[coast_idx]
-		mountain_point = mountain_points[mountain_idx]
-		if coast_point.distance_to(mountain_point) < config.min_coast_to_mountain_distance:
-			continue
-		if config.enable_pair_validation:
-			if not validator.is_pair_valid(coast_point, mountain_point, context):
-				validation_rejections += 1
-				continue
-		path = _generate_river_path_uphill(coast_point, mountain_point, context)
+	for attempt in range(scored_pairs.size()):
+		var pair := scored_pairs[attempt]
+		path = _generate_river_path_uphill(pair.coast_point, pair.mountain_point, context)
 		if not path.is_empty():
-			progress_updated.emit(0.5, "Valid path found on attempt %d" % (attempt + 1))
+			progress_updated.emit(0.5, "Valid path found on pair %d (score %.2f)" % [attempt + 1, pair.score])
 			break
 	if path.is_empty():
 		var elapsed := Time.get_ticks_msec() - start_time
-		var msg := "Failed to generate valid river after %d attempts" % config.max_attempts
-		if validation_rejections > 0:
-			msg += " (%d rejected by pair validation - possibly different landmasses)" % validation_rejections
-		return TerrainModifierResult.create_failure(msg, elapsed)
+		return TerrainModifierResult.create_failure(
+			"Failed to generate valid river from %d scored pairs" % scored_pairs.size(),
+			elapsed
+		)
 	if config.smooth_path:
 		progress_updated.emit(0.6, "Smoothing river path")
 		path = _smooth_path(path, config.smoothing_iterations)
@@ -99,8 +95,27 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 	var riverbed_delta := _carve_riverbed_downstream(path, context)
 	var result := TerrainModifierResult.create_success()
 	result.add_height_delta(riverbed_delta)
+	if config.place_water:
+		progress_updated.emit(0.85, "Building river water mesh")
+		var downstream_path: Array[Vector2] = path.duplicate()
+		downstream_path.reverse()
+		var visual := RiverMeshBuilder.build(
+			downstream_path,
+			context,
+			config.river_width,
+			config.width_multiplier_downstream,
+			config.water_surface_offset,
+			config.ribbon_cross_subdivisions,
+			config.ribbon_resample_spacing
+		)
+		if visual:
+			visual.display_name = get_display_name()
+			visual.material_override = config.water_material
+			result.add_river_visual(visual)
+		else:
+			push_warning("RiverAgent: Failed to build river water mesh")
 	progress_updated.emit(0.95, "Creating debug spheres")
-#	_spawn_debug_trail(path, context)
+	_spawn_debug_trail(path, context)
 	progress_updated.emit(1.0, "Complete")
 	var elapsed := Time.get_ticks_msec() - start_time
 	result.elapsed_time_ms = elapsed
@@ -111,7 +126,6 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 	return result
 
 ## Generate river path from coast to mountain following uphill gradient.
-## Based on Doran & Parberry algorithm (lines #3-#7 of pseudo-code).
 func _generate_river_path_uphill(
 	start_pos: Vector2,
 	target_pos: Vector2,
@@ -120,6 +134,8 @@ func _generate_river_path_uphill(
 	var path: Array[Vector2] = []
 	var current_pos := start_pos
 	path.append(current_pos)
+	var start_height_scaled := context.sample_height_at(start_pos) * context.height_scale
+	var consecutive_downhill := 0
 	for step in range(config.max_path_steps):
 		var current_height := context.sample_height_at(current_pos)
 		var current_height_scaled := current_height * context.height_scale
@@ -136,25 +152,40 @@ func _generate_river_path_uphill(
 			break
 		if current_pos.distance_to(target_pos) < config.step_size * 2:
 			break
+		var height_range := config.max_altitude - start_height_scaled
+		var height_progress: float
+		if height_range > 0.01:
+			height_progress = clampf(
+				(current_height_scaled - start_height_scaled) / height_range, 0.0, 1.0
+			)
+		else:
+			height_progress = 0.0
+		var gradient_weight := lerpf(config.gradient_weight_start, config.gradient_weight_end, height_progress)
+		var target_weight := 1.0 - gradient_weight
 		var to_target := (target_pos - current_pos).normalized()
 		var uphill := context.calculate_uphill_direction(current_pos)
 		if uphill.length_squared() < 0.0001:
 			uphill = to_target
-		var progress := float(step) / float(config.max_path_steps)
-		var gradient_weight := lerpf(config.gradient_weight_start, config.gradient_weight_end, progress)
-		var target_weight := 1.0 - gradient_weight
 		var move_dir := (uphill * gradient_weight + to_target * target_weight)
 		if move_dir.length_squared() < 0.0001:
 			break
 		move_dir = move_dir.normalized()
-		current_pos += move_dir * config.step_size
+		var next_pos := current_pos + move_dir * config.step_size
 		var half_size := context.terrain_size / 2.0
-		current_pos.x = clampf(current_pos.x, -half_size.x, half_size.x)
-		current_pos.y = clampf(current_pos.y, -half_size.y, half_size.y)
-		var new_height := context.sample_height_at(current_pos)
-		var new_height_scaled := new_height * context.height_scale
-		if new_height_scaled + 0.2 < current_height_scaled:
-			break
+		next_pos.x = clampf(next_pos.x, -half_size.x, half_size.x)
+		next_pos.y = clampf(next_pos.y, -half_size.y, half_size.y)
+		var next_height_scaled := context.sample_height_at(next_pos) * context.height_scale
+		var height_drop := current_height_scaled - next_height_scaled
+		if height_drop > config.downhill_tolerance:
+			consecutive_downhill += 1
+			if consecutive_downhill >= config.max_consecutive_downhill_steps:
+				var backoff := mini(consecutive_downhill, path.size() - 1)
+				if backoff > 0:
+					path.resize(path.size() - backoff)
+				break
+		else:
+			consecutive_downhill = 0
+		current_pos = next_pos
 		path.append(current_pos)
 	var path_length := _calculate_path_length(path)
 	if path_length < config.min_river_length:
@@ -187,18 +218,14 @@ func _calculate_path_length(path: Array[Vector2]) -> float:
 	return length
 
 ## Carve riverbed downstream (mountain → coast) with increasing width and depth.
-## Implements lines #8-#11 of Doran & Parberry pseudo-code.
-func _carve_riverbed_downstream(path: Array[Vector2], context: TerrainGenerationContext) -> HeightDeltaMap:
+func _carve_riverbed_downstream(path: Array[Vector2], _context: TerrainGenerationContext) -> HeightDeltaMap:
 	var bounds := _calculate_river_bounds(path)
-	print("River bounds: %s" % bounds)
 	var delta := HeightDeltaMap.create(config.delta_resolution, config.delta_resolution, bounds)
 	delta.blend_strategy = AdditiveBlendStrategy.new()
 	delta.intensity = 1.0
 	delta.source_agent = get_display_name()
-	print("Created delta map with resolution %d x %d" % [config.delta_resolution, config.delta_resolution])
 	var path_downstream: Array[Vector2] = path.duplicate()
 	path_downstream.reverse()
-	print("Carving river with %d path points" % path_downstream.size())
 	for i in range(path_downstream.size()):
 		var position := path_downstream[i]
 		var progress := float(i) / float(path_downstream.size())
@@ -207,14 +234,14 @@ func _carve_riverbed_downstream(path: Array[Vector2], context: TerrainGeneration
 			config.max_depth
 		)
 		var width := config.river_width * lerpf(1.0, config.width_multiplier_downstream, progress)
-		var downhill := context.calculate_downhill_direction(position)
-		if downhill.length_squared() < 0.0001:
-			downhill = Vector2(0, 1)
+		var flow_dir: Vector2
+		if i < path_downstream.size() - 1:
+			flow_dir = (path_downstream[i + 1] - path_downstream[i]).normalized()
+		elif i > 0:
+			flow_dir = (path_downstream[i] - path_downstream[i - 1]).normalized()
 		else:
-			downhill = downhill.normalized()
-		_apply_river_carving(delta, bounds, position, downhill, width, depth)
-		if i < 3 or i >= path_downstream.size() - 3:
-			print("Carved point %d at %s with depth %.2f and width %.2f" % [i, position, depth, width])
+			flow_dir = Vector2(0, 1)
+		_apply_river_carving(delta, bounds, position, flow_dir, width, depth)
 	return delta
 
 ## Apply river carving at a specific position (optimized version).
@@ -228,7 +255,7 @@ func _apply_river_carving(
 	depth: float
 ) -> void:
 	var perpendicular := Vector2(-flow_direction.y, flow_direction.x)
-	var max_distance := width / 2.0 + config.edge_falloff_distance
+	var max_distance := width / 2.0 #+ config.edge_falloff_distance
 	var center_local_x := (position.x - bounds.position.x) / bounds.size.x
 	var center_local_z := (position.y - bounds.position.z) / bounds.size.z
 	var pixel_size_x := bounds.size.x / float(config.delta_resolution)

@@ -22,6 +22,9 @@ var volumes: Array[VolumeDefinition] = []
 ## Generated prop placement rules
 var prop_rules: Array[PropPlacementRule] = []
 
+## Generated river visual data (water surface meshes)
+var river_visuals: Array[RiverVisualData] = []
+
 ## Additional metadata
 var metadata: Dictionary = {}
 
@@ -64,9 +67,14 @@ func add_prop_rule(rule: PropPlacementRule) -> void:
 	if rule:
 		prop_rules.append(rule)
 
+## Add a river visual to the result.
+func add_river_visual(visual: RiverVisualData) -> void:
+	if visual:
+		river_visuals.append(visual)
+
 ## Check if result has any generated content.
 func has_content() -> bool:
-	return not height_deltas.is_empty() or not volumes.is_empty() or not prop_rules.is_empty()
+	return not height_deltas.is_empty() or not volumes.is_empty() or not prop_rules.is_empty() or not river_visuals.is_empty()
 
 ## Get summary string.
 func get_summary() -> String:
@@ -79,7 +87,8 @@ func get_summary() -> String:
 		parts.append("%d volume(s)" % volumes.size())
 	if not prop_rules.is_empty():
 		parts.append("%d prop rule(s)" % prop_rules.size())
+	if not river_visuals.is_empty():
+		parts.append("%d river visual(s)" % river_visuals.size())
 	if parts.is_empty():
 		return "Success (no output)"
 	return "Success: %s in %.1f ms" % [", ".join(parts), elapsed_time_ms]
-

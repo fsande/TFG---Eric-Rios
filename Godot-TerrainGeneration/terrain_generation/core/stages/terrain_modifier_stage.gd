@@ -56,9 +56,11 @@ func _apply_result_to_definition(result: TerrainModifierResult, definition: Terr
 		definition.add_volume(volume)
 	for rule in result.prop_rules:
 		definition.add_prop_rule(rule)
+	for visual in result.river_visuals:
+		visual.source_agent = agent_name
+		definition.add_river_visual(visual)
 
 func _get_display_name() -> String:
 	if stage_name != "":
 		return stage_name
 	return get_script().get_global_name() if get_script() else "UnknownStage"
-

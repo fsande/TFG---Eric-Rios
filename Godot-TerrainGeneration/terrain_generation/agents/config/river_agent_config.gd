@@ -19,8 +19,12 @@ class_name RiverAgentConfig extends Resource
 ## Maximum slope angle before stopping (degrees)
 @export_range(30.0, 80.0, 5.0) var max_slope_degrees: float = 60.0
 
-## Minimum distance from coast to mountain
+## Minimum distance from coast to mountain (pairs closer than this are rejected)
 @export_range(10.0, 500.0, 10.0) var min_coast_to_mountain_distance: float = 50.0
+
+## Maximum distance from coast to mountain (pairs farther than this are rejected).
+## Set to 0 to disable the check.
+@export_range(0.0, 2000.0, 10.0) var max_coast_to_mountain_distance: float = 0.0
 
 ## Minimum river length to be valid
 @export_range(20.0, 1000.0, 10.0) var min_river_length: float = 100.0
@@ -33,14 +37,24 @@ class_name RiverAgentConfig extends Resource
 ## Maximum path steps before giving up
 @export_range(100, 5000, 100) var max_path_steps: int = 2000
 
-## Weight for gradient following (0-1, higher = more gradient influence)
-@export_range(0.0, 1.0, 0.05) var gradient_weight_start: float = 0.7
+## Gradient weight near the coast (start of uphill walk).
+## Low values let the target direction dominate on flat terrain.
+@export_range(0.0, 1.0, 0.05) var gradient_weight_start: float = 0.3
 
-## Weight for gradient at end of path (typically lower)
-@export_range(0.0, 1.0, 0.05) var gradient_weight_end: float = 0.3
+## Gradient weight near the mountain (end of uphill walk).
+## High values let the terrain guide the path up ridges.
+@export_range(0.0, 1.0, 0.05) var gradient_weight_end: float = 0.7
 
 ## Number of steps to backoff from cliff edge
 @export_range(1, 50) var backoff_distance: int = 5
+
+## Number of consecutive downhill steps allowed before terminating the path.
+## Higher values tolerate small dips across ridges / saddle points.
+@export_range(1, 30) var max_consecutive_downhill_steps: int = 5
+
+## Height tolerance (world units) below which a step is not counted as downhill.
+## Prevents noise-level height differences from triggering the downhill detector.
+@export_range(0.0, 5.0, 0.1) var downhill_tolerance: float = 0.1
 
 @export_group("Path Smoothing")
 
@@ -78,19 +92,22 @@ class_name RiverAgentConfig extends Resource
 ## Water surface offset above riverbed (for flow appearance)
 @export_range(0.0, 2.0, 0.1) var water_surface_offset: float = 0.5
 
+## Number of extra vertices across the river width for the ribbon mesh
+## 0 = only left+right edges, 1 = left+centre+right, etc.
+@export_range(0, 8) var ribbon_cross_subdivisions: int = 2
+
+## Resample the river path to this spacing (world units) for uniform mesh density.
+## 0 = use the raw (smoothed) path points as-is.
+@export_range(0.0, 10.0, 0.5) var ribbon_resample_spacing: float = 2.0
+
+## Optional per-river material override. When null the presenter uses
+## the global river material from TerrainConfigurationV2.
+@export var water_material: Material = null
+
 @export_group("Attempts")
 
-## Maximum attempts to generate valid river
-@export_range(1, 100) var max_attempts: int = 5
+## Maximum attempts to generate valid river (top-N scored pairs to try)
+@export_range(1, 100) var max_attempts: int = 20
 
 ## Random seed offset for placement (0 = use context seed)
 @export var placement_seed: int = 0
-
-@export_group("Validation")
-
-## Validator for checking if coast-mountain pairs are valid
-## Can be swapped between heuristic (fast) and flood-fill (accurate)
-@export var pair_validator: RiverPairValidator = null
-
-## Enable pair validation (disable for testing/debugging)
-@export var enable_pair_validation: bool = true

@@ -42,6 +42,12 @@ class_name TerrainDefinition extends Resource
 ## Array of prop placement rules
 @export var prop_placement_rules: Array[PropPlacementRule] = []
 
+## Layer 4: River Visuals
+@export_group("Rivers")
+
+## Array of river water surface visual data
+var river_visuals: Array[RiverVisualData] = []
+
 ## Metadata
 @export_group("Metadata")
 
@@ -98,6 +104,11 @@ func add_volume(volume: VolumeDefinition) -> void:
 func add_prop_rule(rule: PropPlacementRule) -> void:
 	if rule:
 		prop_placement_rules.append(rule)
+
+## Add a river visual data.
+func add_river_visual(visual: RiverVisualData) -> void:
+	if visual:
+		river_visuals.append(visual)
 
 ## Get all volumes affecting a chunk.
 ## @param chunk_bounds Chunk AABB
@@ -225,10 +236,11 @@ func is_valid() -> bool:
 
 ## Get summary string for debugging.
 func get_summary() -> String:
-	return "TerrainDefinition: %dx%d, %d deltas, %d volumes, %d prop rules" % [
+	return "TerrainDefinition: %dx%d, %d deltas, %d volumes, %d prop rules, %d rivers" % [
 		int(terrain_size.x),
 		int(terrain_size.y),
 		height_delta_maps.size(),
 		volume_definitions.size(),
-		prop_placement_rules.size()
+		prop_placement_rules.size(),
+		river_visuals.size()
 	]

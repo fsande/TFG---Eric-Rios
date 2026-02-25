@@ -32,6 +32,7 @@ var _ready_chunks_queue: Array[ChunkReadyData] = []
 var _chunks_container: Node3D
 var _props_container: Node3D
 var _sea_presenter: SeaPresenter
+var _river_presenter: RiverPresenter
 var _update_timer: float = 0.0
 var _is_generating: bool = false
 var _camera: Camera3D
@@ -119,6 +120,8 @@ func regenerate() -> void:
 		_prop_manager = ChunkPropManager.new(_terrain_definition, _props_container)
 	if configuration.enable_sea:
 		_create_sea_plane()
+	if configuration.enable_rivers:
+		_create_river_meshes()
 	if configuration.show_debug_info:
 		print("TerrainPresenterV2: %s" % _terrain_definition.get_summary())
 	_update_visible_chunks()
@@ -138,6 +141,8 @@ func clear_all_chunks() -> void:
 		_generation_service.clear_cache()
 	if _prop_manager:
 		_prop_manager.despawn_all_props()
+	if _river_presenter:
+		_river_presenter.clear()
 
 func get_terrain_definition() -> TerrainDefinition:
 	return _terrain_definition
@@ -397,3 +402,19 @@ func _create_sea_plane() -> void:
 	if configuration.show_debug_info:
 		print("TerrainPresenterV2: Created sea plane - Size: %s, Level: %.2f, Subdivisions: %d" % 
 			[sea_size, configuration.sea_level, configuration.sea_subdivisions])
+
+func _create_river_meshes() -> void:
+	if not _terrain_definition:
+		return
+	if _terrain_definition.river_visuals.is_empty():
+		return
+	_river_presenter = RiverPresenter.new()
+	_river_presenter.create_river_meshes(
+		self,
+		_terrain_definition.river_visuals,
+		configuration.river_water_material
+	)
+	if configuration.show_debug_info:
+		print("TerrainPresenterV2: Created %d river mesh(es)" % _terrain_definition.river_visuals.size())
+		for visual in _terrain_definition.river_visuals:
+			print("  %s" % visual.get_summary())
