@@ -98,7 +98,7 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 	if config.place_water:
 		_place_water(path, context, result)
 	progress_updated.emit(0.95, "Creating debug spheres")
-#	_spawn_debug_trail(path, context)
+	_spawn_debug_trail(path, context)
 	progress_updated.emit(1.0, "Complete")
 	var elapsed := Time.get_ticks_msec() - start_time
 	result.elapsed_time_ms = elapsed
@@ -112,10 +112,11 @@ func _place_water(path: Array[Vector2], _context: TerrainGenerationContext, resu
 	progress_updated.emit(0.85, "Building river water feature")
 	var downstream_path: Array[Vector2] = path.duplicate()
 	downstream_path.reverse()
+	var width := config.river_width + config.water_mesh_extra_width
 	var river_feature := RiverWaterFeature.create(
 		downstream_path,
 		_calculate_river_bounds(path),
-		config.river_width + config.water_mesh_extra_width,
+		width,
 		config.width_multiplier_downstream,
 		config.water_surface_offset,
 		config.ribbon_cross_subdivisions,

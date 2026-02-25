@@ -42,7 +42,7 @@ void vertex() {
 }
 
 void fragment() {
-	vec2 world_uv = world_pos / uv_scale;
+	vec2 world_uv = UV / uv_scale;
 	vec2 movement  = TIME * wave_direction  * time_scale;
 	vec2 movement2 = TIME * wave_direction2 * time_scale;
 	vec3 normal_blend = mix(
