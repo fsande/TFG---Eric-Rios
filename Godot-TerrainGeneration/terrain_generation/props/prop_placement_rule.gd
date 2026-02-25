@@ -3,7 +3,7 @@
 ## @details Defines how props should be distributed on terrain,
 ## including density, constraints, and variation parameters.
 @tool
-class_name PropPlacementRule extends Resource
+class_name PropPlacementRule extends ChunkFeature
 
 ## The scene to instantiate for this prop
 @export var prop_scene: PackedScene = null
@@ -44,9 +44,6 @@ class_name PropPlacementRule extends Resource
 ## LOD settings
 @export_group("LOD")
 
-## Maximum LOD level to spawn props (0 = only highest detail)
-@export_range(0, 5) var max_lod_level: int = 2
-
 ## Distance at which to use billboard impostor (0 = no billboard)
 @export var billboard_distance: float = 0.0
 
@@ -57,29 +54,25 @@ class_name PropPlacementRule extends Resource
 ## When enabled, all props from this rule in a chunk will be batched into a single draw call
 @export var use_multimesh: bool = false
 
-## Metadata
-@export_group("Metadata")
+func get_bounds() -> AABB:
+	return AABB(Vector3.INF, Vector3.INF)
 
-## Unique identifier for this rule
-@export var rule_id: String = ""
-
-## Priority (higher = placed first, can block lower priority)
-@export var priority: int = 0
-
+func intersects_chunk(_chunk_bounds: AABB) -> bool:
+	return true
 
 ## Generate prop placements for a chunk.
 ## @param chunk_bounds World-space bounds of the chunk
 ## @param terrain_sampler Function that takes Vector2 and returns TerrainSample
 ## @param volumes Array of VolumeDefinitions to check for exclusion
-## @param seed Base seed for randomization
-## @return Array of PropPlacement instances
-func get_placements_for_chunk(
+## @param terrain_definition Terrain definition for seed and sea level
+## @return Array of ChunkFeatureInstance (PropPlacement) instances
+func build_for_chunk(
 	chunk_bounds: AABB,
 	terrain_sampler: Callable,  # Callable[[Vector2], TerrainSample]
 	volumes: Array[VolumeDefinition],
 	terrain_definition: TerrainDefinition
-) -> Array[PropPlacement]:
-	var placements: Array[PropPlacement] = []
+) -> Array[ChunkFeatureInstance]:
+	var placements: Array[ChunkFeatureInstance] = []
 	if not prop_scene:
 		return placements
 	if density <= 0:
@@ -140,10 +133,6 @@ func get_placements_for_chunk(
 		placement.scale = Vector3.ONE * scale_value
 		placements.append(placement)
 	return placements
-
-## Check if this rule should apply at given LOD level.
-func should_apply_at_lod(lod_level: int) -> bool:
-	return lod_level <= max_lod_level
 
 ## Convert world position to density map UV.
 func _world_to_density_uv(world_pos: Vector2, chunk_bounds: AABB) -> Vector2:

@@ -105,4 +105,3 @@ func get_aabb() -> AABB:
 ## Check if this group contains any placements.
 func is_empty() -> bool:
 	return placements.is_empty()
-

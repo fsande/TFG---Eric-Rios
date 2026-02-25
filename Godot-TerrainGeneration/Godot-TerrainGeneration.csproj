@@ -174,6 +174,7 @@
     <Content Include="ARCHITECTURE_EVALUATION.md" />
     <Content Include="ASYNC_NODE_CREATION_BUG_REPORT.md" />
     <Content Include="CPU_GPU_EQUIVALENCE_ANALYSIS.md" />
+    <Content Include="DESIGN_D_CHUNK_FEATURE_MANAGER.md" />
     <Content Include="ENTRANCE_CAP_FIX_DETAILS.md" />
     <Content Include="ENTRANCE_CAP_QUICK_START.md" />
     <Content Include="FIX_NESTED_NODES_VISIBILITY.md" />
@@ -250,6 +251,8 @@
     <Content Include="terrain_generation\agents\volume_definition.gd" />
     <Content Include="terrain_generation\chunking\ChunkRequestQueue.gd" />
     <Content Include="terrain_generation\chunking\chunk_cache.gd" />
+    <Content Include="terrain_generation\chunking\chunk_feature.gd" />
+    <Content Include="terrain_generation\chunking\chunk_feature_instance.gd" />
     <Content Include="terrain_generation\chunking\chunk_generation_service.gd" />
     <Content Include="terrain_generation\chunking\chunk_generator.gd" />
     <Content Include="terrain_generation\chunking\chunk_load_context.gd" />
@@ -258,7 +261,7 @@
     <Content Include="terrain_generation\chunking\chunk_mesh_data.gd" />
     <Content Include="terrain_generation\chunking\chunk_mesh_data.gd.uid" />
     <Content Include="terrain_generation\chunking\chunk_prop_data.gd" />
-    <Content Include="terrain_generation\chunking\chunk_prop_manager.gd" />
+    <Content Include="terrain_generation\chunking\chunk_feature_manager.gd" />
     <Content Include="terrain_generation\chunking\chunk_ready_data.gd" />
     <Content Include="terrain_generation\chunking\chunk_request.gd" />
     <Content Include="terrain_generation\chunking\loaded_chunk_state.gd" />

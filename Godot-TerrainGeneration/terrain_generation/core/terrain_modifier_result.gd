@@ -19,6 +19,9 @@ var height_deltas: Array[HeightDeltaMap] = []
 ## Generated volume definitions
 var volumes: Array[VolumeDefinition] = []
 
+## Generated chunk features
+var chunk_features: Array[ChunkFeature] = []
+
 ## Generated prop placement rules
 var prop_rules: Array[PropPlacementRule] = []
 
@@ -62,19 +65,10 @@ func add_volume(volume: VolumeDefinition) -> void:
 	if volume:
 		volumes.append(volume)
 
-## Add a prop rule to the result.
-func add_prop_rule(rule: PropPlacementRule) -> void:
-	if rule:
-		prop_rules.append(rule)
-
 ## Add a river visual to the result.
 func add_river_visual(visual: RiverVisualData) -> void:
 	if visual:
 		river_visuals.append(visual)
-
-## Check if result has any generated content.
-func has_content() -> bool:
-	return not height_deltas.is_empty() or not volumes.is_empty() or not prop_rules.is_empty() or not river_visuals.is_empty()
 
 ## Get summary string.
 func get_summary() -> String:
@@ -85,8 +79,8 @@ func get_summary() -> String:
 		parts.append("%d height delta(s)" % height_deltas.size())
 	if not volumes.is_empty():
 		parts.append("%d volume(s)" % volumes.size())
-	if not prop_rules.is_empty():
-		parts.append("%d prop rule(s)" % prop_rules.size())
+	if not chunk_features.is_empty():
+		parts.append("%d chunk feature(s)" % chunk_features.size())
 	if not river_visuals.is_empty():
 		parts.append("%d river visual(s)" % river_visuals.size())
 	if parts.is_empty():

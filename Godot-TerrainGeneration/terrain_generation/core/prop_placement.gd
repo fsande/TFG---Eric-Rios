@@ -2,29 +2,12 @@
 ##
 ## @details Holds all information needed to instantiate a prop
 ## at a specific location on the terrain.
-class_name PropPlacement extends RefCounted
-
-## World position where prop should be placed
-var position: Vector3 = Vector3.ZERO
-
-## Rotation in radians (Euler angles)
-var rotation: Vector3 = Vector3.ZERO
-
-## Scale multiplier
-var scale: Vector3 = Vector3.ONE
+class_name PropPlacement extends ChunkFeatureInstance
 
 ## Reference to the scene to instantiate
 var prop_scene: PackedScene = null
-
 ## ID of the rule that generated this placement
 var rule_id: String = ""
-
-## Whether this placement has been spawned
-var is_spawned: bool = false
-
-## Reference to spawned node (if spawned)
-var spawned_node: Node3D = null
-
 
 ## Spawn the prop in the scene.
 ## @param parent Parent node to add prop to

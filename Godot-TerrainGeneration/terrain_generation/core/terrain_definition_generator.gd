@@ -75,10 +75,10 @@ func generate(
 		for rule in prop_rules:
 			if rule:
 				if rule.rule_id.is_empty():
-					rule.rule_id = "prop_rule_%d" % definition.prop_placement_rules.size()
+					rule.rule_id = "prop_rule_%d" % definition.chunk_features.size()
 				if rule.seed_offset == 0:
 					rule.seed_offset = generation_seed
-				definition.add_prop_rule(rule)
+				definition.add_chunk_feature(rule)
 				if verbose:
 					print("Added rule: %s (density: %.3f)" % [rule.rule_id, rule.density])
 	if owns_context:

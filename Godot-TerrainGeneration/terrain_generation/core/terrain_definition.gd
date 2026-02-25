@@ -39,8 +39,8 @@ class_name TerrainDefinition extends Resource
 ## Layer 3: Prop Placement
 @export_group("Props")
 
-## Array of prop placement rules
-@export var prop_placement_rules: Array[PropPlacementRule] = []
+## Array of chunk features
+@export var chunk_features: Array[ChunkFeature] = []
 
 ## Layer 4: River Visuals
 @export_group("Rivers")
@@ -100,10 +100,10 @@ func add_volume(volume: VolumeDefinition) -> void:
 	if volume:
 		volume_definitions.append(volume)
 
-## Add a prop placement rule.
-func add_prop_rule(rule: PropPlacementRule) -> void:
-	if rule:
-		prop_placement_rules.append(rule)
+## Add a chunk feature.
+func add_chunk_feature(feature: ChunkFeature) -> void:
+	if feature:
+		chunk_features.append(feature)
 
 ## Add a river visual data.
 func add_river_visual(visual: RiverVisualData) -> void:
@@ -136,9 +136,9 @@ func get_deltas_for_chunk(chunk_bounds: AABB) -> Array[HeightDeltaMap]:
 ## Get all prop rules for a chunk at given LOD.
 ## @param lod_level Current LOD level
 ## @return Array of applicable prop rules
-func get_prop_rules_for_lod(lod_level: int) -> Array[PropPlacementRule]:
-	var result: Array[PropPlacementRule] = []
-	for rule in prop_placement_rules:
+func get_chunk_features_for_lod(lod_level: int) -> Array[ChunkFeature]:
+	var result: Array[ChunkFeature] = []
+	for rule in chunk_features:
 		if rule.should_apply_at_lod(lod_level):
 			result.append(rule)
 	result.sort_custom(func(a, b): return a.priority > b.priority)
@@ -241,6 +241,6 @@ func get_summary() -> String:
 		int(terrain_size.y),
 		height_delta_maps.size(),
 		volume_definitions.size(),
-		prop_placement_rules.size(),
+		chunk_features.size(),
 		river_visuals.size()
 	]

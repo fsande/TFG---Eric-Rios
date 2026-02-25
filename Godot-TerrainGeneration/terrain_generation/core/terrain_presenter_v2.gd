@@ -23,7 +23,7 @@ signal chunk_unloaded(coord: Vector2i)
 
 var _terrain_definition: TerrainDefinition
 var _generation_service: ChunkGenerationService
-var _prop_manager: ChunkPropManager
+var _feature_manager: ChunkFeatureManager
 var _loaded_chunks: Dictionary[Vector2i, LoadedChunkState] = {}
 var _chunk_instances: Dictionary[Vector2i, MeshInstance3D] = {}
 var _collision_bodies: Dictionary[Vector2i, StaticBody3D] = {}
@@ -117,7 +117,7 @@ func regenerate() -> void:
 	_generation_service.generation_failed.connect(_on_async_chunk_failed, ConnectFlags.CONNECT_DEFERRED)
 	_load_context = null
 	if _props_container:
-		_prop_manager = ChunkPropManager.new(_terrain_definition, _props_container)
+		_feature_manager = ChunkFeatureManager.new(_terrain_definition, _props_container)
 	if configuration.enable_sea:
 		_create_sea_plane()
 	if configuration.enable_rivers:
@@ -139,8 +139,8 @@ func clear_all_chunks() -> void:
 	if _generation_service:
 		_generation_service.cancel_all_pending_requests()
 		_generation_service.clear_cache()
-	if _prop_manager:
-		_prop_manager.despawn_all_props()
+	if _feature_manager:
+		_feature_manager.despawn_all_features()
 	if _river_presenter:
 		_river_presenter.clear()
 
@@ -343,8 +343,8 @@ func _instantiate_chunk(coord: Vector2i, lod_level: int, chunk: ChunkMeshData) -
 	_loaded_chunks[coord] = LoadedChunkState.new(lod_level, chunk)
 	if configuration.generate_collision and lod_level == 0:
 		_create_collision_for_chunk(coord, chunk, mesh_instance)
-	if _prop_manager and lod_level <= 1:
-		_prop_manager.spawn_props_for_chunk(chunk, lod_level)
+	if _feature_manager and lod_level <= 1:
+		_feature_manager.spawn_features_for_chunk(chunk, lod_level)
 	chunk_loaded.emit(coord, lod_level)
 
 func _unload_chunk(coord: Vector2i) -> void:
@@ -358,8 +358,8 @@ func _unload_chunk(coord: Vector2i) -> void:
 		if is_instance_valid(body):
 			body.queue_free()
 		_collision_bodies.erase(coord)
-	if _prop_manager:
-		_prop_manager.despawn_props_for_chunk(coord)
+	if _feature_manager:
+		_feature_manager.despawn_features_for_chunk(coord)
 	_loaded_chunks.erase(coord)
 	chunk_unloaded.emit(coord)
 
