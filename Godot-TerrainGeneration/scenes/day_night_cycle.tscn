@@ -1,0 +1,48 @@
+[gd_scene load_steps=8 format=3 uid="uid://wr6ttqcyop7g"]
+
+[ext_resource type="Script" uid="uid://4mtsxh02phh1" path="res://scenes/day_night_cycle.gd" id="1_e4bus"]
+
+[sub_resource type="Gradient" id="Gradient_obh5s"]
+colors = PackedColorArray(0, 0.84705883, 0.94509804, 1, 1, 1, 1, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_dk27i"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_nmhtg"]
+noise = SubResource("FastNoiseLite_dk27i")
+color_ramp = SubResource("Gradient_obh5s")
+seamless = true
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_00p1n"]
+panorama = SubResource("NoiseTexture2D_nmhtg")
+
+[sub_resource type="Sky" id="Sky_b6skf"]
+sky_material = SubResource("PanoramaSkyMaterial_00p1n")
+
+[sub_resource type="Environment" id="Environment_bqotf"]
+background_mode = 2
+sky = SubResource("Sky_b6skf")
+ambient_light_color = Color(0.02, 0.03, 0.08, 1)
+ambient_light_energy = 0.05
+
+[node name="DayNightCycle" type="Node" node_paths=PackedStringArray("sun_light", "moon_light", "world_environment")]
+script = ExtResource("1_e4bus")
+sun_light = NodePath("Sun")
+day_energy = 8.0
+night_energy = 0.1
+moon_light = NodePath("Moon")
+world_environment = NodePath("WorldEnvironment")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 285.32556, 0)
+light_color = Color(0.05, 0.07, 0.15, 1)
+light_energy = 0.1
+shadow_enabled = true
+
+[node name="Moon" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -1, 8.742278e-08, 0, -8.742278e-08, -1, 0, 284.58984, 0)
+light_color = Color(0.4, 0.5, 0.7, 1)
+light_energy = 1.2246063e-17
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_bqotf")

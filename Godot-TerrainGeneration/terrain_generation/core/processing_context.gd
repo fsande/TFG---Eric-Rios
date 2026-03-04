@@ -123,8 +123,6 @@ func dispose() -> void:
 		return
 	_is_disposed = true
 	var lifetime_ms := Time.get_ticks_msec() - _creation_time_ms
-	if lifetime_ms > 100:
-		print("ProcessingContext: Disposed after %d ms" % lifetime_ms)
 
 ## Check if context has been disposed.
 func is_disposed() -> bool:

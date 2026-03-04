@@ -259,7 +259,6 @@
     <Content Include="terrain_generation\chunking\chunk_lod_state.gd" />
     <Content Include="terrain_generation\chunking\chunk_mesh_data.gd" />
     <Content Include="terrain_generation\chunking\chunk_mesh_data.gd.uid" />
-    <Content Include="terrain_generation\chunking\chunk_prop_data.gd" />
     <Content Include="terrain_generation\chunking\chunk_feature_manager.gd" />
     <Content Include="terrain_generation\chunking\chunk_ready_data.gd" />
     <Content Include="terrain_generation\chunking\chunk_request.gd" />

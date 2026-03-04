@@ -1,0 +1,15 @@
+[gd_scene load_steps=6 format=3 uid="uid://b3h5as2lrqe0f"]
+
+[ext_resource type="Script" uid="uid://da5y235y7xltx" path="res://benchmarking/scenes/benchmark_scene_runner.gd" id="1_runner"]
+[ext_resource type="Script" uid="uid://cx1d1s65igqbm" path="res://terrain_generation/configuration/terrain_configuration_v2.gd" id="2_oep7r"]
+[ext_resource type="Resource" uid="uid://ch53n6nd5oc4t" path="res://assets/generation_resources/terrain_v2_demo.tres" id="3_gr677"]
+[ext_resource type="Script" uid="uid://cfi161tjwfbq5" path="res://benchmarking/config/benchmark_profile.gd" id="4_4bmmm"]
+
+[sub_resource type="Resource" id="Resource_1g8c6"]
+script = ExtResource("4_4bmmm")
+configurations = Array[ExtResource("2_oep7r")]([ExtResource("3_gr677")])
+metadata/_custom_type_script = "uid://cfi161tjwfbq5"
+
+[node name="BenchmarkScene" type="Node"]
+script = ExtResource("1_runner")
+profile = SubResource("Resource_1g8c6")

@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://c5010npvryyqd"]
+
+[ext_resource type="Script" uid="uid://c7txrbc5qk7ki" path="res://player/terrain_fly_camera.gd" id="1_21lub"]
+
+[node name="FlyCamera" type="Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, 0, 0, 0)
+fov = 60.0
+far = 2000.0
+script = ExtResource("1_21lub")
