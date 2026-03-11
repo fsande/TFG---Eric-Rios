@@ -101,16 +101,16 @@ static func _build_ribbon_surface(
 	for i in range(point_count):
 		var terrain_height: float = height_sampler.call(path[i])
 		centre_levels[i] = terrain_height + water_offset
-	var stable_level: float = centre_levels[0]
-	var stable_index: int = 0
-	for i in range(1, point_count):
-		if centre_levels[i] < stable_level:
-			stable_level = centre_levels[i]
-			stable_index = i
-		else:
-			break
-	for i in range(stable_index):
-		centre_levels[i] = stable_level
+#	var stable_level: float = centre_levels[0]
+#	var stable_index: int = 0
+#	for i in range(1, point_count):
+#		if centre_levels[i] < stable_level:
+#			stable_level = centre_levels[i]
+#			stable_index = i
+#		else:
+#			break
+#	for i in range(stable_index):
+#		centre_levels[i] = stable_level
 	for i in range(point_count):
 		var downstream_fraction := float(i) / float(point_count - 1)
 		var flow_dir := _compute_flow_direction(path, i)

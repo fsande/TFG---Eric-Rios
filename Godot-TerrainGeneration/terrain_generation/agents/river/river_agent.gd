@@ -107,6 +107,9 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 		path.size(),
 		_calculate_path_length(path)
 	]
+	print("Placed river on world coordinates (%.1f, %.1f) → (%.1f, %.1f) in %d ms" % [
+		path[0].x, path[0].y, path[path.size() - 1].x, path[path.size() - 1].y, elapsed
+	])
 	return result
 
 func _place_water(path: Array[Vector2], _context: TerrainGenerationContext, result: TerrainModifierResult) -> void:

@@ -53,20 +53,23 @@ func save_csv(path: String, include_raw_samples: bool = false) -> Error:
 	_ensure_directory(path)
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if not file:
-		push_error("BenchmarkReport2: Cannot write %s" % path)
+		push_error("BenchmarkReport: Cannot write %s" % path)
 		return FileAccess.get_open_error()
 	var meta_keys := _collect_metadata_keys()
-	var header := "category,metric,unit,mean,min,max,median,std_dev,p95,p99,sample_count"
+	var header := "category,metric,unit,mean,min,max,median,std_dev,ci95_lower,ci95_upper,cv_percent,iqr,p95,p99,sample_count"
 	if include_raw_samples:
 		header += ",raw_samples"
 	for key in meta_keys:
 		header += ",%s" % key
 	file.store_line(header)
 	for r in _results:
-		var line := "%s,%s,%s,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%d" % [
+		var ci := r.get_confidence_interval_95()
+		var line := "%s,%s,%s,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%d" % [
 			_escape(r.category), _escape(r.metric_name), _escape(r.unit),
 			r.get_mean(), r.get_min(), r.get_max(), r.get_median(),
-			r.get_std_dev(), r.get_percentile(95.0), r.get_percentile(99.0),
+			r.get_std_dev(), ci.x, ci.y,
+			r.get_coefficient_of_variation(), r.get_iqr(),
+			r.get_percentile(95.0), r.get_percentile(99.0),
 			r.get_sample_count()
 		]
 		if include_raw_samples:
@@ -78,7 +81,7 @@ func save_csv(path: String, include_raw_samples: bool = false) -> Error:
 			line += ",%s" % _escape(str(r.metadata.get(key, "")))
 		file.store_line(line)
 	file.close()
-	print("BenchmarkReport2: CSV → %s" % path)
+	print("BenchmarkReport: CSV → %s" % path)
 	return OK
 
 
@@ -86,14 +89,14 @@ func save_json(path: String) -> Error:
 	_ensure_directory(path)
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if not file:
-		push_error("BenchmarkReport2: Cannot write %s" % path)
+		push_error("BenchmarkReport: Cannot write %s" % path)
 		return FileAccess.get_open_error()
 	var data := {"environment": _environment.to_dict(), "results": []}
 	for r in _results:
 		data.results.append(r.to_dict())
 	file.store_string(JSON.stringify(data, "  "))
 	file.close()
-	print("BenchmarkReport2: JSON → %s" % path)
+	print("BenchmarkReport: JSON → %s" % path)
 	return OK
 
 ## @brief Compare two benchmark reports and generate a summary of significant changes.

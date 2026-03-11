@@ -29,7 +29,7 @@ signal load_strategy_changed()
 		generation_seed = value
 		configuration_changed.emit()
 
-@export_group("Pipeline Stages)")
+@export_group("Agents")
 @export var modifier_stages: Array[TerrainModifierStage] = []
 
 @export_group("Props")

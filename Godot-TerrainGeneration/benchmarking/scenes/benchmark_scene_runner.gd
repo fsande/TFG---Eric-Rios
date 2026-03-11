@@ -1,7 +1,7 @@
-## @brief Scene script that runs TerrainBenchmark2 with an assigned profile on _ready().
+## @brief Scene script that runs TerrainBenchmark with an assigned profile on _ready().
 class_name BenchmarkSceneRunner extends Node
 
-## Assign your BenchmarkProfile2 .tres resource here in the inspector.
+## Assign your BenchmarkProfile .tres resource here in the inspector.
 @export var profile: BenchmarkProfile
 @export var auto_run: bool = true
 

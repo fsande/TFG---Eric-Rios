@@ -82,7 +82,7 @@ func intersects_chunk(chunk_bounds: AABB) -> bool:
 ##
 ## For SHARED features the ChunkFeatureManager calls this once with the
 ## feature's own bounds. The mesh is built lazily and cached so repeated
-## calls (which should not happen for SHARED, but defensively) are free.
+## calls (which should not happen for SHARED) are free.
 func build_for_chunk(
 	_chunk_bounds: AABB,
 	_terrain_sampler: Callable,
@@ -110,7 +110,6 @@ func build_for_chunk(
 	instance.material = water_material
 	instance.position = Vector3.ZERO
 	return [instance]
-
 
 ## A ChunkFeatureInstance that spawns a MeshInstance3D from an ArrayMesh.
 class RiverMeshInstance extends ChunkFeatureInstance:

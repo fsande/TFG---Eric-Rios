@@ -11,12 +11,6 @@
 ##   Ideal for continuous geometry that spans multiple chunks (rivers, roads).
 class_name ChunkFeatureManager extends RefCounted
 
-## Distance for normal calculation as a fraction of terrain size (0.1% of terrain size)
-const NORMAL_SAMPLE_DISTANCE_FRACTION: float = 0.001
-
-## Minimum delta value to consider for height blending (avoids floating point noise)
-const DELTA_EPSILON: float = 0.0001
-
 var _terrain_definition: TerrainDefinition
 
 ## Dictionary[String, Array[ChunkFeatureInstance]] — chunk key  spawned instances
@@ -292,49 +286,8 @@ func _make_key(coord: Vector2i) -> String:
 	return "%d,%d" % [coord.x, coord.y]
 
 ## Create a heightmap-based terrain sampler for feature placement.
-## Samples directly from the terrain heightmap, ensuring consistent results across all LOD levels.
+## sampling across all consumers (feature manager, benchmarks, etc.).
 ## @param chunk_bounds The world-space bounds of the area to sample.
 ## @return Callable that takes Vector2 world position and returns TerrainSample.
 func _create_terrain_sampler(chunk_bounds: AABB) -> Callable:
-	var base_heightmap := _terrain_definition.get_base_heightmap()
-	if not base_heightmap:
-		push_error("ChunkFeatureManager: Failed to get base heightmap for terrain sampling")
-		return func(_pos: Vector2) -> TerrainSample: return TerrainSample.invalid()
-	var terrain_size := _terrain_definition.terrain_size.x
-	var height_scale := _terrain_definition.height_scale
-	var deltas := _terrain_definition.get_deltas_for_chunk(chunk_bounds)
-	var normal_sample_distance := terrain_size * NORMAL_SAMPLE_DISTANCE_FRACTION
-	return func(world_pos: Vector2) -> TerrainSample:
-		var base_height := HeightmapSampler.sample_height_at(base_heightmap, world_pos, terrain_size)
-		var height := base_height * height_scale
-		for delta_map in deltas:
-			var delta_value := delta_map.sample_at(world_pos)
-			if absf(delta_value) >= DELTA_EPSILON:
-				height = delta_map.apply_blend(height, delta_value)
-		var pos_x_plus := world_pos + Vector2(normal_sample_distance, 0)
-		var pos_x_minus := world_pos - Vector2(normal_sample_distance, 0)
-		var pos_z_plus := world_pos + Vector2(0, normal_sample_distance)
-		var pos_z_minus := world_pos - Vector2(0, normal_sample_distance)
-		var h_x_plus := HeightmapSampler.sample_height_at(base_heightmap, pos_x_plus, terrain_size) * height_scale
-		var h_x_minus := HeightmapSampler.sample_height_at(base_heightmap, pos_x_minus, terrain_size) * height_scale
-		var h_z_plus := HeightmapSampler.sample_height_at(base_heightmap, pos_z_plus, terrain_size) * height_scale
-		var h_z_minus := HeightmapSampler.sample_height_at(base_heightmap, pos_z_minus, terrain_size) * height_scale
-		for delta_map in deltas:
-			var delta_x_plus := delta_map.sample_at(pos_x_plus)
-			if absf(delta_x_plus) >= DELTA_EPSILON:
-				h_x_plus = delta_map.apply_blend(h_x_plus, delta_x_plus)
-			var delta_x_minus := delta_map.sample_at(pos_x_minus)
-			if absf(delta_x_minus) >= DELTA_EPSILON:
-				h_x_minus = delta_map.apply_blend(h_x_minus, delta_x_minus)
-			var delta_z_plus := delta_map.sample_at(pos_z_plus)
-			if absf(delta_z_plus) >= DELTA_EPSILON:
-				h_z_plus = delta_map.apply_blend(h_z_plus, delta_z_plus)
-			var delta_z_minus := delta_map.sample_at(pos_z_minus)
-			if absf(delta_z_minus) >= DELTA_EPSILON:
-				h_z_minus = delta_map.apply_blend(h_z_minus, delta_z_minus)
-		var dx := (h_x_plus - h_x_minus) / (2.0 * normal_sample_distance)
-		var dz := (h_z_plus - h_z_minus) / (2.0 * normal_sample_distance)
-		var tangent_x := Vector3(1, dx, 0).normalized()
-		var tangent_z := Vector3(0, dz, 1).normalized()
-		var normal := tangent_z.cross(tangent_x).normalized()
-		return TerrainSample.new(height, normal, true)
+	return _terrain_definition.create_terrain_sampler(chunk_bounds)

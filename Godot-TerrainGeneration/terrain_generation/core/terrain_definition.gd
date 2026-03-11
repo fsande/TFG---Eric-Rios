@@ -6,6 +6,12 @@
 @tool
 class_name TerrainDefinition extends Resource
 
+## Distance for normal estimation as a fraction of terrain size (0.1%).
+const _NORMAL_SAMPLE_DISTANCE_FRACTION: float = 0.001
+
+## Minimum delta value to consider for height blending (avoids floating point noise).
+const _DELTA_EPSILON: float = 0.0001
+
 ## Base terrain settings
 @export_group("Base Terrain")
 
@@ -204,9 +210,59 @@ func sample_height_at(world_pos: Vector2) -> float:
 	height *= height_scale
 	for delta in height_delta_maps:
 		var delta_value := delta.sample_at(world_pos)
-		if abs(delta_value) >= 0.0001:
+		if abs(delta_value) >= _DELTA_EPSILON:
 			height = delta.apply_blend(height, delta_value)
 	return height
+
+## Create a terrain sampler callable for feature placement and benchmarking.
+## Returns a Callable[[Vector2], TerrainSample] that samples the composed height
+## (base heightmap + deltas) and estimates normals via central differencing.
+## @param chunk_bounds World-space bounds of the area to sample (for delta filtering).
+## @return Callable that takes a Vector2 world position and returns a TerrainSample.
+func create_terrain_sampler(chunk_bounds: AABB) -> Callable:
+	var base_heightmap := get_base_heightmap()
+	if not base_heightmap:
+		push_error("TerrainDefinition: Failed to get base heightmap for terrain sampler")
+		return func(_pos: Vector2) -> TerrainSample: return TerrainSample.invalid()
+	var ts := terrain_size.x
+	var hs := height_scale
+	var deltas := get_deltas_for_chunk(chunk_bounds)
+	var normal_dist := ts * _NORMAL_SAMPLE_DISTANCE_FRACTION
+	return func(world_pos: Vector2) -> TerrainSample:
+		var base_height := HeightmapSampler.sample_height_at(base_heightmap, world_pos, ts)
+		var height := base_height * hs
+		for delta_map in deltas:
+			var delta_value := delta_map.sample_at(world_pos)
+			if absf(delta_value) >= _DELTA_EPSILON:
+				height = delta_map.apply_blend(height, delta_value)
+		# Finite-difference normal estimation (central differencing)
+		var pos_xp := world_pos + Vector2(normal_dist, 0)
+		var pos_xm := world_pos - Vector2(normal_dist, 0)
+		var pos_zp := world_pos + Vector2(0, normal_dist)
+		var pos_zm := world_pos - Vector2(0, normal_dist)
+		var h_xp := HeightmapSampler.sample_height_at(base_heightmap, pos_xp, ts) * hs
+		var h_xm := HeightmapSampler.sample_height_at(base_heightmap, pos_xm, ts) * hs
+		var h_zp := HeightmapSampler.sample_height_at(base_heightmap, pos_zp, ts) * hs
+		var h_zm := HeightmapSampler.sample_height_at(base_heightmap, pos_zm, ts) * hs
+		for delta_map in deltas:
+			var dxp := delta_map.sample_at(pos_xp)
+			if absf(dxp) >= _DELTA_EPSILON:
+				h_xp = delta_map.apply_blend(h_xp, dxp)
+			var dxm := delta_map.sample_at(pos_xm)
+			if absf(dxm) >= _DELTA_EPSILON:
+				h_xm = delta_map.apply_blend(h_xm, dxm)
+			var dzp := delta_map.sample_at(pos_zp)
+			if absf(dzp) >= _DELTA_EPSILON:
+				h_zp = delta_map.apply_blend(h_zp, dzp)
+			var dzm := delta_map.sample_at(pos_zm)
+			if absf(dzm) >= _DELTA_EPSILON:
+				h_zm = delta_map.apply_blend(h_zm, dzm)
+		var dx := (h_xp - h_xm) / (2.0 * normal_dist)
+		var dz := (h_zp - h_zm) / (2.0 * normal_dist)
+		var tangent_x := Vector3(1, dx, 0).normalized()
+		var tangent_z := Vector3(0, dz, 1).normalized()
+		var normal := tangent_z.cross(tangent_x).normalized()
+		return TerrainSample.new(height, normal, true)
 
 ## Check if a point is inside any subtractive volume.
 ## @param point World position

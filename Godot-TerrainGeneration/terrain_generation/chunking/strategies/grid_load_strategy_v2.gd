@@ -4,6 +4,10 @@ class_name GridLoadStrategyV2 extends ChunkLoadStrategyV2
 @export var load_radius: int = 4
 @export var unload_radius: int = 6
 
+func get_max_loaded_chunks() -> int:
+	var diameter := 2 * load_radius + 1
+	return diameter * diameter
+
 func should_load(coord: Vector2i, camera_pos: Vector3, context: ChunkLoadContextV2) -> bool:
 	var camera_chunk := _world_to_chunk_coord(camera_pos, context)
 	var distance := _chunk_distance(coord, camera_chunk)

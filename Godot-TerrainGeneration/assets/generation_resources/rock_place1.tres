@@ -30,5 +30,4 @@ constraints = Array[ExtResource("1_d6vfu")]([SubResource("Resource_fk7lr"), SubR
 scale_range = Vector2(0.6, 1.4)
 max_tilt = 45.0
 use_multimesh = true
-rule_id = "prop_rule_1"
 metadata/_custom_type_script = "uid://wlx5bsak37rn"

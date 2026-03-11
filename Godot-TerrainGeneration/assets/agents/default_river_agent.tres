@@ -1,0 +1,68 @@
+[gd_resource type="Resource" script_class="RiverAgent" load_steps=12 format=3 uid="uid://dlp381xd1qjdc"]
+
+[ext_resource type="Script" uid="uid://birb17b0dkd41" path="res://terrain_generation/agents/config/river_agent_config.gd" id="1_3nd1i"]
+[ext_resource type="Shader" uid="uid://cxx0puljrol3k" path="res://assets/shaders/water.gdshader" id="2_n34m8"]
+[ext_resource type="Script" uid="uid://ikunl5bx48x1" path="res://terrain_generation/agents/river/river_agent.gd" id="3_iglr6"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_3vcur"]
+noise_type = 2
+frequency = 0.0087
+cellular_return_type = 6
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_xyc7r"]
+noise = SubResource("FastNoiseLite_3vcur")
+seamless = true
+in_3d_space = true
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_w5lwi"]
+noise_type = 3
+fractal_type = 2
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_wijoi"]
+noise = SubResource("FastNoiseLite_w5lwi")
+seamless = true
+as_normal_map = true
+bump_strength = 4.0
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_dau60"]
+noise_type = 3
+seed = 64
+frequency = 0.03
+fractal_type = 2
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_fr87a"]
+noise = SubResource("FastNoiseLite_dau60")
+seamless = true
+as_normal_map = true
+bump_strength = 4.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_y1w6q"]
+render_priority = 0
+shader = ExtResource("2_n34m8")
+shader_parameter/albedo = Color(0, 0.32156864, 0.42352942, 1)
+shader_parameter/metallic = 0.50000002375
+shader_parameter/roughness = 0.02000000095
+shader_parameter/texture_normal = SubResource("NoiseTexture2D_wijoi")
+shader_parameter/texture_normal2 = SubResource("NoiseTexture2D_fr87a")
+shader_parameter/wave_direction = Vector2(1, 1)
+shader_parameter/wave_direction2 = Vector2(1, 1)
+shader_parameter/time_scale = 0.20000000298023
+shader_parameter/uv_scale = 1.00000004424012
+shader_parameter/foam_noise_texture = SubResource("NoiseTexture2D_xyc7r")
+shader_parameter/foam_noise_scale = 0.5
+shader_parameter/foam_depth_threshold = 0.50000002375
+shader_parameter/foam_noise_speed = 0.266000012635
+shader_parameter/foam_color = Color(0.95, 0.97, 1, 1)
+
+[sub_resource type="Resource" id="Resource_fhm2n"]
+script = ExtResource("1_3nd1i")
+depth_increase_rate = 0.03
+max_depth = 6.0
+water_mesh_extra_width = 5.0
+water_material = SubResource("ShaderMaterial_y1w6q")
+
+[resource]
+script = ExtResource("3_iglr6")
+config = SubResource("Resource_fhm2n")
+agent_name = "River"
+metadata/_custom_type_script = "uid://ikunl5bx48x1"

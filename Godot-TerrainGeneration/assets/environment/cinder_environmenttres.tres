@@ -1,0 +1,23 @@
+[gd_resource type="Environment" load_steps=6 format=3 uid="uid://bdghsgdrt10a7"]
+
+[sub_resource type="Gradient" id="Gradient_obh5s"]
+colors = PackedColorArray(2.4065375e-08, 0.11559432, 0.13413513, 1, 0.9129318, 0.34118113, 0.36839256, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_dk27i"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_nmhtg"]
+noise = SubResource("FastNoiseLite_dk27i")
+color_ramp = SubResource("Gradient_obh5s")
+seamless = true
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_00p1n"]
+panorama = SubResource("NoiseTexture2D_nmhtg")
+
+[sub_resource type="Sky" id="Sky_b6skf"]
+sky_material = SubResource("PanoramaSkyMaterial_00p1n")
+
+[resource]
+background_mode = 2
+sky = SubResource("Sky_b6skf")
+ambient_light_color = Color(0.02, 0.03, 0.08, 1)
+ambient_light_energy = 0.05

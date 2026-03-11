@@ -6,6 +6,13 @@
 @tool
 class_name ChunkGenerationStrategy extends RefCounted
 
+## Emitted after each major substep of chunk generation completes.
+signal substep_completed(substep_name: String, elapsed_ms: float)
+
+## Helper for subclasses to emit substep timing without scope issues.
+func _emit_substep(substep_name: String, elapsed_ms: float) -> void:
+	substep_completed.emit(substep_name, elapsed_ms)
+
 enum ProcessorType {
 	CPU,
 	GPU,
