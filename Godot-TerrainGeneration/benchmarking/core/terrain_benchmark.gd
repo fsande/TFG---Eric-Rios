@@ -2,7 +2,7 @@
 ##
 ## @details Consumes TerrainConfiguration resources through BenchmarkProfile.
 ## Measures pipeline generation, chunk generation at all LOD levels,
-## cache behavior, and collects static triangle budgets 
+## cache behavior, async loading throughput, and prop placement runtime.
 class_name TerrainBenchmark extends RefCounted
 
 signal benchmark_started()
@@ -22,15 +22,23 @@ const VERTS_PER_TRIANGLE: int = 3
 ## Milliseconds per second for unit conversion.
 const MS_PER_SEC: float = 1000.0
 
-func run(profile: BenchmarkProfile) -> BenchmarkReport:
+## Timeout (ms) for the async spin-wait before giving up.
+const ASYNC_TIMEOUT_MS: float = 60000.0
+
+## SceneTree reference, required only for async benchmarks.
+var _tree: SceneTree = null
+
+## run() accepts an optional SceneTree.  Pass get_tree() from the scene runner
+## so that async benchmarks can await frames for deferred signal delivery.
+func run(profile: BenchmarkProfile, tree: SceneTree = null) -> BenchmarkReport:
+	_tree = tree
 	assert(not profile.configurations.is_empty(), "TerrainBenchmark: Profile has no configurations")
 	_print_header(profile)
 	benchmark_started.emit()
 	var report := BenchmarkReport.new()
 	var total_start := Time.get_ticks_usec()
 	for i in range(profile.configurations.size()):
-		report.add_results(_run_single_config(profile, i))
-	report.add_results(_collect_render_snapshot())
+		report.add_results(await _run_single_config(profile, i))
 	var total_elapsed := (Time.get_ticks_usec() - total_start) / 1000.0
 	print("")
 	print("Total: %d results in %.1f ms" % [report.get_result_count(), total_elapsed])
@@ -45,7 +53,7 @@ func _run_single_config(profile: BenchmarkProfile, index: int) -> Array[Benchmar
 	print("\nConfiguration %d/%d: %s" % [index + 1, profile.configurations.size(), config_name])
 	config_started.emit(config_name, index, profile.configurations.size())
 	var config_start := Time.get_ticks_usec()
-	var config_results := _benchmark_single_config(config, config_name, profile)
+	var config_results := await _benchmark_single_config(config, config_name, profile)
 	var config_elapsed := (Time.get_ticks_usec() - config_start) / 1000.0
 	config_completed.emit(config_name, config_results.size(), config_elapsed)
 	print("  -> %d results in %.1f ms" % [config_results.size(), config_elapsed])
@@ -63,6 +71,10 @@ func _benchmark_single_config(
 		push_error("TerrainBenchmark: Failed to generate definition for %s" % config_name)
 		return results
 	results.append_array(_benchmark_chunks(config, config_name, definition, profile))
+	results.append_array(_benchmark_cache(config, config_name, definition, profile, _spiral_chunk_coords(config, profile.chunks_to_generate)))
+	results.append_array(_benchmark_prop_placement(config, config_name, definition, profile, _spiral_chunk_coords(config, profile.chunks_to_generate)))
+	if not config.use_gpu_mesh_generation:
+		results.append_array(await _benchmark_async_loading(config, config_name, definition, profile))
 	return results
 
 func _benchmark_pipeline(
@@ -163,8 +175,6 @@ func _benchmark_chunks(
 				"chunk_generation", "ms", substep_timings[substep_name], meta
 			))
 		results.append_array(_benchmark_chunk_mesh(profile, last_chunk, lod, meta))
-	results.append_array(_benchmark_cache(config, config_name, definition, profile, coords))
-	results.append_array(_benchmark_prop_placement(config, config_name, definition, profile, coords))
 	return results
 
 func _benchmark_chunk_mesh(profile: BenchmarkProfile, last_chunk: ChunkMeshData, lod: int, meta: Dictionary) -> Array[BenchmarkResult]:
@@ -230,7 +240,7 @@ func _benchmark_prop_placement(
 	config: TerrainConfigurationV2,
 	config_name: String,
 	definition: TerrainDefinition,
-	profile: BenchmarkProfile,
+	_profile: BenchmarkProfile,
 	coords: Array[Vector2i]
 ) -> Array[BenchmarkResult]:
 	var results: Array[BenchmarkResult] = []
@@ -273,36 +283,104 @@ func _benchmark_prop_placement(
 		))
 	return results
 
-func _collect_render_snapshot() -> Array[BenchmarkResult]:
+func _benchmark_async_loading(
+	config: TerrainConfigurationV2,
+	config_name: String,
+	definition: TerrainDefinition,
+	profile: BenchmarkProfile
+) -> Array[BenchmarkResult]:
 	var results: Array[BenchmarkResult] = []
-	print("[Render] Engine snapshot...")
-	var rs := {
-		"rs_objects_drawn": RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME,
-		"rs_primitives_drawn": RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME,
-		"rs_draw_calls": RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME,
-		"rs_video_mem": RenderingServer.RENDERING_INFO_VIDEO_MEM_USED,
-		"rs_texture_mem": RenderingServer.RENDERING_INFO_TEXTURE_MEM_USED,
-		"rs_buffer_mem": RenderingServer.RENDERING_INFO_BUFFER_MEM_USED,
-	}
-	for name in rs:
-		var val: int = RenderingServer.get_rendering_info(rs[name])
-		var u := "MB" if name.contains("mem") else "count"
-		var dv := (val / BYTES_PER_MB) if name.contains("mem") else float(val)
-		results.append(BenchmarkResult.new(name, "render_snapshot", u, PackedFloat64Array([dv])))
-	var pm := {
-		"perf_fps":           [Performance.TIME_FPS, "fps", false],
-		"perf_frame_time":    [Performance.TIME_PROCESS, "ms", true],
-		"perf_physics_time":  [Performance.TIME_PHYSICS_PROCESS, "ms", true],
-		"perf_object_count":  [Performance.OBJECT_COUNT, "count", false],
-		"perf_node_count":    [Performance.OBJECT_NODE_COUNT, "count", false],
-		"perf_orphan_nodes":  [Performance.OBJECT_ORPHAN_NODE_COUNT, "count", false],
-		"perf_resource_count":[Performance.OBJECT_RESOURCE_COUNT, "count", false],
-	}
-	for name in pm:
-		var arr: Array = pm[name]
-		var val: float = Performance.get_monitor(arr[0])
-		if arr[2]: val *= MS_PER_SEC
-		results.append(BenchmarkResult.new(name, "render_snapshot", arr[1], PackedFloat64Array([val])))
+	var coords := _spiral_chunk_coords(config, profile.chunks_to_generate)
+	if coords.is_empty():
+		return results
+	var hw_count := OS.get_processor_count()
+	var configured_count := maxi(1, config.max_concurrent_chunk_requests)
+	var tiers: Array[Dictionary] = []
+	tiers.append({"label": "sequential", "concurrency": 1})
+	if configured_count != 1 and configured_count != hw_count:
+		tiers.append({"label": "configured_%d" % configured_count, "concurrency": configured_count})
+	tiers.append({"label": "hw_ceiling_%d" % hw_count, "concurrency": hw_count})
+	print("[Async] %d chunks × %d tiers | hw=%d configured=%d" % [
+		coords.size(), tiers.size(), hw_count, configured_count
+	])
+	for tier in tiers:
+		var concurrency: int = tier["concurrency"]
+		var label: String = tier["label"]
+		var meta := {
+			"config_name": config_name,
+			"concurrency": concurrency,
+			"chunk_count": coords.size(),
+			"hw_thread_count": hw_count,
+			"configured_concurrency": configured_count,
+			"tier": label,
+		}
+		print("[Async]   tier=%s concurrency=%d ..." % [label, concurrency])
+		var service := ChunkGenerationService.new(
+			definition, config.base_chunk_resolution, config.cache_size_mb, false
+		)
+		service.set_use_threading(true)
+		service.set_max_concurrent_requests(concurrency)
+		var state := {"completed": 0, "timed_out": false}
+		var per_chunk_latencies := PackedFloat64Array()
+		var dispatch_times: Dictionary[String, int] = {}
+		service.chunk_generated.connect(
+			func(_coord: Vector2i, _lod: int, _chunk: ChunkMeshData) -> void:
+				var key := "%d,%d" % [_coord.x, _coord.y]
+				if dispatch_times.has(key):
+					per_chunk_latencies.append(
+						float(Time.get_ticks_usec() - dispatch_times[key]) / 1000.0
+					)
+				state["completed"] = int(state["completed"]) + 1
+		)
+		var wall_start := Time.get_ticks_usec()
+		for coord in coords:
+			dispatch_times["%d,%d" % [coord.x, coord.y]] = Time.get_ticks_usec()
+			service.request_chunk_async(coord, config.chunk_size, 0, 0.0)
+		var deadline_usec: int = Time.get_ticks_usec() + int(ASYNC_TIMEOUT_MS * 1000.0)
+		while state["completed"] < coords.size():
+			if _tree:
+				await _tree.process_frame
+			else:
+				OS.delay_msec(1)
+			if Time.get_ticks_usec() > deadline_usec:
+				push_warning(
+					"TerrainBenchmark: async tier '%s' timed out after %.0f ms (%d/%d chunks)" % [
+						label, ASYNC_TIMEOUT_MS, int(state["completed"]), coords.size()
+					]
+				)
+				state["timed_out"] = true
+				break
+		var wall_ms := float(Time.get_ticks_usec() - wall_start) / 1000.0
+		meta["completed_chunks"] = int(state["completed"])
+		meta["timed_out"] = state["timed_out"]
+		results.append(BenchmarkResult.new(
+			"async_wall_time_%s" % label, "async_loading", "ms",
+			PackedFloat64Array([wall_ms]), meta
+		))
+		if not per_chunk_latencies.is_empty():
+			results.append(BenchmarkResult.new(
+				"async_chunk_latency_%s" % label, "async_loading", "ms",
+				per_chunk_latencies, meta
+			))
+		if wall_ms > 0.0 and int(state["completed"]) > 0:
+			results.append(BenchmarkResult.new(
+				"async_throughput_%s" % label, "async_loading", "chunks/sec",
+				PackedFloat64Array([float(int(state["completed"])) / (wall_ms / 1000.0)]), meta
+			))
+	var seq_wall := 0.0
+	var hw_wall := 0.0
+	for r in results:
+		if r.metric_name == "async_wall_time_sequential":
+			seq_wall = r.get_mean()
+		elif r.metric_name.begins_with("async_wall_time_hw_ceiling"):
+			hw_wall = r.get_mean()
+	if seq_wall > 0.0 and hw_wall > 0.0:
+		results.append(BenchmarkResult.new(
+			"async_speedup_hw_vs_sequential", "async_loading", "x",
+			PackedFloat64Array([seq_wall / hw_wall]),
+			{"config_name": config_name, "hw_thread_count": hw_count,
+			"configured_concurrency": configured_count}
+		))
 	return results
 
 func _generate_definition_quiet(config: TerrainConfigurationV2) -> TerrainDefinition:
@@ -354,35 +432,6 @@ func _spiral_chunk_coords(config: TerrainConfigurationV2, count: int) -> Array[V
 		if radius > maxi(nx, nz):
 			break
 	return coords
-
-func _estimate_max_loaded_chunks(config: TerrainConfigurationV2) -> int:
-	return config.load_strategy.get_max_loaded_chunks()
-
-## Count triangles in a PackedScene by instantiating once and walking the mesh tree.
-func _count_scene_triangles(scene: PackedScene) -> int:
-	if not scene:
-		return 0
-	var instance := scene.instantiate()
-	if not instance:
-		return 0
-	var count := _sum_mesh_triangles(instance)
-	instance.free()
-	return count
-
-func _sum_mesh_triangles(node: Node) -> int:
-	var total := 0
-	if node is MeshInstance3D:
-		var mesh: MeshInstance3D = node
-		if mesh.mesh:
-			for surface_count in mesh.mesh.get_surface_count():
-				var arrays := mesh.mesh.surface_get_arrays(surface_count)
-				if arrays.size() > Mesh.ARRAY_INDEX and arrays[Mesh.ARRAY_INDEX] != null:
-					total += arrays[Mesh.ARRAY_INDEX].size() / VERTS_PER_TRIANGLE
-				elif arrays.size() > Mesh.ARRAY_VERTEX and arrays[Mesh.ARRAY_VERTEX] != null:
-					total += arrays[Mesh.ARRAY_VERTEX].size() / VERTS_PER_TRIANGLE
-	for child in node.get_children():
-		total += _sum_mesh_triangles(child)
-	return total
 
 func _print_header(profile: BenchmarkProfile) -> void:
 	print("")

@@ -28,8 +28,15 @@ func generate_chunk(chunk_coord: Vector2i, chunk_size: Vector2, lod_level: int =
 		_terrain_definition, chunk_coord, chunk_size, lod_level, _base_resolution
 	)
 
+func duplicate() -> ChunkGenerator:
+	var copy := ChunkGenerator.new(_terrain_definition, _base_resolution, false)
+	if _generation_strategy.get_processor_type() == ChunkGenerationStrategy.ProcessorType.GPU:
+		copy._generation_strategy = GpuChunkGenerationStrategy.new()
+	else:
+		copy._generation_strategy = CpuChunkGenerationStrategy.new()
+	return copy
+
 ## Get the underlying generation strategy (CPU or GPU).
 ## Used by benchmarks to connect to substep_completed signals.
 func get_strategy() -> ChunkGenerationStrategy:
 	return _generation_strategy
-

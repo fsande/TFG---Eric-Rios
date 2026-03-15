@@ -61,26 +61,31 @@ func _generate_chunk_gpu(
 		return null
 	var chunk_bounds := calculate_chunk_bounds(terrain_definition, chunk_coord, chunk_size)
 	var resolution := calculate_resolution_for_lod(base_resolution, lod_level)
+
 	var t := Time.get_ticks_usec()
 	var height_grid := _generate_height_grid_gpu(rd, terrain_definition, chunk_bounds, resolution)
 	_emit_substep("height_grid", (Time.get_ticks_usec() - t) / 1000.0)
 	if height_grid.is_empty():
 		return null
+
 	t = Time.get_ticks_usec()
 	var mesh_result := _build_mesh_gpu(rd, height_grid, chunk_bounds, resolution)
 	_emit_substep("mesh_build", (Time.get_ticks_usec() - t) / 1000.0)
 	if not mesh_result:
 		return null
+
 	var volumes := terrain_definition.get_volumes_for_chunk(chunk_bounds, lod_level)
 	if not volumes.is_empty():
 		t = Time.get_ticks_usec()
 		var cpu_strategy := CpuChunkGenerationStrategy.new()
 		mesh_result = cpu_strategy._apply_volumes(mesh_result, volumes, chunk_bounds, lod_level)
 		_emit_substep("volumes", (Time.get_ticks_usec() - t) / 1000.0)
+
 	if mesh_result.cached_normals.is_empty():
 		t = Time.get_ticks_usec()
 		mesh_result.cached_normals = MeshNormalCalculator.calculate_normals(mesh_result)
 		_emit_substep("normals", (Time.get_ticks_usec() - t) / 1000.0)
+
 	if mesh_result.cached_tangents.is_empty():
 		t = Time.get_ticks_usec()
 		mesh_result.cached_tangents = MeshTangentCalculator.calculate_tangents(mesh_result, mesh_result.cached_normals)

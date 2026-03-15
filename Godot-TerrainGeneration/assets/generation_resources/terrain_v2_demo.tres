@@ -7,8 +7,6 @@
 [ext_resource type="Script" uid="uid://c5ppavb1os4er" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="5_xedlb"]
 [ext_resource type="Script" uid="uid://2wt0wp5vkq0f" path="res://terrain_generation/agents/terrain_modifier_agent.gd" id="6_ywmle"]
 [ext_resource type="Script" uid="uid://birb17b0dkd41" path="res://terrain_generation/agents/config/river_agent_config.gd" id="7_m8xok"]
-[ext_resource type="Resource" uid="uid://dlp381xd1qjdc" path="res://assets/agents/default_river_agent.tres" id="7_ynpy0"]
-[ext_resource type="Material" uid="uid://bg6hotk2ler2n" path="res://assets/materials/water/river_water.tres" id="8_ynpy0"]
 [ext_resource type="Script" uid="uid://ikunl5bx48x1" path="res://terrain_generation/agents/river/river_agent.gd" id="9_xedlb"]
 [ext_resource type="Script" uid="uid://d1uj11l5nqaog" path="res://terrain_generation/core/stages/sequential_modifier_stage.gd" id="10_rirjj"]
 [ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="10_vnpua"]
@@ -41,22 +39,27 @@ script = ExtResource("4_ynpy0")
 load_radius = 2
 unload_radius = 3
 
-[sub_resource type="Resource" id="Resource_vxcob"]
+[sub_resource type="Resource" id="Resource_2gqhp"]
 script = ExtResource("7_m8xok")
-depth_increase_rate = 0.03
-max_depth = 6.0
-water_mesh_extra_width = 5.0
-water_material = ExtResource("8_ynpy0")
 
-[sub_resource type="Resource" id="Resource_hnkrs"]
+[sub_resource type="Resource" id="Resource_ywmle"]
 script = ExtResource("9_xedlb")
-config = SubResource("Resource_vxcob")
+config = SubResource("Resource_2gqhp")
+agent_name = "River"
+metadata/_custom_type_script = "uid://ikunl5bx48x1"
+
+[sub_resource type="Resource" id="Resource_m8xok"]
+script = ExtResource("7_m8xok")
+
+[sub_resource type="Resource" id="Resource_ynpy0"]
+script = ExtResource("9_xedlb")
+config = SubResource("Resource_m8xok")
 agent_name = "River"
 metadata/_custom_type_script = "uid://ikunl5bx48x1"
 
 [sub_resource type="Resource" id="Resource_vnpua"]
 script = ExtResource("10_rirjj")
-agents = Array[ExtResource("6_ywmle")]([ExtResource("7_ynpy0"), SubResource("Resource_hnkrs")])
+agents = Array[ExtResource("6_ywmle")]([SubResource("Resource_ywmle"), SubResource("Resource_ynpy0")])
 metadata/_custom_type_script = "uid://d1uj11l5nqaog"
 
 [sub_resource type="Resource" id="Resource_skfwi"]
@@ -94,6 +97,7 @@ constraints = Array[ExtResource("13_bgmbc")]([SubResource("Resource_skfwi"), Sub
 scale_range = Vector2(0.1, 0.12)
 align_to_normal = false
 use_multimesh = true
+rule_id = "prop_rule_2"
 metadata/_custom_type_script = "uid://wlx5bsak37rn"
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_qigeq"]
@@ -114,6 +118,7 @@ constraints = Array[ExtResource("13_bgmbc")]([SubResource("Resource_skfwi"), Sub
 scale_range = Vector2(0.1, 0.12)
 align_to_normal = false
 use_multimesh = true
+rule_id = "prop_rule_3"
 metadata/_custom_type_script = "uid://wlx5bsak37rn"
 
 [resource]
@@ -123,12 +128,10 @@ terrain_size = Vector2(1828, 1828)
 height_scale = 256.0
 modifier_stages = Array[ExtResource("5_xedlb")]([SubResource("Resource_vnpua")])
 prop_placement_rules = Array[ExtResource("10_vnpua")]([ExtResource("11_kl2pl"), ExtResource("12_6d4f2"), SubResource("Resource_mgv4o"), SubResource("Resource_qx382")])
-base_chunk_resolution = 256
+base_chunk_resolution = 32
 load_strategy = SubResource("Resource_4fayk")
-use_async_loading = false
-max_concurrent_chunk_requests = 1
+max_concurrent_chunk_requests = 5
 use_gpu_heightmap = true
-use_gpu_mesh_generation = true
 lod_distances = Array[float]([100.0, 200.0, 250.0, 400.0])
 sea_level = 2.0
 sea_material = ExtResource("21_ncxol")

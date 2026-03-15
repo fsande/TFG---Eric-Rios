@@ -69,6 +69,7 @@ var river_visuals: Array[RiverVisualData] = []
 ## Cached base heightmap (generated on first access)
 var _cached_base_heightmap: Image = null
 var _cached_heightmap_size: float = 0.0
+var _heightmap_cache_mutex: Mutex = Mutex.new()
 
 ## Shared processing context for GPU operations
 var _shared_processing_context: ProcessingContext = null
@@ -176,10 +177,14 @@ func get_deltas_by_zone(tag: StringName) -> Array[HeightDeltaMap]:
 ## @param resolution Resolution to generate at
 ## @return Heightmap image
 func get_base_heightmap(resolution: int = 1024) -> Image:
+	_heightmap_cache_mutex.lock()
 	if _cached_base_heightmap and _cached_heightmap_size == resolution:
-		return _cached_base_heightmap
+		var cached := _cached_base_heightmap
+		_heightmap_cache_mutex.unlock()
+		return cached
 	if not heightmap_source:
 		push_error("TerrainDefinition: No heightmap source")
+		_heightmap_cache_mutex.unlock()
 		return null
 	var context: ProcessingContext
 	var owns_context := false
@@ -197,7 +202,9 @@ func get_base_heightmap(resolution: int = 1024) -> Image:
 	_cached_heightmap_size = resolution
 	if owns_context:
 		context.dispose()
-	return _cached_base_heightmap
+	var result := _cached_base_heightmap
+	_heightmap_cache_mutex.unlock()
+	return result
 
 ## Sample composed height at a world position.
 ## @param world_pos World position (XZ)
@@ -292,7 +299,6 @@ func get_memory_usage() -> int:
 	for volume in volume_definitions:
 		usage += volume.get_memory_usage()
 	return usage
-
 
 ## Clear cached data to free memory.
 func clear_cache() -> void:

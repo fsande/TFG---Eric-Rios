@@ -60,4 +60,3 @@ func calculate_chunk_bounds(
 		Vector3(chunk_origin.x, -height_range, chunk_origin.z),
 		Vector3(chunk_size.x, height_range * 2.0, chunk_size.y)
 	)
-

@@ -24,35 +24,37 @@ func generate_chunk(
 		return null
 	var chunk_bounds := calculate_chunk_bounds(terrain_definition, chunk_coord, chunk_size)
 	var resolution := calculate_resolution_for_lod(base_resolution, lod_level)
-	var t := Time.get_ticks_usec()
+	var current_time := Time.get_ticks_usec()
 	var height_grid := _generate_height_grid(terrain_definition, chunk_bounds, resolution)
-	_emit_substep("height_grid", (Time.get_ticks_usec() - t) / 1000.0)
+	_emit_substep("height_grid", (Time.get_ticks_usec() - current_time) / 1000.0)
 	if height_grid.is_empty():
 		return null
-	t = Time.get_ticks_usec()
+	current_time = Time.get_ticks_usec()
 	var mesh_data := _build_mesh_from_height_grid(height_grid, chunk_bounds, resolution)
-	_emit_substep("mesh_build", (Time.get_ticks_usec() - t) / 1000.0)
+	_emit_substep("mesh_build", (Time.get_ticks_usec() - current_time) / 1000.0)
 	if not mesh_data:
 		return null
 	var volumes := terrain_definition.get_volumes_for_chunk(chunk_bounds, lod_level)
 	if not volumes.is_empty():
-		t = Time.get_ticks_usec()
+		current_time = Time.get_ticks_usec()
 		mesh_data = apply_volumes(mesh_data, volumes, chunk_bounds, resolution)
-		_emit_substep("volumes", (Time.get_ticks_usec() - t) / 1000.0)
+		_emit_substep("volumes", (Time.get_ticks_usec() - current_time) / 1000.0)
 	if mesh_data.cached_normals.is_empty():
-		t = Time.get_ticks_usec()
+		current_time = Time.get_ticks_usec()
 		mesh_data.cached_normals = MeshNormalCalculator.calculate_normals(mesh_data)
-		_emit_substep("normals", (Time.get_ticks_usec() - t) / 1000.0)
+		_emit_substep("normals", (Time.get_ticks_usec() - current_time) / 1000.0)
 	if mesh_data.cached_tangents.is_empty():
-		t = Time.get_ticks_usec()
+		current_time = Time.get_ticks_usec()
 		mesh_data.cached_tangents = MeshTangentCalculator.calculate_tangents(mesh_data, mesh_data.cached_normals)
-		_emit_substep("tangents", (Time.get_ticks_usec() - t) / 1000.0)
+		_emit_substep("tangents", (Time.get_ticks_usec() - current_time) / 1000.0)
 	var world_center := Vector3(
 		chunk_bounds.position.x + chunk_bounds.size.x / 2.0,
 		0,
 		chunk_bounds.position.z + chunk_bounds.size.z / 2.0
 	)
-	return ChunkMeshData.new(chunk_coord, world_center, chunk_size, mesh_data)
+	var chunk_mesh_data = ChunkMeshData.new(chunk_coord, world_center, chunk_size, mesh_data)
+	chunk_mesh_data.build_mesh()
+	return chunk_mesh_data
 
 func _generate_height_grid(
 	terrain_definition: TerrainDefinition,

@@ -19,7 +19,7 @@ var aabb: AABB
 ## Core mesh data (vertices, indices, UVs) - subset of terrain mesh
 var mesh_data: MeshData
 
-## Built ArrayMesh with LOD levels (null until built)
+## Built ArrayMesh with LOD
 var mesh: ArrayMesh = null
 
 ## Array of meshes, index = LOD level (0 = highest detail)
@@ -62,11 +62,11 @@ func _init(coord: Vector2i, position: Vector3, size: Vector2, p_mesh: MeshData):
 		aabb_max.y = max_y
 	aabb = AABB(aabb_min, aabb_max - aabb_min)
 
-## Build ArrayMesh with automatic LOD generation using Godot's ImporterMesh
+## Build ArrayMesh 
 ## @param normal_merge_angle Maximum angle difference to merge normals (degrees)
 ## @param normal_split_angle Maximum angle to split normals during LOD (degrees)
 ## @return Built ArrayMesh with LOD levels
-func build_mesh_with_lod(normal_merge_angle: float = 60.0, normal_split_angle: float = 25.0) -> ArrayMesh:
+func build_mesh() -> ArrayMesh:
 	if not mesh_data or mesh_data.vertices.size() == 0:
 		push_warning("ChunkMeshData: Cannot build mesh - no mesh data")
 		return null
@@ -169,8 +169,10 @@ func build_collision(use_simplified: bool = false) -> Shape3D:
 		collision_shape = shape
 	else:
 		if not mesh:
-			build_mesh_with_lod()
+			build_mesh()
 		if mesh:
+			# TODO: see whether decimating the mesh to reduce triangle count for collision improves performance without sacrificing accuracy
+			# Could probably just use one lower LOD level for collision to reduce complexity
 			collision_shape = mesh.create_trimesh_shape()
 		else:
 			push_warning("ChunkMeshData: Failed to build mesh for collision")

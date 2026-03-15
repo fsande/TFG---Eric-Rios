@@ -42,7 +42,7 @@ func generate(
 			ProcessingContext.ProcessorType.CPU,
 			generation_seed
 		)
-	var reference_heightmap := _generate_reference_heightmap(heightmap_source, terrain_size, generation_seed, processing_context)
+	var reference_heightmap := definition.get_base_heightmap()
 	if not reference_heightmap:
 		push_error("TerrainDefinitionGenerator: Failed to generate reference heightmap")
 		if owns_context:
@@ -90,13 +90,3 @@ func generate(
 		print(definition.get_summary())
 	generation_completed.emit(definition)
 	return definition
-
-## Generate reference heightmap for agent analysis.
-func _generate_reference_heightmap(
-	source: HeightmapSource,
-	terrain_size: Vector2,
-	generation_seed: int,
-	processing_context: ProcessingContext
-) -> Image:
-	var heightmap := source.generate(processing_context)
-	return heightmap

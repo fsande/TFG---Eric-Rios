@@ -322,23 +322,18 @@ func _cancel_out_of_range_requests(camera_pos: Vector3) -> void:
 func _instantiate_chunk(coord: Vector2i, lod_level: int, chunk: ChunkMeshData) -> void:
 	if _loaded_chunks.has(coord):
 		return
-	var mesh := ArrayMeshBuilder.build_mesh(chunk.mesh_data)
-	if not mesh:
-		return
 	var mesh_instance := MeshInstance3D.new()
-	mesh_instance.mesh = mesh
+	mesh_instance.mesh = chunk.mesh
 	mesh_instance.name = "Chunk_%d_%d" % [coord.x, coord.y]
 	mesh_instance.position = chunk.world_position
 	if configuration.terrain_material:
 		mesh_instance.material_override = configuration.terrain_material
 	mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	_chunks_container.add_child(mesh_instance)
-#	if Engine.is_editor_hint():
-#		mesh_instance.owner = get_tree().edited_scene_root
 	_chunk_instances[coord] = mesh_instance
 	_loaded_chunks[coord] = LoadedChunkState.new(lod_level, chunk)
 	if configuration.generate_collision and lod_level == 0:
-		_create_collision_for_chunk(coord, chunk, mesh_instance)
+		_create_collision_for_chunk(coord, chunk, mesh_instance) # TODO: Optimize this. It is very expensive
 	if _feature_manager and lod_level <= 1:
 		_feature_manager.spawn_features_for_chunk(chunk, lod_level)
 	chunk_loaded.emit(coord, lod_level)

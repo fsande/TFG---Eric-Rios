@@ -28,4 +28,4 @@ func _run() -> void:
 		func(report: BenchmarkReport) -> void:
 			print("[Bench] Done — %d results saved to %s" % [report.get_result_count(), profile.output_dir])
 	)
-	_report = benchmark.run(profile)
+	_report = await benchmark.run(profile, get_tree())

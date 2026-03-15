@@ -11,14 +11,20 @@ var _pending_requests: Dictionary[String, ChunkRequest] = {}
 var _request_mutex: Mutex = Mutex.new()
 var _max_concurrent_requests: int = 16
 var _active_request_count: int = 0
-var _generator: ChunkGenerator = null
 var _cache: ChunkCache = null
-var _is_processing: bool = false
+var _generator: ChunkGenerator = null
+var _generator_pool: Array[ChunkGenerator] = []
+var _generator_pool_semaphore: Semaphore = Semaphore.new()
 
 func _init(generator: ChunkGenerator, cache: ChunkCache, max_concurrent: int) -> void:
 	_generator = generator
 	_cache = cache
 	_max_concurrent_requests = max_concurrent
+	for i in max_concurrent:
+		_generator_pool.append(
+			generator.duplicate()
+		)
+		_generator_pool_semaphore.post()
 
 func request_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int, priority: float = 0.0) -> void:
 	_request_mutex.lock()
@@ -56,6 +62,14 @@ func cancel_all_pending() -> void:
 		_pending_requests.erase(key)
 	_request_mutex.unlock()
 
+func cancel_all() -> void:
+	_request_mutex.lock()
+	for key in _pending_requests.keys():
+		var request: ChunkRequest = _pending_requests[key]
+		request.mark_cancelled()
+	_pending_requests.clear()
+	_request_mutex.unlock()
+
 func update_priority(coord: Vector2i, lod: int, new_priority: float) -> void:
 	_request_mutex.lock()
 	var key := _make_key(coord, lod)
@@ -91,23 +105,6 @@ func get_active_request_count() -> int:
 	_request_mutex.unlock()
 	return count
 
-func get_total_request_count() -> int:
-	_request_mutex.lock()
-	var count := _pending_requests.size()
-	_request_mutex.unlock()
-	return count
-
-func clear_completed() -> void:
-	_request_mutex.lock()
-	var keys_to_remove: Array[String] = []
-	for key in _pending_requests.keys():
-		var request: ChunkRequest = _pending_requests[key]
-		if not request.is_active():
-			keys_to_remove.append(key)
-	for key in keys_to_remove:
-		_pending_requests.erase(key)
-	_request_mutex.unlock()
-
 func _try_process_next() -> void:
 	while true:
 		_request_mutex.lock()
@@ -119,11 +116,9 @@ func _try_process_next() -> void:
 			_request_mutex.unlock()
 			return
 		_active_request_count += 1
-		var task_id := WorkerThreadPool.add_task(
-			_generate_chunk_task.bind(next_request)
-		)
-		next_request.mark_in_progress(task_id)
+		next_request.mark_in_progress(-1)
 		_request_mutex.unlock()
+		WorkerThreadPool.add_task(_generate_chunk_task.bind(next_request))
 
 func _get_highest_priority_pending() -> ChunkRequest:
 	var best_request: ChunkRequest = null
@@ -140,7 +135,15 @@ func _generate_chunk_task(request: ChunkRequest) -> void:
 	if cached:
 		_on_generation_complete(request, cached, "")
 		return
-	var chunk := _generator.generate_chunk(request.coord, request.chunk_size, request.lod_level)
+	_generator_pool_semaphore.wait()
+	_request_mutex.lock()
+	var generator: ChunkGenerator = _generator_pool.pop_back()
+	_request_mutex.unlock()
+	var chunk := generator.generate_chunk(request.coord, request.chunk_size, request.lod_level)
+	_request_mutex.lock()
+	_generator_pool.push_back(generator)
+	_request_mutex.unlock()
+	_generator_pool_semaphore.post()
 	if chunk:
 		_cache.store_chunk(request.coord, request.lod_level, chunk)
 		_on_generation_complete(request, chunk, "")
@@ -156,16 +159,15 @@ func _on_generation_complete(request: ChunkRequest, chunk: ChunkMeshData, error:
 		_request_mutex.unlock()
 		_try_process_next()
 		return
+	_pending_requests.erase(key)
+	_request_mutex.unlock()
 	if chunk:
 		request.mark_completed()
-		_pending_requests.erase(key)
-		_request_mutex.unlock()
 		chunk_completed.emit(request.coord, request.lod_level, chunk)
 	else:
 		request.mark_failed()
-		_pending_requests.erase(key)
-		_request_mutex.unlock()
 		chunk_failed.emit(request.coord, request.lod_level, error)
+
 	_try_process_next()
 
 func _make_key(coord: Vector2i, lod: int) -> String:
