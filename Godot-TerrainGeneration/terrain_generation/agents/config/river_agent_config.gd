@@ -103,9 +103,8 @@ class_name RiverAgentConfig extends Resource
 ## 0 = use the raw (smoothed) path points as-is.
 @export_range(0.0, 10.0, 0.5) var ribbon_resample_spacing: float = 2.0
 
-## Optional per-river material override. When null the presenter uses
-## the global river material from TerrainConfigurationV2.
-@export var water_material: Material = null
+## Optional per-river material override.
+@export var water_material: Material = preload("res://assets/materials/water/river_water.tres")
 
 @export_group("Attempts")
 

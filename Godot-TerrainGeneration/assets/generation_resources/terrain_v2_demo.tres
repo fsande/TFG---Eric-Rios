@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TerrainConfigurationV2" load_steps=41 format=3 uid="uid://ch53n6nd5oc4t"]
+[gd_resource type="Resource" script_class="TerrainConfigurationV2" load_steps=42 format=3 uid="uid://ch53n6nd5oc4t"]
 
 [ext_resource type="Script" uid="uid://d30u6ur3uvl8d" path="res://terrain_generation/heightmap/processors/blur_processor.gd" id="1_2gqhp"]
 [ext_resource type="Script" uid="uid://x7gc7eg20w0b" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="2_ywmle"]
@@ -7,9 +7,11 @@
 [ext_resource type="Script" uid="uid://c5ppavb1os4er" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="5_xedlb"]
 [ext_resource type="Script" uid="uid://2wt0wp5vkq0f" path="res://terrain_generation/agents/terrain_modifier_agent.gd" id="6_ywmle"]
 [ext_resource type="Script" uid="uid://birb17b0dkd41" path="res://terrain_generation/agents/config/river_agent_config.gd" id="7_m8xok"]
+[ext_resource type="Resource" uid="uid://c03c4s75qyfev" path="res://assets/agents/default_river_config.tres" id="7_ynpy0"]
 [ext_resource type="Script" uid="uid://ikunl5bx48x1" path="res://terrain_generation/agents/river/river_agent.gd" id="9_xedlb"]
 [ext_resource type="Script" uid="uid://d1uj11l5nqaog" path="res://terrain_generation/core/stages/sequential_modifier_stage.gd" id="10_rirjj"]
 [ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="10_vnpua"]
+[ext_resource type="Material" uid="uid://bg6hotk2ler2n" path="res://assets/materials/water/river_water.tres" id="10_xedlb"]
 [ext_resource type="Resource" uid="uid://v5ie01qj4ft2" path="res://assets/generation_resources/tree_place1.tres" id="11_kl2pl"]
 [ext_resource type="Resource" uid="uid://dmjfm4v8myli7" path="res://assets/generation_resources/rock_place1.tres" id="12_6d4f2"]
 [ext_resource type="Script" uid="uid://cu0sy48pu3x7x" path="res://terrain_generation/props/constraints/prop_placement_constraint.gd" id="13_bgmbc"]
@@ -39,12 +41,9 @@ script = ExtResource("4_ynpy0")
 load_radius = 2
 unload_radius = 3
 
-[sub_resource type="Resource" id="Resource_2gqhp"]
-script = ExtResource("7_m8xok")
-
 [sub_resource type="Resource" id="Resource_ywmle"]
 script = ExtResource("9_xedlb")
-config = SubResource("Resource_2gqhp")
+config = ExtResource("7_ynpy0")
 agent_name = "River"
 metadata/_custom_type_script = "uid://ikunl5bx48x1"
 

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="RiverAgentConfig" load_steps=3 format=3 uid="uid://c03c4s75qyfev"]
+
+[ext_resource type="Script" uid="uid://birb17b0dkd41" path="res://terrain_generation/agents/config/river_agent_config.gd" id="1_lrjvi"]
+[ext_resource type="Material" uid="uid://bg6hotk2ler2n" path="res://assets/materials/water/river_water.tres" id="2_yfqad"]
+
+[resource]
+script = ExtResource("1_lrjvi")
