@@ -174,29 +174,29 @@ func _benchmark_chunks(
 				"chunk_substep_%s_lod%d" % [substep_name, lod],
 				"chunk_generation", "ms", substep_timings[substep_name], meta
 			))
-		results.append_array(_benchmark_chunk_mesh(profile, last_chunk, lod, meta))
+		results.append_array(_benchmark_chunk_mesh(profile, last_chunk.mesh_data, lod, meta))
 	return results
 
-func _benchmark_chunk_mesh(profile: BenchmarkProfile, last_chunk: ChunkMeshData, lod: int, meta: Dictionary) -> Array[BenchmarkResult]:
+func _benchmark_chunk_mesh(profile: BenchmarkProfile, last_chunk_mesh: MeshData, lod: int, meta: Dictionary) -> Array[BenchmarkResult]:
 	var results: Array[BenchmarkResult] = []
-	if last_chunk and last_chunk.mesh_data:
+	if last_chunk_mesh:
 		var mb_samples := PackedFloat64Array()
 		for _n in profile.iterations:
 			var t := Time.get_ticks_usec()
-			ArrayMeshBuilder.build_mesh(last_chunk.mesh_data)
+			ArrayMeshBuilder.build_mesh(last_chunk_mesh)
 			mb_samples.append((Time.get_ticks_usec() - t) / 1000.0)
 		results.append(BenchmarkResult.new(
 			"array_mesh_build_lod%d" % lod, "chunk_generation", "ms", mb_samples, meta
 		))
-		meta["actual_vertices"] = last_chunk.mesh_data.get_vertex_count()
-		meta["actual_triangles"] = last_chunk.mesh_data.get_triangle_count()
+		meta["actual_vertices"] = last_chunk_mesh.get_vertex_count()
+		meta["actual_triangles"] = last_chunk_mesh.get_triangle_count()
 		results.append(BenchmarkResult.new(
 			"vertex_count_lod%d" % lod, "chunk_generation", "count",
-			PackedFloat64Array([float(last_chunk.mesh_data.get_vertex_count())]), meta
+			PackedFloat64Array([float(last_chunk_mesh.get_vertex_count())]), meta
 		))
 		results.append(BenchmarkResult.new(
 			"triangle_count_lod%d" % lod, "chunk_generation", "count",
-			PackedFloat64Array([float(last_chunk.mesh_data.get_triangle_count())]), meta
+			PackedFloat64Array([float(last_chunk_mesh.get_triangle_count())]), meta
 		))
 	return results
 

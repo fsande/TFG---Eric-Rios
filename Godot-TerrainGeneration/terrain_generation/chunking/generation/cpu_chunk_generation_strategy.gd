@@ -14,15 +14,13 @@ func supports_async() -> bool:
 
 func generate_chunk(
 	terrain_definition: TerrainDefinition,
-	chunk_coord: Vector2i,
-	chunk_size: Vector2,
+	chunk_bounds: AABB,
 	lod_level: int,
 	base_resolution: int
-) -> ChunkMeshData:
+) -> MeshData:
 	if not terrain_definition or not terrain_definition.is_valid():
 		push_error("CpuChunkGenerationStrategy: Invalid terrain definition")
 		return null
-	var chunk_bounds := calculate_chunk_bounds(terrain_definition, chunk_coord, chunk_size)
 	var resolution := calculate_resolution_for_lod(base_resolution, lod_level)
 	var current_time := Time.get_ticks_usec()
 	var height_grid := _generate_height_grid(terrain_definition, chunk_bounds, resolution)
@@ -47,14 +45,7 @@ func generate_chunk(
 		current_time = Time.get_ticks_usec()
 		mesh_data.cached_tangents = MeshTangentCalculator.calculate_tangents(mesh_data, mesh_data.cached_normals)
 		_emit_substep("tangents", (Time.get_ticks_usec() - current_time) / 1000.0)
-	var world_center := Vector3(
-		chunk_bounds.position.x + chunk_bounds.size.x / 2.0,
-		0,
-		chunk_bounds.position.z + chunk_bounds.size.z / 2.0
-	)
-	var chunk_mesh_data = ChunkMeshData.new(chunk_coord, world_center, chunk_size, mesh_data)
-	chunk_mesh_data.build_mesh()
-	return chunk_mesh_data
+	return mesh_data
 
 func _generate_height_grid(
 	terrain_definition: TerrainDefinition,

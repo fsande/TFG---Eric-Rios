@@ -131,21 +131,20 @@ func _get_highest_priority_pending() -> ChunkRequest:
 	return best_request
 
 func _generate_chunk_task(request: ChunkRequest) -> void:
-	var cached := _cache.get_chunk(request.coord, request.lod_level)
-	if cached:
-		_on_generation_complete(request, cached, "")
+	if _cache.has_chunk_with_lod(request.coord, request.lod_level):
+		_on_generation_complete(request, _cache.get_chunk(request.coord), "")
 		return
 	_generator_pool_semaphore.wait()
 	_request_mutex.lock()
 	var generator: ChunkGenerator = _generator_pool.pop_back()
 	_request_mutex.unlock()
-	var chunk := generator.generate_chunk(request.coord, request.chunk_size, request.lod_level)
+	var chunk := generator.update_or_generate_chunk(request.coord, request.chunk_size, request.lod_level, _cache)
 	_request_mutex.lock()
 	_generator_pool.push_back(generator)
 	_request_mutex.unlock()
 	_generator_pool_semaphore.post()
 	if chunk:
-		_cache.store_chunk(request.coord, request.lod_level, chunk)
+#		_cache.store_chunk(request.coord, chunk)
 		_on_generation_complete(request, chunk, "")
 	else:
 		_on_generation_complete(request, null, "Chunk generation failed")

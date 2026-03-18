@@ -23,43 +23,38 @@ func supports_async() -> bool:
 
 func generate_chunk(
 	terrain_definition: TerrainDefinition,
-	chunk_coord: Vector2i,
-	chunk_size: Vector2,
+	chunk_bounds: AABB,
 	lod_level: int,
 	base_resolution: int
-) -> ChunkMeshData:
+) -> MeshData:
 	_gpu_manager = GpuResourceManager.get_singleton()
 	if not _gpu_manager or not _gpu_manager.is_gpu_available():
 		return _fallback_strategy.generate_chunk(
-			terrain_definition, chunk_coord, chunk_size, lod_level, base_resolution
+			terrain_definition, chunk_bounds, lod_level, base_resolution
 		)
 	var result := _generate_chunk_gpu(
-		terrain_definition, chunk_coord, chunk_size, lod_level, base_resolution
+		terrain_definition, chunk_bounds, lod_level, base_resolution
 	)
-	
 	if not result:
 		push_warning("GpuChunkGenerationStrategy: GPU generation failed, falling back to CPU")
 		return _fallback_strategy.generate_chunk(
-			terrain_definition, chunk_coord, chunk_size, lod_level, base_resolution
+			terrain_definition, chunk_bounds, lod_level, base_resolution
 		)
-	
 	return result
 
 
 func _generate_chunk_gpu(
 	terrain_definition: TerrainDefinition,
-	chunk_coord: Vector2i,
-	chunk_size: Vector2,
+	chunk_bounds: AABB,
 	lod_level: int,
 	base_resolution: int
-) -> ChunkMeshData:
+) -> MeshData:
 	if not terrain_definition or not terrain_definition.is_valid():
 		push_error("GpuChunkGenerationStrategy: Invalid terrain definition")
 		return null
 	var rd := _gpu_manager.get_rendering_device()
 	if not rd:
 		return null
-	var chunk_bounds := calculate_chunk_bounds(terrain_definition, chunk_coord, chunk_size)
 	var resolution := calculate_resolution_for_lod(base_resolution, lod_level)
 	var t := Time.get_ticks_usec()
 	var height_grid := _generate_height_grid_gpu(rd, terrain_definition, chunk_bounds, resolution)
@@ -67,32 +62,24 @@ func _generate_chunk_gpu(
 	if height_grid.is_empty():
 		return null
 	t = Time.get_ticks_usec()
-	var mesh_result := _build_mesh_gpu(rd, height_grid, chunk_bounds, resolution)
+	var mesh_data := _build_mesh_gpu(rd, height_grid, chunk_bounds, resolution)
 	_emit_substep("mesh_build", (Time.get_ticks_usec() - t) / 1000.0)
-	if not mesh_result:
+	if not mesh_data:
 		return null
 	var volumes := terrain_definition.get_volumes_for_chunk(chunk_bounds, lod_level)
 	if not volumes.is_empty():
 		t = Time.get_ticks_usec()
-		var cpu_strategy := CpuChunkGenerationStrategy.new()
-		mesh_result = cpu_strategy._apply_volumes(mesh_result, volumes, chunk_bounds, lod_level)
+		mesh_data = _fallback_strategy._apply_volumes(mesh_data, volumes, chunk_bounds, lod_level)
 		_emit_substep("volumes", (Time.get_ticks_usec() - t) / 1000.0)
-	if mesh_result.cached_normals.is_empty():
+	if mesh_data.cached_normals.is_empty():
 		t = Time.get_ticks_usec()
-		mesh_result.cached_normals = MeshNormalCalculator.calculate_normals(mesh_result)
+		mesh_data.cached_normals = MeshNormalCalculator.calculate_normals(mesh_data)
 		_emit_substep("normals", (Time.get_ticks_usec() - t) / 1000.0)
-	if mesh_result.cached_tangents.is_empty():
+	if mesh_data.cached_tangents.is_empty():
 		t = Time.get_ticks_usec()
-		mesh_result.cached_tangents = MeshTangentCalculator.calculate_tangents(mesh_result, mesh_result.cached_normals)
+		mesh_data.cached_tangents = MeshTangentCalculator.calculate_tangents(mesh_data, mesh_data.cached_normals)
 		_emit_substep("tangents", (Time.get_ticks_usec() - t) / 1000.0)
-	var world_center := Vector3(
-		chunk_bounds.position.x + chunk_bounds.size.x / 2.0,
-		0,
-		chunk_bounds.position.z + chunk_bounds.size.z / 2.0
-	)
-	var chunk_mesh_data = ChunkMeshData.new(chunk_coord, world_center, chunk_size, mesh_result)
-	chunk_mesh_data.build_mesh()
-	return chunk_mesh_data
+	return mesh_data
 
 func _generate_height_grid_gpu(
 	rd: RenderingDevice,

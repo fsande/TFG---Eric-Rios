@@ -33,15 +33,14 @@ func _init(terrain_def: TerrainDefinition, base_resolution: int = 64, cache_size
 		_request_queue = _make_queue()
 
 func get_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int = 0) -> ChunkMeshData:
-	var cached := _cache.get_chunk(coord, lod_level)
-	if cached:
-		return cached
+	if _cache.has_chunk_with_lod(coord, lod_level):
+		return _cache.get_chunk(coord)
 	var start_time := Time.get_ticks_usec()
-	var chunk := _generator.generate_chunk(coord, chunk_size, lod_level)
+	var chunk := _generator.update_or_generate_chunk(coord, chunk_size, lod_level, _cache)
 	var elapsed := (Time.get_ticks_usec() - start_time) / 1000.0
 	print("Generated chunk at ", coord, " LOD ", lod_level, " in ", elapsed, " ms")
 	if chunk:
-		_cache.store_chunk(coord, lod_level, chunk)
+#		_cache.store_chunk(coord, chunk)
 		chunk_generated.emit(coord, lod_level, chunk)
 	else:
 		generation_failed.emit(coord, lod_level, "Generation failed")
@@ -65,9 +64,8 @@ func request_chunk_async(coord: Vector2i, chunk_size: Vector2, lod_level: int = 
 		else:
 			generation_failed.emit.call_deferred(coord, lod_level, "GPU generation failed")
 		return
-	var cached := _cache.get_chunk(coord, lod_level)
-	if cached:
-		chunk_generated.emit.call_deferred(coord, lod_level, cached)
+	if _cache.has_chunk_with_lod(coord, lod_level):
+		chunk_generated.emit.call_deferred(coord, lod_level, _cache.get_chunk(coord))
 		return
 	_request_queue.request_chunk(coord, chunk_size, lod_level, priority)
 
@@ -109,11 +107,11 @@ func set_max_concurrent_requests(count: int) -> void:
 func is_threading_enabled() -> bool:
 	return _use_threading
 
-func has_cached_chunk(coord: Vector2i, lod_level: int) -> bool:
-	return _cache.has_chunk(coord, lod_level)
+func has_cached_chunk(coord: Vector2i) -> bool:
+	return _cache.has_chunk(coord)
 
-func invalidate_chunk(coord: Vector2i, lod_level: int) -> void:
-	_cache.invalidate_chunk(coord, lod_level)
+func invalidate_chunk(coord: Vector2i) -> void:
+	_cache.invalidate_chunk(coord)
 
 func invalidate_all_lods(coord: Vector2i) -> void:
 	_cache.invalidate_coord(coord)

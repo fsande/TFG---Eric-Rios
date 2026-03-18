@@ -13,9 +13,9 @@ var _current_size_bytes: int = 0
 func _init(max_size_mb: float = 200.0) -> void:
 	_max_size_mb = max_size_mb
 
-func get_chunk(coord: Vector2i, lod: int) -> ChunkMeshData:
+func get_chunk(coord: Vector2i) -> ChunkMeshData:
 	_mutex.lock()
-	var key := _make_key(coord, lod)
+	var key := _make_key(coord)
 	if not _cache.has(key):
 		_mutex.unlock()
 		return null
@@ -24,11 +24,11 @@ func get_chunk(coord: Vector2i, lod: int) -> ChunkMeshData:
 	_mutex.unlock()
 	return result
 
-func store_chunk(coord: Vector2i, lod: int, chunk: ChunkMeshData) -> void:
+func store_chunk(coord: Vector2i, chunk: ChunkMeshData) -> void:
 	if not chunk:
 		return
 	_mutex.lock()
-	var key := _make_key(coord, lod)
+	var key := _make_key(coord)
 	if _cache.has(key):
 		_remove(key)
 	var chunk_size := _estimate_chunk_size(chunk)
@@ -40,15 +40,26 @@ func store_chunk(coord: Vector2i, lod: int, chunk: ChunkMeshData) -> void:
 	_current_size_bytes += chunk_size
 	_mutex.unlock()
 
-func has_chunk(coord: Vector2i, lod: int) -> bool:
+func has_chunk(coord: Vector2i) -> bool:
 	_mutex.lock()
-	var result := _cache.has(_make_key(coord, lod))
+	var result := _cache.has(_make_key(coord))
 	_mutex.unlock()
 	return result
 
-func invalidate_chunk(coord: Vector2i, lod: int) -> void:
+func has_chunk_with_lod(coord: Vector2i, lod_level: int) -> bool:
 	_mutex.lock()
-	var key := _make_key(coord, lod)
+	var key := _make_key(coord)
+	if not _cache.has(key):
+		_mutex.unlock()
+		return false
+	var chunk: ChunkMeshData = _cache[key]
+	var result := chunk and chunk.lod_level_count > lod_level
+	_mutex.unlock()
+	return result
+
+func invalidate_chunk(coord: Vector2i) -> void:
+	_mutex.lock()
+	var key := _make_key(coord)
 	if _cache.has(key):
 		_remove(key)
 	_mutex.unlock()
@@ -106,8 +117,8 @@ func get_stats() -> Dictionary:
 		"utilization": memory_mb / max_mb if max_mb > 0 else 0.0
 	}
 
-func _make_key(coord: Vector2i, lod: int) -> String:
-	return "%d,%d,%d" % [coord.x, coord.y, lod]
+func _make_key(coord: Vector2i) -> String:
+	return "%d,%d" % [coord.x, coord.y]
 
 func _touch(key: String) -> void:
 	var idx := _access_order.find(key)
@@ -131,17 +142,12 @@ func _evict_oldest() -> void:
 	var oldest_key := _access_order[0]
 	_remove(oldest_key)
 
+## Really rough estimation of chunk memory usage based on mesh data sizes and overhead.
+## Could be improved with more accurate measurements or by tracking actual memory usage when storing chunks.
 func _estimate_chunk_size(chunk: ChunkMeshData) -> int:
-	if not chunk or not chunk.mesh_data:
-		return 256
-	var vertex_bytes := chunk.mesh_data.vertices.size() * 12
-	var index_bytes := chunk.mesh_data.indices.size() * 4
-	var uv_bytes := chunk.mesh_data.uvs.size() * 8
-	var normal_bytes := chunk.mesh_data.cached_normals.size() * 12
-	var tangent_bytes := chunk.mesh_data.cached_tangents.size() * 16
-	var mesh_overhead := 1024
+	var size := 0
 	for lod_mesh in chunk.lod_meshes:
 		if lod_mesh:
-			mesh_overhead += 2048
-	return vertex_bytes + index_bytes + uv_bytes + normal_bytes + tangent_bytes + mesh_overhead
-
+			size += lod_mesh.get_surface_count() * 100000
+	size += 1000
+	return size

@@ -24,11 +24,10 @@ func get_processor_type() -> ProcessorType:
 
 func generate_chunk(
 	_terrain_definition: TerrainDefinition,
-	_chunk_coord: Vector2i,
-	_chunk_size: Vector2,
+	_chunk_bounds: AABB,
 	_lod_level: int,
 	_base_resolution: int
-) -> ChunkMeshData:
+) -> MeshData:
 	push_error("ChunkGenerationStrategy.generate_chunk() must be overridden")
 	return null
 

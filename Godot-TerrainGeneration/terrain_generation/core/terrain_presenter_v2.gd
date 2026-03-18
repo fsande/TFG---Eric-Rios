@@ -323,7 +323,7 @@ func _instantiate_chunk(coord: Vector2i, lod_level: int, chunk: ChunkMeshData) -
 	if _loaded_chunks.has(coord):
 		return
 	var mesh_instance := MeshInstance3D.new()
-	mesh_instance.mesh = chunk.mesh
+	mesh_instance.mesh = chunk.lod_meshes[lod_level]
 	mesh_instance.name = "Chunk_%d_%d" % [coord.x, coord.y]
 	mesh_instance.position = chunk.world_position
 	if configuration.terrain_material:
