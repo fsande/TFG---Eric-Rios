@@ -333,7 +333,7 @@ func _instantiate_chunk(coord: Vector2i, lod_level: int, chunk: ChunkMeshData) -
 	_chunk_instances[coord] = mesh_instance
 	_loaded_chunks[coord] = LoadedChunkState.new(lod_level, chunk)
 	if configuration.generate_collision and lod_level == 0:
-		WorkerThreadPool.add_task(_create_collision_for_chunk.bind(coord, chunk, mesh_instance), true) # TODO: Optimize this. It is very expensive
+		WorkerThreadPool.add_task(_create_collision_for_chunk.bind(coord, chunk, mesh_instance, lod_level), true)
 	if _feature_manager and lod_level <= 1:
 		_feature_manager.spawn_features_for_chunk(chunk, lod_level)
 	chunk_loaded.emit(coord, lod_level)
@@ -354,8 +354,8 @@ func _unload_chunk(coord: Vector2i) -> void:
 	_loaded_chunks.erase(coord)
 	chunk_unloaded.emit(coord)
 
-func _create_collision_for_chunk(coord: Vector2i, chunk: ChunkMeshData, mesh_instance: MeshInstance3D) -> void:
-	var shape := chunk.build_collision(false)
+func _create_collision_for_chunk(coord: Vector2i, chunk: ChunkMeshData, mesh_instance: MeshInstance3D, lod_level: int) -> void:
+	var shape := chunk.build_collision(4) # TODO: Parametrize in configuration?
 	if not shape:
 		return
 	var body := StaticBody3D.new()
@@ -372,7 +372,6 @@ func _add_collision_to_tree(coord: Vector2i, shape: CollisionShape3D, body: Stat
 		body.owner = get_tree().edited_scene_root
 		shape.owner = get_tree().edited_scene_root
 	_collision_bodies[coord] = body
-
 
 func _get_camera_position() -> Vector3:
 	if configuration.track_camera:

@@ -21,16 +21,16 @@ func _init(terrain_def: TerrainDefinition, base_resolution: int, use_gpu: bool) 
 	else:
 		_generation_strategy = CpuChunkGenerationStrategy.new()
 
-func update_or_generate_chunk(chunk_coord: Vector2i, chunk_size: Vector2, lod_level: int, chunk_cache: ChunkCache = null) -> ChunkMeshData:
+func update_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int, cache: ChunkCache = null) -> ChunkMeshData:
 	if not _terrain_definition or not _terrain_definition.is_valid():
 		push_error("ChunkGenerator: Invalid terrain definition")
 		return null
-	var chunk_bounds = _calculate_chunk_bounds(_terrain_definition, chunk_coord, chunk_size)
+	var chunk_bounds = _calculate_chunk_bounds(_terrain_definition, coord, chunk_size)
 	var mesh_data = _generation_strategy.generate_chunk(
 		_terrain_definition, chunk_bounds, lod_level, _base_resolution
 	)
-	var cached := chunk_cache.get_chunk(chunk_coord) if chunk_cache else null
-	if cached:
+	var cached := cache.get_chunk(coord) if cache else null
+	if cached and cached.has_lod_mesh(0):
 		cached.add_lod_mesh(mesh_data, lod_level)
 		return cached
 	var world_center := Vector3(
@@ -38,7 +38,10 @@ func update_or_generate_chunk(chunk_coord: Vector2i, chunk_size: Vector2, lod_le
 		0,
 		chunk_bounds.position.z + chunk_bounds.size.z / 2.0
 	)
-	var chunk_mesh_data = ChunkMeshData.new(chunk_coord, world_center, chunk_size, mesh_data, lod_level)
+	var chunk_mesh_data = ChunkMeshData.new(coord, world_center, chunk_size, mesh_data, lod_level)
+	cache.store_chunk(coord, chunk_mesh_data)
+	if lod_level == 0:
+		update_or_generate_chunk(coord, chunk_size, 4, cache)
 	return chunk_mesh_data
 
 func duplicate() -> ChunkGenerator:

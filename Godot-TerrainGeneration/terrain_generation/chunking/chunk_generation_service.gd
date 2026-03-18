@@ -34,13 +34,10 @@ func _init(terrain_def: TerrainDefinition, base_resolution: int = 64, cache_size
 
 func get_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int = 0) -> ChunkMeshData:
 	if _cache.has_chunk_with_lod(coord, lod_level):
+		print("Got hit with cache for ", coord, " LOD ", lod_level)
 		return _cache.get_chunk(coord)
-	var start_time := Time.get_ticks_usec()
 	var chunk := _generator.update_or_generate_chunk(coord, chunk_size, lod_level, _cache)
-	var elapsed := (Time.get_ticks_usec() - start_time) / 1000.0
-	print("Generated chunk at ", coord, " LOD ", lod_level, " in ", elapsed, " ms")
 	if chunk:
-#		_cache.store_chunk(coord, chunk)
 		chunk_generated.emit(coord, lod_level, chunk)
 	else:
 		generation_failed.emit(coord, lod_level, "Generation failed")
@@ -103,12 +100,6 @@ func set_max_concurrent_requests(count: int) -> void:
 	_max_concurrent_requests = maxi(1, count)
 	if not _use_gpu and _request_queue:
 		_replace_queue()
-
-func is_threading_enabled() -> bool:
-	return _use_threading
-
-func has_cached_chunk(coord: Vector2i) -> bool:
-	return _cache.has_chunk(coord)
 
 func invalidate_chunk(coord: Vector2i) -> void:
 	_cache.invalidate_chunk(coord)

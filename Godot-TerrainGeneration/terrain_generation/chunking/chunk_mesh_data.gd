@@ -69,6 +69,9 @@ func add_lod_mesh(p_mesh_data: MeshData, lod_level: int) -> void:
 		push_warning("ChunkMeshData: Failed to build ArrayMesh for LOD %d" % lod_level)
 	lod_level_count = max(lod_level_count, lod_level + 1)
 
+func has_lod_mesh(lod_level: int) -> bool:
+	return lod_level >= 0 and lod_level < lod_meshes.size() and lod_meshes[lod_level] != null
+
 ## Get appropriate mesh for given distance
 ## @param distance Distance from camera to chunk center
 ## @return ArrayMesh at appropriate LOD level
@@ -96,20 +99,18 @@ func get_lod_level_for_distance(distance: float) -> int:
 ## @param lod_level LOD level to use for collision mesh (-1 for simple box)
 ## @return Generated collision shape
 func build_collision(lod_level: int) -> Shape3D:
-	if has_collision: # TODO: Consider regenerating
-		return collision_shape
-	var mesh: ArrayMesh = null
-	if lod_level < lod_meshes.size() and lod_meshes[lod_level]:
-		mesh = lod_meshes[lod_level]
-	else:
-		mesh = get_mesh_for_distance(0)
-	if not mesh:
-		push_warning("ChunkMeshData: Cannot build collision - no mesh")
-		return null
 	if lod_level == -1:
 		var shape := BoxShape3D.new()
 		shape.size = Vector3(chunk_size.x, aabb.size.y, chunk_size.y)
 		collision_shape = shape
+	var mesh: ArrayMesh = null
+	if lod_level < lod_meshes.size() and lod_meshes[lod_level]:
+		mesh = lod_meshes[lod_level]
+	else:
+		mesh = lod_meshes[0]
+	if not mesh:
+		push_warning("ChunkMeshData: Cannot build collision - no mesh")
+		return null
 	else:
 		collision_shape = mesh.create_trimesh_shape()
 	has_collision = true

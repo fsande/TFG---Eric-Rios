@@ -132,6 +132,7 @@ func _get_highest_priority_pending() -> ChunkRequest:
 
 func _generate_chunk_task(request: ChunkRequest) -> void:
 	if _cache.has_chunk_with_lod(request.coord, request.lod_level):
+		print("Got hit with cache for ", request.coord, " LOD ", request.lod_level)
 		_on_generation_complete(request, _cache.get_chunk(request.coord), "")
 		return
 	_generator_pool_semaphore.wait()
@@ -144,7 +145,6 @@ func _generate_chunk_task(request: ChunkRequest) -> void:
 	_request_mutex.unlock()
 	_generator_pool_semaphore.post()
 	if chunk:
-#		_cache.store_chunk(request.coord, chunk)
 		_on_generation_complete(request, chunk, "")
 	else:
 		_on_generation_complete(request, null, "Chunk generation failed")

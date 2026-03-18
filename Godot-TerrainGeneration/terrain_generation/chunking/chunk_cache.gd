@@ -53,7 +53,7 @@ func has_chunk_with_lod(coord: Vector2i, lod_level: int) -> bool:
 		_mutex.unlock()
 		return false
 	var chunk: ChunkMeshData = _cache[key]
-	var result := chunk and chunk.lod_level_count > lod_level
+	var result := chunk and chunk.has_lod_mesh(lod_level)
 	_mutex.unlock()
 	return result
 
