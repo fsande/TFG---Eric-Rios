@@ -48,23 +48,22 @@ func get_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int 
 	return chunk
 
 func request_chunk_async(coord: Vector2i, chunk_size: Vector2, lod_level: int = 0, priority: float = 0.0) -> void:
-	if _use_gpu:
+	if _use_gpu or not _use_threading:
+		if not _use_gpu: 
+			push_warning(
+				"ChunkGenerationService.request_chunk_async: threading is disabled. " +
+				"falling back to synchronous generation. Call set_use_threading(true) to enable async."
+			)
+		if _use_threading:
+			push_warning(
+				"ChunkGenerationService.request_chunk_async: threading is incompatible with GPU mode. " +
+				"falling back to synchronous generation with GPU. Call set_use_threading(false) to disable async."
+			)
 		var chunk := get_or_generate_chunk(coord, chunk_size, lod_level)
 		if chunk:
 			chunk_generated.emit.call_deferred(coord, lod_level, chunk)
 		else:
 			generation_failed.emit.call_deferred(coord, lod_level, "GPU generation failed")
-		return
-	if not _use_threading:
-		push_warning(
-			"ChunkGenerationService.request_chunk_async: threading is disabled. " +
-			"falling back to synchronous generation. Call set_use_threading(true) to enable async."
-		)
-		var chunk := get_or_generate_chunk(coord, chunk_size, lod_level)
-		if chunk:
-			chunk_generated.emit.call_deferred(coord, lod_level, chunk)
-		else:
-			generation_failed.emit.call_deferred(coord, lod_level, "Generation failed")
 		return
 	var cached := _cache.get_chunk(coord, lod_level)
 	if cached:

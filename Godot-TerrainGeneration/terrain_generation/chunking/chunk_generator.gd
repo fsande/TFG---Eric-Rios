@@ -14,6 +14,7 @@ var _generation_strategy: ChunkGenerationStrategy
 
 func _init(terrain_def: TerrainDefinition, base_resolution: int, use_gpu: bool) -> void:
 	_terrain_definition = terrain_def
+	_terrain_definition.get_base_heightmap()
 	_base_resolution = clampi(base_resolution, MIN_RESOLUTION, MAX_RESOLUTION)
 	if use_gpu:
 		_generation_strategy = GpuChunkGenerationStrategy.new()

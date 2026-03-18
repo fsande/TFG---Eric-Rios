@@ -333,7 +333,7 @@ func _instantiate_chunk(coord: Vector2i, lod_level: int, chunk: ChunkMeshData) -
 	_chunk_instances[coord] = mesh_instance
 	_loaded_chunks[coord] = LoadedChunkState.new(lod_level, chunk)
 	if configuration.generate_collision and lod_level == 0:
-		_create_collision_for_chunk(coord, chunk, mesh_instance) # TODO: Optimize this. It is very expensive
+		WorkerThreadPool.add_task(_create_collision_for_chunk.bind(coord, chunk, mesh_instance), true) # TODO: Optimize this. It is very expensive
 	if _feature_manager and lod_level <= 1:
 		_feature_manager.spawn_features_for_chunk(chunk, lod_level)
 	chunk_loaded.emit(coord, lod_level)
@@ -363,12 +363,16 @@ func _create_collision_for_chunk(coord: Vector2i, chunk: ChunkMeshData, mesh_ins
 	body.collision_layer = configuration.collision_layers
 	var collision_shape := CollisionShape3D.new()
 	collision_shape.shape = shape
-	body.add_child(collision_shape)
-	mesh_instance.add_child(body)
+	_add_collision_to_tree.call_deferred(coord, collision_shape, body, mesh_instance)
+
+func _add_collision_to_tree(coord: Vector2i, shape: CollisionShape3D, body: StaticBody3D, mesh: MeshInstance3D) -> void:
+	body.add_child(shape)
+	mesh.add_child(body)
 	if Engine.is_editor_hint():
 		body.owner = get_tree().edited_scene_root
-		collision_shape.owner = get_tree().edited_scene_root
+		shape.owner = get_tree().edited_scene_root
 	_collision_bodies[coord] = body
+
 
 func _get_camera_position() -> Vector3:
 	if configuration.track_camera:

@@ -137,12 +137,9 @@ func build_mesh_with_multiple_lods(
 func get_mesh_for_distance(distance: float) -> ArrayMesh:
 	if lod_meshes.is_empty():
 		return mesh
-	
 	var lod_level := get_lod_level_for_distance(distance)
 	if lod_level < lod_meshes.size():
 		return lod_meshes[lod_level]
-	
-	# Return lowest detail LOD if distance exceeds all thresholds
 	return lod_meshes[lod_meshes.size() - 1]
 
 ## Get appropriate LOD level for distance
