@@ -46,13 +46,13 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 	var start_time := Time.get_ticks_msec()
 	var seed_base := config.placement_seed
 	progress_updated.emit(0.0, "Finding coastline points")
-	var coastline_points := context.find_coastline_points(20, seed_base + 1000)
+	var coastline_points := context.find_coastline_points(config.max_attempts, seed_base)
 	if coastline_points.is_empty():
 		var elapsed := Time.get_ticks_msec() - start_time
 		return TerrainModifierResult.create_failure("No coastline found", elapsed)
 	progress_updated.emit(0.1, "Finding mountain points")
 	var min_height_norm := config.min_origin_height / context.height_scale
-	var mountain_points := context.find_points_above_height(min_height_norm, 20, seed_base + 2000)
+	var mountain_points := context.find_points_above_height(min_height_norm, config.max_attempts, seed_base + 2000)
 	if mountain_points.is_empty():
 		var elapsed := Time.get_ticks_msec() - start_time
 		return TerrainModifierResult.create_failure(
@@ -148,17 +148,14 @@ func _generate_river_path_uphill(
 			var backoff_steps := mini(config.backoff_distance, path.size() - 1)
 			if backoff_steps > 0:
 				path.resize(path.size() - backoff_steps)
-#			print("TOO HIGH")
 			break
 		var slope := context.calculate_slope_at(current_pos)
 		if slope > config.max_slope_degrees:
 			var backoff_steps := mini(config.backoff_distance, path.size() - 1)
 			if backoff_steps > 0:
 				path.resize(path.size() - backoff_steps)
-#			print("TOO STEEP: %.1f degrees" % slope)
 			break
 		if current_pos.distance_to(target_pos) < config.step_size * 2:
-#			print("REACHED TARGET")
 			break
 		var height_range := config.max_altitude - start_height_scaled
 		var height_progress: float
@@ -176,7 +173,6 @@ func _generate_river_path_uphill(
 			uphill = to_target
 		var move_dir := (uphill * gradient_weight + to_target * target_weight)
 		if move_dir.length_squared() < 0.0001:
-#			print("NO DIRECTION")
 			break
 		move_dir = move_dir.normalized()
 		var next_pos := current_pos + move_dir * config.step_size
@@ -191,7 +187,6 @@ func _generate_river_path_uphill(
 				var backoff := mini(consecutive_downhill, path.size() - 1)
 				if backoff > 0:
 					path.resize(path.size() - backoff)
-#				print("TOO MUCH DOWNHILL")
 				break
 		else:
 			consecutive_downhill = 0
@@ -237,9 +232,6 @@ func _carve_riverbed_downstream(path: Array[Vector2], _context: TerrainGeneratio
 	delta.zone_tags = [&"river"]
 	var path_downstream: Array[Vector2] = path.duplicate()
 	path_downstream.reverse()
-	# Compute the hard boundary plane at the mountain source.
-	# The plane normal points downstream; any pixel behind it is rejected
-	# regardless of which path point is being processed.
 	var start_point := path_downstream[0]
 	var start_flow_dir: Vector2
 	if path_downstream.size() > 1:

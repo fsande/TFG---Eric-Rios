@@ -5,3 +5,9 @@
 
 [resource]
 script = ExtResource("1_lrjvi")
+depth_increase_rate = 0.01
+max_depth = 5.0
+water_mesh_extra_width = 5.5
+water_surface_offset = 0.6
+max_attempts = 45
+placement_seed = 2
