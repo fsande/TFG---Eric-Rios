@@ -68,6 +68,7 @@ signal load_strategy_changed()
 
 @export_group("Visuals")
 @export var terrain_material: Material
+@export var environment: Environment
 
 @export_group("Collision")
 @export var generate_collision: bool = true

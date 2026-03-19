@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="TerrainConfigurationV2" load_steps=42 format=3 uid="uid://ch53n6nd5oc4t"]
+[gd_resource type="Resource" script_class="TerrainConfigurationV2" load_steps=43 format=3 uid="uid://ch53n6nd5oc4t"]
 
 [ext_resource type="Script" uid="uid://d30u6ur3uvl8d" path="res://terrain_generation/heightmap/processors/blur_processor.gd" id="1_2gqhp"]
+[ext_resource type="Environment" uid="uid://ci0fdcxk6hux2" path="res://assets/environment/blue_sky.tres" id="1_ynpy0"]
 [ext_resource type="Script" uid="uid://x7gc7eg20w0b" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="2_ywmle"]
 [ext_resource type="Resource" uid="uid://wr2k3r0ty8xg" path="res://assets/generation_resources/españita_guay.tres" id="3_m8xok"]
 [ext_resource type="Script" uid="uid://c51qydcxes5yv" path="res://terrain_generation/chunking/strategies/grid_load_strategy_v2.gd" id="4_ynpy0"]
@@ -141,5 +142,6 @@ lod_distances = Array[float]([100.0, 200.0, 250.0, 400.0])
 sea_level = 2.0
 sea_material = ExtResource("21_ncxol")
 terrain_material = ExtResource("22_0c0l2")
+environment = ExtResource("1_ynpy0")
 auto_generate = false
 metadata/_custom_type_script = "uid://cx1d1s65igqbm"

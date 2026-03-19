@@ -119,6 +119,8 @@ func regenerate() -> void:
 		_feature_manager = ChunkFeatureManager.new(_terrain_definition, _props_container)
 	if configuration.enable_sea:
 		_create_sea_plane()
+	if configuration.environment:
+		_create_environment(configuration.environment)
 	if configuration.show_debug_info:
 		print("TerrainPresenterV2: %s" % _terrain_definition.get_summary())
 	_update_visible_chunks()
@@ -396,3 +398,8 @@ func _create_sea_plane() -> void:
 	if configuration.show_debug_info:
 		print("TerrainPresenterV2: Created sea plane - Size: %s, Level: %.2f, Subdivisions: %d" % 
 			[sea_size, configuration.sea_level, configuration.sea_subdivisions])
+
+func _create_environment(environment: Environment) -> void:
+	var environment_node := NodeCreationHelper.get_or_create_node(self, "Environment", WorldEnvironment)
+	NodeCreationHelper.remove_all_children(environment_node)
+	environment_node.environment = environment
