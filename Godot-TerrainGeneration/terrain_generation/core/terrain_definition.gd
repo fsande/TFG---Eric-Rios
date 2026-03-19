@@ -30,25 +30,25 @@ const _DELTA_EPSILON: float = 0.0001
 ## Sea level for water plane and underwater props
 @export var sea_level: float = 0.0
 
-## Layer 1: Height Modifications
+## Height Modifications
 @export_group("Height Deltas")
 
 ## Array of height delta maps to apply
 @export var height_delta_maps: Array[HeightDeltaMap] = []
 
-## Layer 2: Volume Modifications
+## Volume Modifications
 @export_group("Volumes")
 
 ## Array of volume definitions (tunnels, caves, overhangs)
 @export var volume_definitions: Array[VolumeDefinition] = []
 
-## Layer 3: Prop Placement
+## Prop Placement
 @export_group("Props")
 
 ## Array of chunk features
 @export var chunk_features: Array[ChunkFeature] = []
 
-## Layer 4: River Visuals
+## River Visuals
 @export_group("Rivers")
 
 ## Array of river water surface visual data

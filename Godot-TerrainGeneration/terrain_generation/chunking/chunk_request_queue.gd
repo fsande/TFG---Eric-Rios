@@ -26,7 +26,7 @@ func _init(generator: ChunkGenerator, cache: ChunkCache, max_concurrent: int) ->
 		)
 		_generator_pool_semaphore.post()
 
-func request_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int, priority: float = 0.0) -> void:
+func request_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int, collision_lod: int, required_lod_for_collision: int, priority: float = 0.0) -> void:
 	_request_mutex.lock()
 	var key := _make_key(coord, lod_level)
 	if _pending_requests.has(key):
@@ -35,7 +35,7 @@ func request_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int, priorit
 			existing.priority = minf(existing.priority, priority)
 			_request_mutex.unlock()
 			return
-	var request := ChunkRequest.new(coord, chunk_size, lod_level, priority)
+	var request := ChunkRequest.new(coord, chunk_size, lod_level, collision_lod, required_lod_for_collision, priority)
 	_pending_requests[key] = request
 	_request_mutex.unlock()
 	_try_process_next()
@@ -132,7 +132,6 @@ func _get_highest_priority_pending() -> ChunkRequest:
 
 func _generate_chunk_task(request: ChunkRequest) -> void:
 	if _cache.has_chunk_with_lod(request.coord, request.lod_level):
-		print("Got hit with cache for ", request.coord, " LOD ", request.lod_level)
 		_on_generation_complete(request, _cache.get_chunk(request.coord), "")
 		return
 	_generator_pool_semaphore.wait()
@@ -140,6 +139,8 @@ func _generate_chunk_task(request: ChunkRequest) -> void:
 	var generator: ChunkGenerator = _generator_pool.pop_back()
 	_request_mutex.unlock()
 	var chunk := generator.update_or_generate_chunk(request.coord, request.chunk_size, request.lod_level, _cache)
+	if request.lod_level <= request.required_lod_for_collision:
+		_generator.update_or_generate_chunk(request.coord, request.chunk_size, request.generated_collision_lod, _cache)
 	_request_mutex.lock()
 	_generator_pool.push_back(generator)
 	_request_mutex.unlock()

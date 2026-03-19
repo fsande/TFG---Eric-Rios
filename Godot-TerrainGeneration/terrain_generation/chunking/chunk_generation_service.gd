@@ -13,6 +13,7 @@ signal chunk_generated(coord: Vector2i, lod: int, chunk: ChunkMeshData)
 signal generation_failed(coord: Vector2i, lod: int, error: String)
 
 var _terrain_definition: TerrainDefinition
+var _terrain_configuration: TerrainConfigurationV2
 var _generator: ChunkGenerator
 var _cache: ChunkCache
 var _request_queue: ChunkRequestQueue
@@ -21,12 +22,13 @@ var _use_threading: bool = false
 var _max_concurrent_requests: int = 4
 var _use_gpu: bool = false
 
-func _init(terrain_def: TerrainDefinition, base_resolution: int = 64, cache_size_mb: float = 200.0, use_gpu: bool = false) -> void:
+func _init(terrain_def: TerrainDefinition, terrain_config: TerrainConfigurationV2) -> void:
 	_terrain_definition = terrain_def
-	_base_resolution = base_resolution
-	_use_gpu = use_gpu
-	_generator = ChunkGenerator.new(terrain_def, base_resolution, _use_gpu)
-	_cache = ChunkCache.new(cache_size_mb)
+	_terrain_configuration = terrain_config
+	_base_resolution = terrain_config.base_chunk_resolution
+	_use_gpu = terrain_config.use_gpu_mesh_generation
+	_generator = ChunkGenerator.new(terrain_def, _base_resolution, _use_gpu)
+	_cache = ChunkCache.new(terrain_config.cache_size_mb)
 	if _use_gpu:
 		push_warning("ChunkGenerationService: GPU mode — async loading disabled (GPU requires main thread)")
 	else:
@@ -37,6 +39,8 @@ func get_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int 
 		print("Got hit with cache for ", coord, " LOD ", lod_level)
 		return _cache.get_chunk(coord)
 	var chunk := _generator.update_or_generate_chunk(coord, chunk_size, lod_level, _cache)
+	if lod_level <= _terrain_configuration.required_lod_for_collision:
+		_generator.update_or_generate_chunk(coord, chunk_size, _terrain_configuration.collision_lod, _cache)
 	if chunk:
 		chunk_generated.emit(coord, lod_level, chunk)
 	else:
@@ -64,7 +68,7 @@ func request_chunk_async(coord: Vector2i, chunk_size: Vector2, lod_level: int = 
 	if _cache.has_chunk_with_lod(coord, lod_level):
 		chunk_generated.emit.call_deferred(coord, lod_level, _cache.get_chunk(coord))
 		return
-	_request_queue.request_chunk(coord, chunk_size, lod_level, priority)
+	_request_queue.request_chunk(coord, chunk_size, lod_level, _terrain_configuration.required_lod_for_collision, _terrain_configuration.collision_lod, priority)
 
 func cancel_request(coord: Vector2i, lod_level: int) -> void:
 	if _request_queue:

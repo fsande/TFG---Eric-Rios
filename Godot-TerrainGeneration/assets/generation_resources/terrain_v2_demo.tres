@@ -24,7 +24,7 @@
 [ext_resource type="PackedScene" uid="uid://c0adabc2fckco" path="res://assets/models/environment/bush/bush.glb" id="19_nh2u1"]
 [ext_resource type="Script" uid="uid://cx1d1s65igqbm" path="res://terrain_generation/configuration/terrain_configuration_v2.gd" id="20_8umv2"]
 [ext_resource type="Material" uid="uid://bebs1xgkmteua" path="res://assets/materials/water/water_mat.tres" id="21_ncxol"]
-[ext_resource type="Material" uid="uid://dmlbneowgjfqy" path="res://assets/materials/terrain_mat2.tres" id="22_0c0l2"]
+[ext_resource type="Material" uid="uid://dmlbneowgjfqy" path="res://assets/materials/terrain_mat2.tres" id="25_ynpy0"]
 
 [sub_resource type="Resource" id="Resource_dk27i"]
 script = ExtResource("1_2gqhp")
@@ -102,7 +102,6 @@ density_map = SubResource("NoiseTexture2D_mm01p")
 constraints = Array[ExtResource("13_bgmbc")]([SubResource("Resource_skfwi"), SubResource("Resource_swklc"), SubResource("Resource_3lhjx"), SubResource("Resource_ih7yn")])
 scale_range = Vector2(0.1, 0.12)
 align_to_normal = false
-use_multimesh = true
 rule_id = "prop_rule_2"
 metadata/_custom_type_script = "uid://wlx5bsak37rn"
 
@@ -123,7 +122,6 @@ density_map = SubResource("NoiseTexture2D_amtu7")
 constraints = Array[ExtResource("13_bgmbc")]([SubResource("Resource_skfwi"), SubResource("Resource_swklc"), SubResource("Resource_3lhjx"), SubResource("Resource_ih7yn")])
 scale_range = Vector2(0.1, 0.12)
 align_to_normal = false
-use_multimesh = true
 rule_id = "prop_rule_3"
 metadata/_custom_type_script = "uid://wlx5bsak37rn"
 
@@ -136,12 +134,13 @@ modifier_stages = Array[ExtResource("5_xedlb")]([SubResource("Resource_vnpua")])
 prop_placement_rules = Array[ExtResource("10_vnpua")]([ExtResource("11_kl2pl"), ExtResource("12_6d4f2"), SubResource("Resource_mgv4o"), SubResource("Resource_qx382")])
 base_chunk_resolution = 256
 load_strategy = SubResource("Resource_4fayk")
-max_concurrent_chunk_requests = 5
+max_concurrent_chunk_requests = 12
 use_gpu_heightmap = true
 lod_distances = Array[float]([100.0, 200.0, 250.0, 400.0])
 sea_level = 2.0
 sea_material = ExtResource("21_ncxol")
-terrain_material = ExtResource("22_0c0l2")
+terrain_material = ExtResource("25_ynpy0")
 environment = ExtResource("1_ynpy0")
+collision_lod = 3
 auto_generate = false
 metadata/_custom_type_script = "uid://cx1d1s65igqbm"

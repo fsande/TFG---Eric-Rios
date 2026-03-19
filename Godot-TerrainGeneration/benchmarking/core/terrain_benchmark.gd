@@ -211,7 +211,7 @@ func _benchmark_cache(
 	var meta := {"config_name": config_name, "cache_size_mb": config.cache_size_mb}
 	print("[Cache] Measuring hit/miss performance...")
 	var service := ChunkGenerationService.new(
-		definition, config.base_chunk_resolution, config.cache_size_mb, config.use_gpu_mesh_generation
+		definition, config
 	)
 	var cold_samples := PackedFloat64Array()
 	for coord in coords:
@@ -316,7 +316,7 @@ func _benchmark_async_loading(
 		}
 		print("[Async]   tier=%s concurrency=%d ..." % [label, concurrency])
 		var service := ChunkGenerationService.new(
-			definition, config.base_chunk_resolution, config.cache_size_mb, false
+			definition, config
 		)
 		service.set_use_threading(true)
 		service.set_max_concurrent_requests(concurrency)

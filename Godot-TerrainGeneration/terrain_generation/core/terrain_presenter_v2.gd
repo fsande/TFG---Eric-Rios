@@ -106,9 +106,7 @@ func regenerate() -> void:
 		configuration.use_async_loading = false
 	_generation_service = ChunkGenerationService.new(
 		_terrain_definition,
-		configuration.base_chunk_resolution,
-		configuration.cache_size_mb,
-		configuration.use_gpu_mesh_generation
+		configuration
 	)
 	_generation_service.set_use_threading(configuration.use_async_loading)
 	_generation_service.set_max_concurrent_requests(configuration.max_concurrent_chunk_requests)
@@ -236,10 +234,11 @@ func update_chunk_lod(coord: Vector2i, new_lod: int, priority: float) -> void:
 	var state: LoadedChunkState = _loaded_chunks[coord]
 	if state.lod == new_lod:
 		return
+	## TODO: Delegate to _request_chunk_load which will handle pending requests and avoid unnecessary reloads
 	if _pending_chunk_requests.has(coord):
 		return
 	var lod_difference := absi(state.lod - new_lod)
-	if lod_difference < 1 and new_lod != 0:
+	if lod_difference <= 0 and new_lod != 0:
 		return
 	_pending_chunk_requests[coord] = new_lod
 	if configuration.use_async_loading:
@@ -357,7 +356,7 @@ func _unload_chunk(coord: Vector2i) -> void:
 	chunk_unloaded.emit(coord)
 
 func _create_collision_for_chunk(coord: Vector2i, chunk: ChunkMeshData, mesh_instance: MeshInstance3D, lod_level: int) -> void:
-	var shape := chunk.build_collision(4) # TODO: Parametrize in configuration?
+	var shape := chunk.build_collision(configuration.collision_lod)
 	if not shape:
 		return
 	var body := StaticBody3D.new()

@@ -3,7 +3,7 @@
 ## @details Defines the interface for generating chunk meshes from TerrainDefinition.
 ## Implementations can use CPU or GPU processing while maintaining a consistent API.
 ## Follows the Strategy pattern for interchangeable generation algorithms.
-@tool
+@tool @abstract
 class_name ChunkGenerationStrategy extends RefCounted
 
 ## Emitted after each major substep of chunk generation completes.
@@ -19,20 +19,24 @@ enum ProcessorType {
 	HYBRID
 }
 
-func get_processor_type() -> ProcessorType:
-	return ProcessorType.CPU
+@abstract
+func get_processor_type() -> ProcessorType
 
+@abstract
 func generate_chunk(
-	_terrain_definition: TerrainDefinition,
-	_chunk_bounds: AABB,
-	_lod_level: int,
-	_base_resolution: int
-) -> MeshData:
-	push_error("ChunkGenerationStrategy.generate_chunk() must be overridden")
-	return null
+	terrain_definition: TerrainDefinition,
+	chunk_bounds: AABB,
+	lod_level: int,
+	resolution: int,
+	height_grid: PackedFloat32Array
+) -> MeshData
 
-func supports_async() -> bool:
-	return false
+
+@abstract
+func supports_async() -> bool
+
+@abstract
+func generate_height_grid(	terrain_definition: TerrainDefinition, chunk_bounds: AABB, resolution: int) -> PackedFloat32Array
 
 func dispose() -> void:
 	pass

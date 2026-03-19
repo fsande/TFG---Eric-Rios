@@ -16,14 +16,13 @@ func generate_chunk(
 	terrain_definition: TerrainDefinition,
 	chunk_bounds: AABB,
 	lod_level: int,
-	base_resolution: int
+	resolution: int,
+	height_grid: PackedFloat32Array
 ) -> MeshData:
 	if not terrain_definition or not terrain_definition.is_valid():
 		push_error("CpuChunkGenerationStrategy: Invalid terrain definition")
 		return null
-	var resolution := calculate_resolution_for_lod(base_resolution, lod_level)
 	var current_time := Time.get_ticks_usec()
-	var height_grid := _generate_height_grid(terrain_definition, chunk_bounds, resolution)
 	_emit_substep("height_grid", (Time.get_ticks_usec() - current_time) / 1000.0)
 	if height_grid.is_empty():
 		return null
@@ -47,7 +46,7 @@ func generate_chunk(
 		_emit_substep("tangents", (Time.get_ticks_usec() - current_time) / 1000.0)
 	return mesh_data
 
-func _generate_height_grid(
+func generate_height_grid(
 	terrain_definition: TerrainDefinition,
 	chunk_bounds: AABB,
 	resolution: int

@@ -25,20 +25,21 @@ func generate_chunk(
 	terrain_definition: TerrainDefinition,
 	chunk_bounds: AABB,
 	lod_level: int,
-	base_resolution: int
+	resolution: int,
+	height_grid: PackedFloat32Array
 ) -> MeshData:
 	_gpu_manager = GpuResourceManager.get_singleton()
 	if not _gpu_manager or not _gpu_manager.is_gpu_available():
 		return _fallback_strategy.generate_chunk(
-			terrain_definition, chunk_bounds, lod_level, base_resolution
+			terrain_definition, chunk_bounds, lod_level, resolution, height_grid
 		)
 	var result := _generate_chunk_gpu(
-		terrain_definition, chunk_bounds, lod_level, base_resolution
+		terrain_definition, chunk_bounds, lod_level, resolution, height_grid
 	)
 	if not result:
 		push_warning("GpuChunkGenerationStrategy: GPU generation failed, falling back to CPU")
 		return _fallback_strategy.generate_chunk(
-			terrain_definition, chunk_bounds, lod_level, base_resolution
+			terrain_definition, chunk_bounds, lod_level, resolution, height_grid
 		)
 	return result
 
@@ -47,7 +48,8 @@ func _generate_chunk_gpu(
 	terrain_definition: TerrainDefinition,
 	chunk_bounds: AABB,
 	lod_level: int,
-	base_resolution: int
+	resolution: int,
+	height_grid: PackedFloat32Array
 ) -> MeshData:
 	if not terrain_definition or not terrain_definition.is_valid():
 		push_error("GpuChunkGenerationStrategy: Invalid terrain definition")
@@ -55,9 +57,7 @@ func _generate_chunk_gpu(
 	var rd := _gpu_manager.get_rendering_device()
 	if not rd:
 		return null
-	var resolution := calculate_resolution_for_lod(base_resolution, lod_level)
 	var t := Time.get_ticks_usec()
-	var height_grid := _generate_height_grid_gpu(rd, terrain_definition, chunk_bounds, resolution)
 	_emit_substep("height_grid", (Time.get_ticks_usec() - t) / 1000.0)
 	if height_grid.is_empty():
 		return null
@@ -81,12 +81,12 @@ func _generate_chunk_gpu(
 		_emit_substep("tangents", (Time.get_ticks_usec() - t) / 1000.0)
 	return mesh_data
 
-func _generate_height_grid_gpu(
-	rd: RenderingDevice,
+func generate_height_grid(
 	terrain_definition: TerrainDefinition,
 	chunk_bounds: AABB,
 	resolution: int
 ) -> PackedFloat32Array:
+	var rd := _gpu_manager.get_rendering_device()
 	var base_heightmap := terrain_definition.get_base_heightmap()
 	if not base_heightmap:
 		push_error("GpuChunkGenerationStrategy: No base heightmap available")
