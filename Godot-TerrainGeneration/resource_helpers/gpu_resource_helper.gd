@@ -116,7 +116,6 @@ static func dispatch_compute_2d(
 	rd: RenderingDevice,
 	pipeline: RID,
 	uniform_set: RID,
-	shader_rid: RID,
 	push_constants: PackedByteArray,
 	width: int,
 	height: int,

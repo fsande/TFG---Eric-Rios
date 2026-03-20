@@ -54,7 +54,8 @@ func generate(
 	context.processing_context = processing_context
 	var stage_index := 0
 	for stage in stages:
-		if not stage.enabled:
+		if not stage or not stage.enabled:
+			print("Skipping disabled stage: %s" % stage._get_display_name())
 			continue
 		stage_index += 1
 		if verbose:
@@ -68,7 +69,8 @@ func generate(
 		var stage_elapsed := Time.get_ticks_msec() - stage_start
 		stage_completed.emit(stage._get_display_name(), stage_elapsed)
 		if not success:
-			push_error("TerrainDefinitionGenerator: Stage '%s' failed" % stage._get_display_name())
+			push_warning("TerrainDefinitionGenerator: Stage '%s' failed" % stage._get_display_name())
+			continue
 	if not prop_rules.is_empty():
 		if verbose:
 			print("\n=== Adding Prop Placement Rules ===")

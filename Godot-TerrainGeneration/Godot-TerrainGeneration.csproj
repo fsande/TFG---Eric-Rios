@@ -284,7 +284,6 @@
     <Content Include="terrain_generation\chunking\generation\cpu_chunk_generation_strategy.gd.uid" />
     <Content Include="terrain_generation\chunking\generation\gpu_chunk_generation_strategy.gd" />
     <Content Include="terrain_generation\chunking\generation\gpu_chunk_generation_strategy.gd.uid" />
-    <Content Include="terrain_generation\chunking\generation\shaders\chunk_height_grid.glsl" />
     <Content Include="terrain_generation\chunking\generation\shaders\chunk_height_grid.glsl.import" />
     <Content Include="terrain_generation\chunking\generation\shaders\chunk_mesh_builder.glsl" />
     <Content Include="terrain_generation\chunking\generation\shaders\chunk_mesh_builder.glsl.import" />
@@ -331,6 +330,8 @@
     <Content Include="terrain_generation\core\heightmap_sampler.gd" />
     <Content Include="terrain_generation\core\height_delta_compositor.gd" />
     <Content Include="terrain_generation\core\height_delta_map.gd" />
+    <Content Include="terrain_generation\core\height_grid\chunk_height_grid.glsl" />
+    <Content Include="terrain_generation\core\height_grid\height_grid_generator.gd" />
     <Content Include="terrain_generation\core\overhang_volume_definition.gd" />
     <Content Include="terrain_generation\core\processing_context.gd" />
     <Content Include="terrain_generation\core\prop_placement.gd" />
@@ -347,6 +348,7 @@
     <Content Include="terrain_generation\core\terrain_definition_generator.gd" />
     <Content Include="terrain_generation\core\terrain_generation_context.gd" />
     <Content Include="terrain_generation\core\terrain_generation_context_CLEAN.gd" />
+    <Content Include="terrain_generation\core\terrain_material_provider.gd" />
     <Content Include="terrain_generation\core\terrain_mesh_builder.gd" />
     <Content Include="terrain_generation\core\terrain_modifier_result.gd" />
     <Content Include="terrain_generation\core\terrain_presenter_v2.gd" />

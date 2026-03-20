@@ -150,7 +150,7 @@ func generate_height_grid(
 		0  # padding
 	])
 	GpuResourceHelper.dispatch_compute_2d(
-		rd, pipeline_rid, uniform_set, shader_rid,
+		rd, pipeline_rid, uniform_set,
 		push_constants, resolution, resolution, 8
 	)
 	var result_bytes := rd.buffer_get_data(output_buffer)
@@ -190,7 +190,7 @@ func _build_mesh_gpu(
 		1  # padding
 	])
 	GpuResourceHelper.dispatch_compute_2d(
-		rd, pipeline_rid, uniform_set, shader_rid,
+		rd, pipeline_rid, uniform_set,
 		push_constants, resolution, resolution, 8
 	)
 	var vertices := GpuResourceHelper.read_vector3_buffer(rd, vertex_buffer, vertex_count)

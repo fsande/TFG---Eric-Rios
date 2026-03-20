@@ -87,24 +87,6 @@ func is_active_at(world_pos: Vector2, threshold: float = 0.0001) -> bool:
 func has_zone_tag(tag: StringName) -> bool:
 	return tag in zone_tags
 
-## Sample delta values for an entire region at specified resolution.
-## @param bounds Region bounds to sample
-## @param resolution Output resolution
-## @return Image with sampled delta values
-func sample_region(bounds: AABB, resolution: Vector2i) -> Image:
-	var result := Image.create(resolution.x, resolution.y, false, Image.FORMAT_RF)
-	if not delta_texture:
-		return result
-	for y in range(resolution.y):
-		for x in range(resolution.x):
-			var u := float(x) / float(resolution.x - 1) if resolution.x > 1 else 0.5
-			var v := float(y) / float(resolution.y - 1) if resolution.y > 1 else 0.5
-			var world_x := lerpf(bounds.position.x, bounds.position.x + bounds.size.x, u)
-			var world_z := lerpf(bounds.position.z, bounds.position.z + bounds.size.z, v)
-			var delta_value := sample_at(Vector2(world_x, world_z))
-			result.set_pixel(x, y, Color(delta_value, 0, 0, 1))
-	return result
-
 ## Set delta value at a world position.
 ## @param world_pos World position (XZ plane)
 ## @param value Delta height value to set
@@ -119,17 +101,6 @@ func set_at(world_pos: Vector2, value: float) -> void:
 	px = clampi(px, 0, delta_texture.get_width() - 1)
 	py = clampi(py, 0, delta_texture.get_height() - 1)
 	delta_texture.set_pixel(px, py, Color(value, 0, 0, 1))
-
-## Add to delta value at a world position.
-## @param world_pos World position (XZ plane)
-## @param value Delta value to add
-func add_at(world_pos: Vector2, value: float) -> void:
-	if not delta_texture:
-		return
-	if not _is_in_bounds_xz(world_pos):
-		return
-	var current := sample_at(world_pos)
-	set_at(world_pos, current + value)
 
 ## Set delta value at UV coordinates.
 ## @param uv UV coordinates (0-1 range)

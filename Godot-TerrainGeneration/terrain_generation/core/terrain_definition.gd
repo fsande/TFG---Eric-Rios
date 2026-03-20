@@ -242,7 +242,6 @@ func create_terrain_sampler(chunk_bounds: AABB) -> Callable:
 			var delta_value := delta_map.sample_at(world_pos)
 			if absf(delta_value) >= _DELTA_EPSILON:
 				height = delta_map.apply_blend(height, delta_value)
-		# Finite-difference normal estimation (central differencing)
 		var pos_xp := world_pos + Vector2(normal_dist, 0)
 		var pos_xm := world_pos - Vector2(normal_dist, 0)
 		var pos_zp := world_pos + Vector2(0, normal_dist)

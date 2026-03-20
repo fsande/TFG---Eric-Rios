@@ -64,4 +64,3 @@ func get_metadata() -> Dictionary:
 		"priority": priority,
 		"modifier_type": ModifierType.keys()[get_modifier_type()]
 	}
-

@@ -5,45 +5,6 @@
 ## Supports bilinear interpolation for high-quality sampling.
 class_name HeightmapSampler extends RefCounted
 
-## Sample a heightmap source at specific bounds and resolution.
-## @param source The HeightmapSource to sample from
-## @param bounds World-space bounds to sample (only XZ used, Y ignored)
-## @param resolution Target resolution (width x height in pixels)
-## @param terrain_size Total terrain size for context
-## @param seed Generation seed
-## @param shared_context Optional shared ProcessingContext
-## @return Image in FORMAT_RF with sampled heights
-static func sample_region(
-	source: HeightmapSource,
-	bounds: AABB,
-	resolution: Vector2i,
-	terrain_size: float,
-	generation_seed: int = 0,
-	shared_context: ProcessingContext = null
-) -> Image:
-	if not source:
-		push_error("HeightmapSampler: No source provided")
-		return null
-	var context: ProcessingContext
-	var owns_context := false
-	if shared_context:
-		context = shared_context
-	else:
-		context = ProcessingContext.new(
-			terrain_size,
-			ProcessingContext.ProcessorType.CPU,
-			ProcessingContext.ProcessorType.CPU,
-			generation_seed
-		)
-		owns_context = true
-	var full_heightmap := source.generate(context)
-	if owns_context:
-		context.dispose()
-	if not full_heightmap:
-		push_error("HeightmapSampler: Failed to generate heightmap from source")
-		return null
-	return _sample_region_from_image(full_heightmap, bounds, resolution, terrain_size)
-
 ## Sample a region from an existing heightmap image.
 ## @param heightmap Source heightmap image
 ## @param bounds World-space bounds to sample

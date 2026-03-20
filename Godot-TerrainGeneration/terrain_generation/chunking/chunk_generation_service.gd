@@ -36,7 +36,6 @@ func _init(terrain_def: TerrainDefinition, terrain_config: TerrainConfigurationV
 
 func get_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int = 0) -> ChunkMeshData:
 	if _cache.has_chunk_with_lod(coord, lod_level):
-		print("Got hit with cache for ", coord, " LOD ", lod_level)
 		return _cache.get_chunk(coord)
 	var chunk := _generator.update_or_generate_chunk(coord, chunk_size, lod_level, _cache)
 	if lod_level <= _terrain_configuration.required_lod_for_collision:
