@@ -14,7 +14,11 @@ const ORM_FORMAT = Image.FORMAT_RGBA8
 
 func _init():
 	shader = preload("res://assets/shaders/advanced_terrain_shader.gdshader")
-	resource_local_to_scene = true
+	_update_shader()
+	
+func _validate_property(property: Dictionary) -> void:
+	if property.name in ["shader_parameter/albedo_array", "shader_parameter/normal_array", "shader_parameter/orm_array"]:
+		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL
 
 func _update_shader():
 	if height_layers.is_empty():
@@ -49,8 +53,11 @@ func _get_orm_textures(layers: Array[HeightLayer]) -> Array[Image]:
 	var images: Array[Image] = []
 	for layer in layers:
 		var ao_img := _get_single_channel(layer.material.ao_texture, base_size, 1.0)
+		ao_img.decompress()
 		var rough_img := _get_single_channel(layer.material.roughness_texture, base_size, 1.0)
+		rough_img.decompress()
 		var metal_img := _get_single_channel(layer.material.metallic_texture, base_size, 0.0)
+		metal_img.decompress()
 		var orm := Image.create(base_size.x, base_size.y, false, ORM_FORMAT)
 		for y in base_size.y:
 			for x in base_size.x:
@@ -63,11 +70,10 @@ func _get_orm_textures(layers: Array[HeightLayer]) -> Array[Image]:
 		images.append(orm)
 	return images
 
-# Extracts a single-channel image from a texture, or returns a flat fallback
+## Extracts a single-channel image from a texture, or returns a flat fallback
 func _get_single_channel(texture: Texture2D, size: Vector2i, fallback_value: float) -> Image:
 	if texture:
 		var texture_img := texture.get_image()
-		texture_img.decompress()
 		if texture_img.get_width() != size.x or texture_img.get_height() != size.y:
 			texture_img.resize(size.x, size.y)
 		return texture_img
@@ -87,7 +93,6 @@ func _get_validated_textures(layers: Array, getter: Callable, format: int) -> Ar
 		var texture: Texture2D = getter.call(layer)
 		if texture:
 			var image := texture.get_image()
-			image.decompress()
 			if image.get_width() != base_size.x or image.get_height() != base_size.y:
 				image.resize(base_size.x, base_size.y)
 			images.append(image)

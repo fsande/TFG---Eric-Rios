@@ -1,16 +1,21 @@
 shader_type spatial;
 
-uniform float terrain_height = 64.0;
 uniform float blend_width = 0.2;
 uniform int texture_count;
 uniform sampler2DArray albedo_array : source_color;
 uniform sampler2DArray normal_array : hint_normal;
 uniform sampler2DArray orm_array : hint_default_white; // Packed AO (R), Roughness (G), Metallic (B)
+uniform sampler2D height_noise: hint_default_white;
+uniform float height_noise_strength = 3.0;
 uniform float blend_heights[32];
 uniform vec2 uv_scale = vec2(1.0);
 uniform float triplanar_sharpness = 4.0;
 uniform float slope_start = 0.2;
 uniform float slope_end = 0.5;
+uniform float height_noise_scale = 0.01;
+//uniform int cliff_layer_index;
+//uniform float cliff_slope_start = 0.4;
+//uniform float cliff_slope_end = 0.7;
 
 vec3 blend_normals_rnm(vec3 n1, vec3 n2, float factor) {
 	n1 = n1 * 2.0 - 1.0;
@@ -107,19 +112,24 @@ void fragment() {
 	vec3 world_normal = normalize((INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	float slope = 1.0 - abs(dot(world_normal, vec3(0.0, 1.0, 0.0)));
 	float triplanar_factor = smoothstep(slope_start, slope_end, slope);
-	float height_percent = model_vertex.y / terrain_height;
+	float noise = texture(height_noise, vec2(model_vertex.x, model_vertex.z) * height_noise_scale).r;
+	float effective_height = model_vertex.y + (noise * 2.0 - 1.0) * height_noise_strength;
 	int lower_index = 0;
 	for (int i = 0; i < texture_count - 1; i++) {
-		if (height_percent >= blend_heights[i]) {
-			lower_index = i;
-		} else {
-			break;
-		}
+	    if (effective_height >= blend_heights[i]) {
+	        lower_index = i;
+	    } else {
+	        break;
+	    }
 	}
 	int upper_index = min(lower_index + 1, texture_count - 1);
-	float blend = smoothstep(blend_heights[lower_index], blend_heights[lower_index] + blend_width, height_percent);
+	float blend = smoothstep(
+	    blend_heights[lower_index],
+	    blend_heights[lower_index] + blend_width,
+	    effective_height
+	);
 	float avg_uv_scale = (uv_scale.x + uv_scale.y) * 0.5;
-	float triplanar_scale = avg_uv_scale / terrain_height;
+	float triplanar_scale = avg_uv_scale;
 	vec2 scaled_uv = UV * uv_scale;
 	TriplanarWeights tri_weights = calculate_triplanar_weights(model_vertex, world_normal, triplanar_scale);
 	ALBEDO = blend_layer_vec3(albedo_array, lower_index, upper_index, blend, scaled_uv, tri_weights, triplanar_factor);
@@ -146,9 +156,20 @@ void fragment() {
 		}
 		NORMAL_MAP = mix(normal_uv, normal_tri, triplanar_factor);
 	}
-
 	vec3 orm = blend_layer_orm(orm_array, lower_index, upper_index, blend, scaled_uv, tri_weights, triplanar_factor);
 	AO = orm.r;
 	ROUGHNESS = orm.g;
 	METALLIC = orm.b;
+	
+	//float cliff_blend = smoothstep(cliff_slope_start, cliff_slope_end, slope);
+	//if (cliff_blend > 0.01) {
+	    //vec3 cliff_albedo = sample_triplanar_vec3(albedo_array, cliff_layer_index, tri_weights);
+	    //ALBEDO = mix(ALBEDO, cliff_albedo, cliff_blend);
+	    //vec3 cliff_normal = sample_triplanar_vec3(normal_array, cliff_layer_index, tri_weights);
+	    //NORMAL_MAP = mix(NORMAL_MAP, blend_normals_rnm(NORMAL_MAP, cliff_normal, 1.0), cliff_blend);
+	    //vec3 cliff_orm = sample_triplanar_vec3(orm_array, cliff_layer_index, tri_weights);
+	    //AO = mix(AO, cliff_orm.r, cliff_blend);
+	    //ROUGHNESS = mix(ROUGHNESS, cliff_orm.g, cliff_blend);
+	    //METALLIC = mix(METALLIC,  cliff_orm.b, cliff_blend);
+	//}
 }

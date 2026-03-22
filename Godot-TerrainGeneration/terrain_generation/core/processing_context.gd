@@ -29,7 +29,7 @@ var _creation_time_ms: int = 0
 var _is_disposed: bool = false
 
 ## Construct context with terrain configuration.
-func _init(p_terrain_size: float, p_heightmap_processor: ProcessorType, p_mesh_processor: ProcessorType, p_seed: int = 0):
+func _init(p_terrain_size: float, p_heightmap_processor: ProcessorType = ProcessorType.CPU, p_mesh_processor: ProcessorType = ProcessorType.CPU, p_seed: int = 0):
 	if p_terrain_size <= 0.0:
 		push_error("ProcessingContext: terrain_size must be positive, got %f" % p_terrain_size)
 		p_terrain_size = 256.0
