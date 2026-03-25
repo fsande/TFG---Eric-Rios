@@ -376,6 +376,7 @@
     <Content Include="terrain_generation\heightmap\processors\mask_processor.gd" />
     <Content Include="terrain_generation\heightmap\processors\normalization_processor.gd" />
     <Content Include="terrain_generation\heightmap\processors\shaders\blur_processor.glsl" />
+    <Content Include="terrain_generation\heightmap\processors\shaders\normalization_processor.glsl" />
     <Content Include="terrain_generation\heightmap\processors\shaders\thermal_erosion_processor.glsl" />
     <Content Include="terrain_generation\heightmap\processors\shaders\thermal_erosion_two_pass.glsl" />
     <Content Include="terrain_generation\heightmap\processors\thermal_erosion_processor.gd" />

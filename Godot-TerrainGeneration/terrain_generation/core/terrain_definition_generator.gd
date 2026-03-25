@@ -42,6 +42,7 @@ func generate(
 			ProcessingContext.ProcessorType.CPU,
 			generation_seed
 		)
+	definition.set_shared_processing_context(processing_context)
 	var reference_heightmap := definition.get_base_heightmap()
 	if not reference_heightmap:
 		push_error("TerrainDefinitionGenerator: Failed to generate reference heightmap")

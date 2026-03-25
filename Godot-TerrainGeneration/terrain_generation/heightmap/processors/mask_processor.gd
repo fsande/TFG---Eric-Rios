@@ -120,26 +120,19 @@ func _simple_mask_multiply(heightmap: Image, mask: Image) -> Image:
 func _advanced_mask_with_transitions(heightmap: Image, mask: Image, context: ProcessingContext) -> Image:
 	if not _transition_noise or not _transition_factory:
 		_init_transition_noise()
-	
 	_blur_processor.blur_radius = blur_radius
 	var blurred_mask := _blur_processor.process(mask, context)
-	
 	var result := Image.create(heightmap.get_width(), heightmap.get_height(), false, Image.FORMAT_RF)
 	var width := heightmap.get_width()
 	var height := heightmap.get_height()
-	
 	for y in height:
 		for x in width:
 			var base_height := heightmap.get_pixel(x, y).r
 			var mask_value := mask.get_pixel(x, y).r
 			var blur_value := blurred_mask.get_pixel(x, y).r
-			
 			var is_transition: bool = abs(mask_value - blur_value) > transition_threshold
-			
 			var final_height: float
-			
 			if is_transition:
-				# Select and apply transition strategy
 				var transition := _select_transition_for_point(Vector2(x, y))
 				final_height = transition.calculate_height(
 					base_height,
@@ -148,10 +141,8 @@ func _advanced_mask_with_transitions(heightmap: Image, mask: Image, context: Pro
 					Vector2(x, y)
 				)
 			else:
-				# Simple multiply for non-edge pixels
 				final_height = base_height * mask_value
 			result.set_pixel(x, y, Color(final_height, 0, 0))
-	
 	return result
 
 ## Select transition type based on noise value at position

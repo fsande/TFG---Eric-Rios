@@ -19,13 +19,6 @@ data = {
 [sub_resource type="Resource" id="Resource_82xsv"]
 script = ExtResource("1_ks3ey")
 mask_image = SubResource("Image_5d10y")
-blur_radius = 3.0
-use_transitions = true
-transition_threshold = 0.05
-transition_seed = 0
-transition_noise_frequency = 0.01
-cliff_threshold = 0.3
-beach_threshold = 0.7
 metadata/_custom_type_script = "uid://dk2sbp22dpfkj"
 
 [sub_resource type="Resource" id="Resource_getpj"]
