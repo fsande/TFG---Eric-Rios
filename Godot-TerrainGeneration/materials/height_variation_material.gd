@@ -15,29 +15,30 @@ const ORM_FORMAT = Image.FORMAT_RGBA8
 func _init():
 	shader = preload("res://assets/shaders/advanced_terrain_shader.gdshader")
 	_update_shader()
-	
-func _validate_property(property: Dictionary) -> void:
-	if property.name in ["shader_parameter/albedo_array", "shader_parameter/normal_array", "shader_parameter/orm_array"]:
-		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL
+
+var _albedo_array: Texture2DArray
+var _normal_array: Texture2DArray
+var _orm_array: Texture2DArray
 
 func _update_shader():
 	if height_layers.is_empty():
 		return
-	height_layers.sort_custom(func(a, b):
-		return a.blend_height < b.blend_height
-	)
-	var count := height_layers.size()
+	height_layers.sort_custom(func(a, b): return a.blend_height < b.blend_height)
 	var albedo_images = _get_validated_textures(height_layers, func(layer): return layer.material.albedo_texture, ALBEDO_FORMAT)
 	var normal_images = _get_validated_textures(height_layers, func(layer): return layer.material.normal_texture, NORMAL_FORMAT)
 	var orm_images = _get_orm_textures(height_layers)
-	var blend_heights = height_layers.map(func(layer): return layer.blend_height)
-	count = albedo_images.size()
+	var count := albedo_images.size()
 	if count == 0:
 		return
-	set_shader_parameter("albedo_array", _create_texture_array(albedo_images))
-	set_shader_parameter("normal_array", _create_texture_array(normal_images))
-	set_shader_parameter("orm_array", _create_texture_array(orm_images))
-	set_shader_parameter("blend_heights", blend_heights)
+	_albedo_array = _create_texture_array(albedo_images)
+	_normal_array = _create_texture_array(normal_images)
+	_orm_array = _create_texture_array(orm_images)
+	var rid := get_rid() 
+	# Need to do this, so the arrays don't serialize and increase storage
+	RenderingServer.material_set_param(rid, "albedo_array", _albedo_array.get_rid())
+	RenderingServer.material_set_param(rid, "normal_array", _normal_array.get_rid())
+	RenderingServer.material_set_param(rid, "orm_array", _orm_array.get_rid())
+	set_shader_parameter("blend_heights", height_layers.map(func(layer): return layer.blend_height))
 	set_shader_parameter("texture_count", count)
 
 ## Packs AO (R), Roughness (G), Metallic (B) from each layer's material into one image per layer

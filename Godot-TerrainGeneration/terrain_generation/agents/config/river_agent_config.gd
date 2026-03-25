@@ -85,25 +85,12 @@ class_name RiverAgentConfig extends Resource
 @export_range(1.0, 20.0, 0.5) var edge_falloff_distance: float = 5.0
 
 @export_group("Water Placement")
-
-## Extra width added to the river mesh beyond the carved riverbed (for water visuals).
-@export var water_mesh_extra_width: float = 2.0
-
-## Place water in river
+@export_range(0.0, 10.0, 0.5) var bank_strength: float = 2.0
+@export_range(0.0, 15.0, 0.5) var max_bank_degrees: float = 5.0
 @export var place_water: bool = true
-
-## Water surface offset above riverbed (for flow appearance)
 @export_range(0.0, 2.0, 0.1) var water_surface_offset: float = 0.5
-
-## Number of extra vertices across the river width for the ribbon mesh
-## 0 = only left+right edges, 1 = left+centre+right, etc.
 @export_range(0, 8) var ribbon_cross_subdivisions: int = 2
-
-## Resample the river path to this spacing (world units) for uniform mesh density.
-## 0 = use the raw (smoothed) path points as-is.
 @export_range(0.0, 10.0, 0.5) var ribbon_resample_spacing: float = 2.0
-
-## Optional per-river material override.
 @export var water_material: Material = preload("res://assets/materials/water/river_water.tres")
 
 @export_group("Attempts")

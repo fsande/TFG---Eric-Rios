@@ -48,7 +48,7 @@ func _init() -> void:
 	agent_name = "Tunnel Boring V2"
 
 func get_modifier_type() -> ModifierType:
-	return ModifierType.VOLUME_SUBTRACTIVE
+	return ModifierType.COMPOSITE
 
 func get_agent_type() -> String:
 	return "TunnelBoringV2"

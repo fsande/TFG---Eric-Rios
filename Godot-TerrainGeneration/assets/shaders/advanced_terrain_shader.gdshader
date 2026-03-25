@@ -112,7 +112,7 @@ void fragment() {
 	vec3 world_normal = normalize((INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	float slope = 1.0 - abs(dot(world_normal, vec3(0.0, 1.0, 0.0)));
 	float triplanar_factor = smoothstep(slope_start, slope_end, slope);
-	float noise = texture(height_noise, vec2(model_vertex.x, model_vertex.z) * height_noise_scale).r;
+	float noise = texture(height_noise, vec2(world_vertex.x, world_vertex.z) * height_noise_scale).r;
 	float effective_height = model_vertex.y + (noise * 2.0 - 1.0) * height_noise_strength;
 	int lower_index = 0;
 	for (int i = 0; i < texture_count - 1; i++) {
@@ -160,7 +160,7 @@ void fragment() {
 	AO = orm.r;
 	ROUGHNESS = orm.g;
 	METALLIC = orm.b;
-	
+
 	//float cliff_blend = smoothstep(cliff_slope_start, cliff_slope_end, slope);
 	//if (cliff_blend > 0.01) {
 	    //vec3 cliff_albedo = sample_triplanar_vec3(albedo_array, cliff_layer_index, tri_weights);

@@ -26,6 +26,10 @@ var width_multiplier: float = 1.5
 ## Height offset above the carved riverbed surface.
 var water_offset: float = 0.5
 
+var edge_falloff_distance: float = 5.0
+var bank_strength: float = 2.0
+var max_bank_degrees: float = 5.0
+
 ## Number of extra vertices across the river width for the ribbon mesh.
 var cross_subdivisions: int = 2
 
@@ -54,6 +58,9 @@ static func create(
 	p_river_width: float,
 	p_width_multiplier: float,
 	p_water_offset: float,
+	p_edge_falloff_distance: float,
+	p_bank_strength: float,
+	p_max_bank_degrees: float,
 	p_cross_subdivisions: int,
 	p_resample_spacing: float,
 	p_material: Material,
@@ -65,13 +72,16 @@ static func create(
 	feature.river_width = p_river_width
 	feature.width_multiplier = p_width_multiplier
 	feature.water_offset = p_water_offset
+	feature.edge_falloff_distance = p_edge_falloff_distance
+	feature.bank_strength = p_bank_strength
+	feature.max_bank_degrees = p_max_bank_degrees
 	feature.cross_subdivisions = p_cross_subdivisions
 	feature.resample_spacing = p_resample_spacing
 	feature.water_material = p_material
 	feature.display_name = p_display_name
 	feature.rule_id = "river_water_%s" % p_display_name
 	return feature
-
+	
 func get_bounds() -> AABB:
 	return river_bounds
 
@@ -94,13 +104,10 @@ func build_for_chunk(
 		return []
 	if not _cached_mesh:
 		_cached_mesh = RiverMeshBuilder.build_from_definition(
-			river_path,
-			terrain_definition,
-			river_width,
-			width_multiplier,
-			water_offset,
-			cross_subdivisions,
-			resample_spacing
+			river_path, terrain_definition,
+			river_width, width_multiplier, water_offset,
+			edge_falloff_distance, bank_strength, max_bank_degrees,
+			cross_subdivisions, resample_spacing
 		)
 	if not _cached_mesh:
 		push_warning("RiverWaterFeature: Failed to build river mesh")

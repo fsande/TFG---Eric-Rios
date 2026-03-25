@@ -116,20 +116,22 @@ func _place_water(path: Array[Vector2], _context: TerrainGenerationContext, resu
 	progress_updated.emit(0.85, "Building river water feature")
 	var downstream_path: Array[Vector2] = path.duplicate()
 	downstream_path.reverse()
-	var width := config.river_width + config.water_mesh_extra_width
 	var river_feature := RiverWaterFeature.create(
 		downstream_path,
 		_calculate_river_bounds(path),
-		width,
+		config.river_width,
 		config.width_multiplier_downstream,
 		config.water_surface_offset,
+		config.edge_falloff_distance,
+		config.bank_strength,
+		config.max_bank_degrees,
 		config.ribbon_cross_subdivisions,
 		config.ribbon_resample_spacing,
 		config.water_material,
 		get_display_name()
 	)
 	result.add_chunk_feature(river_feature)
-
+	
 ## Generate river path from coast to mountain following uphill gradient.
 func _generate_river_path_uphill(
 	start_pos: Vector2,

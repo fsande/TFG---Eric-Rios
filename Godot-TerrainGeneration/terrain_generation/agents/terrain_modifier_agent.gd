@@ -9,10 +9,10 @@ class_name TerrainModifierAgent extends Resource
 
 ## Type of modification this agent produces
 enum ModifierType {
-	HEIGHT_DELTA,       
-	VOLUME_SUBTRACTIVE, 
-	VOLUME_ADDITIVE,    
-	PROP_PLACEMENT,     
+	HEIGHT_DELTA,
+	VOLUME_SUBTRACTIVE,
+	VOLUME_ADDITIVE,
+	PROP_PLACEMENT,
 	COMPOSITE
 }
 
