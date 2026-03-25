@@ -1,6 +1,5 @@
-[gd_resource type="Resource" script_class="TerrainConfigurationV2" load_steps=39 format=3 uid="uid://ch53n6nd5oc4t"]
+[gd_resource type="Resource" script_class="TerrainConfigurationV2" load_steps=37 format=3 uid="uid://ch53n6nd5oc4t"]
 
-[ext_resource type="Script" uid="uid://d30u6ur3uvl8d" path="res://terrain_generation/heightmap/processors/blur_processor.gd" id="1_2gqhp"]
 [ext_resource type="Environment" uid="uid://ci0fdcxk6hux2" path="res://assets/environment/blue_sky.tres" id="1_ynpy0"]
 [ext_resource type="Script" uid="uid://x7gc7eg20w0b" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="2_ywmle"]
 [ext_resource type="Resource" uid="uid://wr2k3r0ty8xg" path="res://assets/generation_resources/españita_guay.tres" id="3_m8xok"]
@@ -24,15 +23,9 @@
 [ext_resource type="Script" uid="uid://cx1d1s65igqbm" path="res://terrain_generation/configuration/terrain_configuration_v2.gd" id="20_8umv2"]
 [ext_resource type="Material" uid="uid://bebs1xgkmteua" path="res://assets/materials/water/water_mat.tres" id="21_ncxol"]
 
-[sub_resource type="Resource" id="Resource_dk27i"]
-script = ExtResource("1_2gqhp")
-blur_radius = 2.0
-metadata/_custom_type_script = "uid://d30u6ur3uvl8d"
-
 [sub_resource type="Resource" id="Resource_00p1n"]
 script = ExtResource("2_ywmle")
 source = ExtResource("3_m8xok")
-processor = SubResource("Resource_dk27i")
 metadata/_custom_type_script = "uid://x7gc7eg20w0b"
 
 [sub_resource type="Resource" id="Resource_4fayk"]

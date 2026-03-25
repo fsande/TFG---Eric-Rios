@@ -31,7 +31,6 @@ static func create_heightmap_texture(rd: RenderingDevice, heightmap: Image) -> R
 	return texture
 	
 
-
 ## Creates an empty GPU texture with the specified dimensions
 static func create_empty_texture(rd: RenderingDevice, width: int, height: int) -> RID:
 	var fmt := RDTextureFormat.new()
