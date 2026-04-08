@@ -57,6 +57,8 @@ func find_points_above_height(min_height_norm: float, count: int, seed_offset: i
 		var height_norm := _context.sample_height_at_uv(uv)
 		if height_norm >= min_height_norm:
 			points.append(_context.uv_to_world(uv))
+	print("Trying to find points above normalized height %.2f: Found %d valid points out of %d samples" %
+		[min_height_norm, points.size(), count * OVERSAMPLE_FACTOR])
 	return points
 
 ## Find points below a height threshold (for valley placement, etc.).

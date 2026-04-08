@@ -59,10 +59,11 @@ func get_rendering_device() -> RenderingDevice:
 
 func get_or_create_shader(shader_path: String) -> RID:
 	_mutex.lock()
-	if _shader_cache.has(shader_path):
-		var cached_rid := _shader_cache[shader_path]
-		_mutex.unlock()
-		return cached_rid
+	# Commented out temporarily to avoid shader caching issues during development - will re-enable once stable
+#	if _shader_cache.has(shader_path):
+#		var cached_rid := _shader_cache[shader_path]
+#		_mutex.unlock()
+#		return cached_rid
 	_mutex.unlock()
 	if not is_gpu_available():
 		return RID()

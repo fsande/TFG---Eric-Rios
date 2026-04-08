@@ -115,7 +115,6 @@ func _apply_thermal_erosion_cpu(image: Image) -> Image:
 						total_height_diff += height_diff
 						if height_diff > max_height_diff:
 							max_height_diff = height_diff
-				# Distribute material to valid neighbours
 				if valid_neighbour_count > 0 and total_height_diff > 0.0:
 					var move_amount := erosion_factor * (max_height_diff - talus_threshold)
 					move_amount = clamp(move_amount, min_height_difference, max_height_difference)

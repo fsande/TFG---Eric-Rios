@@ -24,10 +24,11 @@ signal heightmap_changed
 @export_tool_button("Export") var export_action := export_to_png
 func export_to_png() -> void:
 	var temp_context := ProcessingContext.new(export_size,
-		ProcessingContext.ProcessorType.CPU,
+		ProcessingContext.ProcessorType.GPU,
 		ProcessingContext.ProcessorType.CPU,
 		0)
 	var img := generate(temp_context)
+	print("generated an image of size %dx%d" % [img.get_width(), img.get_height()])
 	temp_context.dispose()
 	if not img:
 		push_error("HeightmapSource: No image to export")

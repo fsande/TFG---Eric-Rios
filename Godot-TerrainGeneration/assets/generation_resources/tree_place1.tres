@@ -37,7 +37,7 @@ noise = SubResource("FastNoiseLite_ibtys")
 [resource]
 script = ExtResource("2_eewly")
 prop_scene = ExtResource("1_do4rr")
-density = 0.025
+density = 0.05
 density_map = SubResource("NoiseTexture2D_7f1po")
 constraints = Array[ExtResource("1_eewly")]([SubResource("Resource_skfwi"), SubResource("Resource_swklc"), SubResource("Resource_3lhjx"), SubResource("Resource_ih7yn")])
 scale_range = Vector2(0.1, 0.12)

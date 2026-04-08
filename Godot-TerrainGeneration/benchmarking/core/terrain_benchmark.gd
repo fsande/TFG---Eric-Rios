@@ -101,6 +101,7 @@ func _benchmark_pipeline(
 		var start_time := Time.get_ticks_usec()
 		generator.generate(
 			config.heightmap_source, config.terrain_size, config.height_scale,
+			config.sea_level,
 			config.modifier_stages, config.generation_seed,
 			context, config.prop_placement_rules
 		)
@@ -389,6 +390,7 @@ func _generate_definition_quiet(config: TerrainConfigurationV2) -> TerrainDefini
 	var context := _make_context(config)
 	var definition := gen.generate(
 		config.heightmap_source, config.terrain_size, config.height_scale,
+		config.sea_level,
 		config.modifier_stages, config.generation_seed,
 		context, config.prop_placement_rules
 	)

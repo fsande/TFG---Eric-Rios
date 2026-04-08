@@ -26,7 +26,7 @@ func generate_binary_map(heightmap: Image, sea_level_normalized: float) -> Image
 	if not heightmap:
 		push_error("CoastlineDetector: Heightmap is null")
 		return null
-	_cached_binary_map = ImageBinarizer.binarize_image(heightmap, sea_level_normalized)
+	_cached_binary_map = ImageBinarizer.white_threshold(heightmap, sea_level_normalized)
 	return _cached_binary_map
 
 ## Get or generate binary coastline map.

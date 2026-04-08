@@ -12,12 +12,21 @@ class_name ImageBinarizer
 ## - threshold (float): luminance threshold in [0,1] (default 0.5).
 ##
 ## Returns: a new Image where pixels are 0 or 1 based on threshold.
-static func binarize_image(image: Image, threshold: float = 0.5) -> Image:
+static func binarize_rgb(image: Image, threshold: float = 0.5) -> Image:
 	var binarized_image := image.duplicate()
 	for y in range(image.get_height()):
 		for x in range(image.get_width()):
 			var color := image.get_pixel(x, y)
 			var gray := 0.299 * color.r + 0.587 * color.g + 0.114 * color.b
 			var v := int(gray > threshold)
+			binarized_image.set_pixel(x, y, Color(v, v, v, 1))
+	return binarized_image
+
+static func white_threshold(image: Image, threshold: float = 0.5) -> Image:
+	var binarized_image := image.duplicate()
+	for y in range(image.get_height()):
+		for x in range(image.get_width()):
+			var color := image.get_pixel(x, y).r
+			var v := int(color > threshold)
 			binarized_image.set_pixel(x, y, Color(v, v, v, 1))
 	return binarized_image

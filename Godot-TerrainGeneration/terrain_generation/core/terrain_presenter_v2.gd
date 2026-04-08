@@ -89,6 +89,7 @@ func regenerate() -> void:
 		configuration.heightmap_source,
 		configuration.terrain_size,
 		configuration.height_scale,
+		configuration.sea_level,
 		configuration.modifier_stages,
 		configuration.generation_seed,
 		shared_context,
@@ -99,7 +100,6 @@ func regenerate() -> void:
 		shared_context.dispose()
 		_is_generating = false
 		return
-	_terrain_definition.sea_level = configuration.sea_level
 	_terrain_definition.set_shared_processing_context(shared_context)
 	if configuration.use_gpu_mesh_generation and configuration.use_async_loading:
 		push_warning("TerrainPresenterV2: GPU mesh generation REQUIRES synchronous loading. Disabling async loading.")

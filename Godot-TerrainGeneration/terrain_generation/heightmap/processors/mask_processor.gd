@@ -10,7 +10,7 @@ class_name MaskProcessor extends HeightmapProcessor
 @export var mask_image: Image:
 	set(value):
 		if value:
-			mask_image = ImageBinarizer.binarize_image(value, 0.01)
+			mask_image = ImageBinarizer.binarize_rgb(value, 0.01)
 		else:
 			mask_image = null
 		changed.emit()

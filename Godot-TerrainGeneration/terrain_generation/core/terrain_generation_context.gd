@@ -145,6 +145,7 @@ func get_coastline_binary_map() -> Image:
 		push_warning("TerrainGenerationContext: Cannot generate coastline without heightmap and terrain definition")
 		return null
 	var sea_level_normalized := terrain_definition.sea_level / height_scale
+	print("Sea level normalized: %.3f (sea level: %.2f, height scale: %.2f)" % [sea_level_normalized, terrain_definition.sea_level, height_scale])
 	return _coastline_detector.get_or_generate_binary_map(reference_heightmap, sea_level_normalized)
 
 ## Get or generate coastline edge map using edge detection.

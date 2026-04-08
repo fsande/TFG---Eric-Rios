@@ -19,6 +19,7 @@ func generate(
 	heightmap_source: HeightmapSource,
 	terrain_size: Vector2,
 	height_scale: float,
+	sea_level: float,
 	stages: Array[TerrainModifierStage],
 	generation_seed: int = 0,
 	shared_context: ProcessingContext = null,
@@ -31,6 +32,7 @@ func generate(
 		print("Stages to process: %d" % stages.size())
 	generation_started.emit()
 	var definition := TerrainDefinition.create(heightmap_source, terrain_size, height_scale, generation_seed)
+	definition.sea_level = sea_level
 	var owns_context := shared_context == null
 	var processing_context: ProcessingContext
 	if shared_context:

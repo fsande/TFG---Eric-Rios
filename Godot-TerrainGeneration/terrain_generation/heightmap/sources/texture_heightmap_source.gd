@@ -1,4 +1,4 @@
-﻿@tool
+@tool
 class_name TextureHeightmapSource extends HeightmapSource
 
 @export var heightmap_texture: Texture2D:
@@ -7,7 +7,12 @@ class_name TextureHeightmapSource extends HeightmapSource
 		heightmap_changed.emit()
 
 func generate(context: ProcessingContext) -> Image:
-	return heightmap_texture.get_image() if heightmap_texture else null
+	if heightmap_texture:
+		var image := heightmap_texture.get_image()
+		image.convert(Image.FORMAT_RF)
+		return image
+	else:
+		return null
 
 func get_metadata() -> Dictionary:
 	return {

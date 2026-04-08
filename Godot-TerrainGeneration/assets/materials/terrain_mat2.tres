@@ -11,30 +11,31 @@
 [sub_resource type="Resource" id="Resource_4gi05"]
 script = ExtResource("1_o4pkv")
 material = ExtResource("2_4gi05")
-blend_height = 8.0
+blend_height = 60.0
 metadata/_custom_type_script = "uid://cnri5xq0qldk"
 
 [sub_resource type="Resource" id="Resource_a7faj"]
 script = ExtResource("1_o4pkv")
 material = ExtResource("3_4gi05")
-blend_height = 30.0
+blend_height = 90.0
 metadata/_custom_type_script = "uid://cnri5xq0qldk"
 
 [sub_resource type="Resource" id="Resource_mm8fh"]
 script = ExtResource("1_o4pkv")
 material = ExtResource("3_a7faj")
-blend_height = 40.0
+blend_height = 130.0
 metadata/_custom_type_script = "uid://cnri5xq0qldk"
 
 [sub_resource type="Resource" id="Resource_amtu7"]
 script = ExtResource("1_o4pkv")
 material = ExtResource("4_o4pkv")
-blend_height = 65.0
+blend_height = 200.0
 metadata/_custom_type_script = "uid://cnri5xq0qldk"
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_q2o47"]
 noise_type = 3
 seed = 51513
+frequency = 0.0068
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_3q2jc"]
 noise = SubResource("FastNoiseLite_q2o47")
@@ -46,12 +47,12 @@ shader = ExtResource("6_6mb2p")
 shader_parameter/blend_width = 5.0
 shader_parameter/texture_count = 4
 shader_parameter/height_noise = SubResource("NoiseTexture2D_3q2jc")
-shader_parameter/height_noise_strength = 3.0
-shader_parameter/blend_heights = [8.0, 30.0, 40.0, 65.0]
-shader_parameter/uv_scale = Vector2(10, 10)
+shader_parameter/height_noise_strength = 15.0
+shader_parameter/blend_heights = [60.0, 90.0, 130.0, 200.0]
+shader_parameter/uv_scale = Vector2(15, 15)
 shader_parameter/triplanar_sharpness = 4.0
-shader_parameter/slope_start = 0.5
-shader_parameter/slope_end = 0.7
+shader_parameter/slope_start = 1.0
+shader_parameter/slope_end = 1.0
 shader_parameter/height_noise_scale = 0.01
 script = ExtResource("5_3q2jc")
 height_layers = Array[ExtResource("1_o4pkv")]([SubResource("Resource_4gi05"), SubResource("Resource_a7faj"), SubResource("Resource_mm8fh"), SubResource("Resource_amtu7")])
