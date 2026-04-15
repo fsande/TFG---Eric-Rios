@@ -58,52 +58,28 @@ float sample_triplanar_scalar(sampler2DArray tex_array, int layer, TriplanarWeig
 
 vec3 blend_layer_vec3(sampler2DArray tex_array, int lower, int upper, float blend_factor, vec2 uv, TriplanarWeights tri_weights, float tri_factor) {
 	vec3 sample1_uv = texture(tex_array, vec3(uv, float(lower))).rgb;
-	vec3 uv_result;
-	if (blend_factor < 0.01) {
-		uv_result = sample1_uv;
-	} else if (blend_factor > 0.99) {
-		uv_result = texture(tex_array, vec3(uv, float(upper))).rgb;
-	} else {
-		uv_result = mix(sample1_uv, texture(tex_array, vec3(uv, float(upper))).rgb, blend_factor);
-	}
+	vec3 sample2_uv = texture(tex_array, vec3(uv, float(upper))).rgb;
+	vec3 uv_result = mix(sample1_uv, sample2_uv, blend_factor);
 	if (tri_factor < 0.01) {
 		return uv_result;
 	}
 	vec3 sample1_tri = sample_triplanar_vec3(tex_array, lower, tri_weights);
-	vec3 tri_result;
-	if (blend_factor < 0.01) {
-		tri_result = sample1_tri;
-	} else if (blend_factor > 0.99) {
-		tri_result = sample_triplanar_vec3(tex_array, upper, tri_weights);
-	} else {
-		tri_result = mix(sample1_tri, sample_triplanar_vec3(tex_array, upper, tri_weights), blend_factor);
-	}
+	vec3 sample2_tri = sample_triplanar_vec3(tex_array, upper, tri_weights);
+	vec3 tri_result = mix(sample1_tri, sample_triplanar_vec3(tex_array, upper, tri_weights), blend_factor);
 	return mix(uv_result, tri_result, tri_factor);
 }
 
-vec3 blend_layer_orm(sampler2DArray tex_array, int lower, int upper, float blend_factor, vec2 uv, TriplanarWeights tri_weights, float tri_factor) {
-	vec3 sample1_uv = texture(tex_array, vec3(uv, float(lower))).rgb;
-	vec3 uv_result;
-	if (blend_factor < 0.01) {
-		uv_result = sample1_uv;
-	} else if (blend_factor > 0.99) {
-		uv_result = texture(tex_array, vec3(uv, float(upper))).rgb;
-	} else {
-		uv_result = mix(sample1_uv, texture(tex_array, vec3(uv, float(upper))).rgb, blend_factor);
-	}
+vec3 blend_layer_normal(int lower, int upper, float blend_factor, vec2 uv, TriplanarWeights tri_weights, float tri_factor) {
+	vec3 normal1_uv = texture(normal_array, vec3(uv, float(lower))).rgb;
+	vec3 normal2_uv = texture(normal_array, vec3(uv, float(upper))).rgb;
+	vec3 normal_uv = blend_normals_rnm(normal1_uv, normal2_uv.rgb, blend_factor);
 	if (tri_factor < 0.01) {
-		return uv_result;
+		return normal_uv;
 	}
-	vec3 sample1_tri = sample_triplanar_vec3(tex_array, lower, tri_weights);
-	vec3 tri_result;
-	if (blend_factor < 0.01) {
-		tri_result = sample1_tri;
-	} else if (blend_factor > 0.99) {
-		tri_result = sample_triplanar_vec3(tex_array, upper, tri_weights);
-	} else {
-		tri_result = mix(sample1_tri, sample_triplanar_vec3(tex_array, upper, tri_weights), blend_factor);
-	}
-	return mix(uv_result, tri_result, tri_factor);
+	vec3 normal1_tri = sample_triplanar_vec3(normal_array, lower, tri_weights);
+	vec3 normal2_tri = sample_triplanar_vec3(normal_array, upper, tri_weights);
+	vec3 normal_tri = blend_normals_rnm(normal1_tri, normal2_tri, blend_factor);
+	return mix(normal_uv, normal_tri, tri_factor);
 }
 
 void fragment() {
@@ -133,34 +109,11 @@ void fragment() {
 	vec2 scaled_uv = UV * uv_scale;
 	TriplanarWeights tri_weights = calculate_triplanar_weights(model_vertex, world_normal, triplanar_scale);
 	ALBEDO = blend_layer_vec3(albedo_array, lower_index, upper_index, blend, scaled_uv, tri_weights, triplanar_factor);
-	vec3 normal1_uv = texture(normal_array, vec3(scaled_uv, float(lower_index))).rgb;
-	vec3 normal_uv;
-	if (blend < 0.01) {
-		normal_uv = normal1_uv;
-	} else if (blend > 0.99) {
-		normal_uv = texture(normal_array, vec3(scaled_uv, float(upper_index))).rgb;
-	} else {
-		normal_uv = blend_normals_rnm(normal1_uv, texture(normal_array, vec3(scaled_uv, float(upper_index))).rgb, blend);
-	}
-	if (triplanar_factor < 0.01) {
-		NORMAL_MAP = normal_uv;
-	} else {
-		vec3 normal1_tri = sample_triplanar_vec3(normal_array, lower_index, tri_weights);
-		vec3 normal_tri;
-		if (blend < 0.01) {
-			normal_tri = normal1_tri;
-		} else if (blend > 0.99) {
-			normal_tri = sample_triplanar_vec3(normal_array, upper_index, tri_weights);
-		} else {
-			normal_tri = blend_normals_rnm(normal1_tri, sample_triplanar_vec3(normal_array, upper_index, tri_weights), blend);
-		}
-		NORMAL_MAP = mix(normal_uv, normal_tri, triplanar_factor);
-	}
-	vec3 orm = blend_layer_orm(orm_array, lower_index, upper_index, blend, scaled_uv, tri_weights, triplanar_factor);
+	NORMAL_MAP = blend_layer_normal(lower_index, upper_index, blend, scaled_uv, tri_weights, triplanar_factor);
+	vec3 orm = blend_layer_vec3(orm_array, lower_index, upper_index, blend, scaled_uv, tri_weights, triplanar_factor);
 	AO = orm.r;
 	ROUGHNESS = orm.g;
 	METALLIC = orm.b;
-
 	//float cliff_blend = smoothstep(cliff_slope_start, cliff_slope_end, slope);
 	//if (cliff_blend > 0.01) {
 	    //vec3 cliff_albedo = sample_triplanar_vec3(albedo_array, cliff_layer_index, tri_weights);

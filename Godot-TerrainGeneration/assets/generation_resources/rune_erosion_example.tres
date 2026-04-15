@@ -1,56 +1,39 @@
-[gd_resource type="Resource" script_class="TerrainConfigurationV2" load_steps=28 format=3 uid="uid://bgqcvdn3n4iy"]
+[gd_resource type="Resource" script_class="TerrainConfigurationV2" load_steps=16 format=3 uid="uid://bgqcvdn3n4iy"]
 
 [ext_resource type="Environment" uid="uid://ci0fdcxk6hux2" path="res://assets/environment/blue_sky.tres" id="1_mg48h"]
-[ext_resource type="Script" uid="uid://doxiokddifd55" path="res://terrain_generation/heightmap/processors/normalization_processor.gd" id="2_ve3ac"]
 [ext_resource type="Script" uid="uid://x7gc7eg20w0b" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="3_10fri"]
 [ext_resource type="Script" uid="uid://c8woatbkj6p7e" path="res://terrain_generation/heightmap/processors/rune_erosion.gd" id="4_oeiu2"]
-[ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="5_nu8o5"]
+[ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="5_a76fp"]
 [ext_resource type="Script" uid="uid://c51qydcxes5yv" path="res://terrain_generation/chunking/strategies/grid_load_strategy_v2.gd" id="6_8vwua"]
 [ext_resource type="Script" uid="uid://c5ppavb1os4er" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="7_3mr36"]
-[ext_resource type="Script" uid="uid://2wt0wp5vkq0f" path="res://terrain_generation/agents/terrain_modifier_agent.gd" id="8_farwy"]
-[ext_resource type="Script" uid="uid://birb17b0dkd41" path="res://terrain_generation/agents/config/river_agent_config.gd" id="9_jbs5o"]
-[ext_resource type="Material" uid="uid://bg6hotk2ler2n" path="res://assets/materials/water/river_water.tres" id="10_kpkxc"]
-[ext_resource type="Script" uid="uid://ikunl5bx48x1" path="res://terrain_generation/agents/river/river_agent.gd" id="11_8wopk"]
-[ext_resource type="Script" uid="uid://d1uj11l5nqaog" path="res://terrain_generation/core/stages/sequential_modifier_stage.gd" id="12_s2o1u"]
 [ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="13_klsig"]
-[ext_resource type="Resource" uid="uid://v5ie01qj4ft2" path="res://assets/generation_resources/tree_place1.tres" id="14_1wxls"]
 [ext_resource type="Script" uid="uid://cx1d1s65igqbm" path="res://terrain_generation/configuration/terrain_configuration_v2.gd" id="15_ec5ko"]
 [ext_resource type="Material" uid="uid://bebs1xgkmteua" path="res://assets/materials/water/water_mat.tres" id="16_drqbo"]
 [ext_resource type="Material" uid="uid://dmlbneowgjfqy" path="res://assets/materials/terrain_mat2.tres" id="17_okpth"]
 
-[sub_resource type="Resource" id="Resource_dk27i"]
-script = ExtResource("2_ve3ac")
-metadata/_custom_type_script = "uid://doxiokddifd55"
-
 [sub_resource type="Resource" id="Resource_a8qn4"]
 script = ExtResource("4_oeiu2")
+erosion_strength = 0.6
 erosion_octaves = 10
-erosion_normalization = 1.0
+erosion_cell_scale = 0.9
 metadata/_custom_type_script = "uid://c8woatbkj6p7e"
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_00p1n"]
-noise_type = 4
-frequency = 0.0546
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_lhoqm"]
 fractal_type = 0
 
-[sub_resource type="Resource" id="Resource_mm8fh"]
-script = ExtResource("5_nu8o5")
+[sub_resource type="Resource" id="Resource_pjc77"]
+script = ExtResource("5_a76fp")
+resolution = 3000
 frequency = 2.0
-noise = SubResource("FastNoiseLite_00p1n")
+noise = SubResource("FastNoiseLite_lhoqm")
 metadata/_custom_type_script = "uid://rlx21xot8cjj"
 
 [sub_resource type="Resource" id="Resource_obh5s"]
 script = ExtResource("3_10fri")
-source = SubResource("Resource_mm8fh")
+source = SubResource("Resource_pjc77")
 processor = SubResource("Resource_a8qn4")
 save_path = "eroded_512.png"
 export_size = 512.0
-metadata/_custom_type_script = "uid://x7gc7eg20w0b"
-
-[sub_resource type="Resource" id="Resource_qigeq"]
-script = ExtResource("3_10fri")
-source = SubResource("Resource_obh5s")
-processor = SubResource("Resource_dk27i")
 metadata/_custom_type_script = "uid://x7gc7eg20w0b"
 
 [sub_resource type="Resource" id="Resource_bqotf"]
@@ -58,41 +41,18 @@ script = ExtResource("6_8vwua")
 load_radius = 100
 unload_radius = 100
 
-[sub_resource type="Resource" id="Resource_amtu7"]
-script = ExtResource("9_jbs5o")
-river_width = 3.0
-min_origin_height = 120.0
-max_altitude = 260.0
-max_slope_degrees = 80.0
-min_coast_to_mountain_distance = 60.0
-max_consecutive_downhill_steps = 15
-max_attempts = 60
-
-[sub_resource type="Resource" id="Resource_qx382"]
-script = ExtResource("11_8wopk")
-config = SubResource("Resource_amtu7")
-agent_name = "River"
-metadata/_custom_type_script = "uid://ikunl5bx48x1"
-
-[sub_resource type="Resource" id="Resource_xt6x4"]
-script = ExtResource("12_s2o1u")
-agents = Array[ExtResource("8_farwy")]([SubResource("Resource_qx382")])
-metadata/_custom_type_script = "uid://d1uj11l5nqaog"
-
 [resource]
 script = ExtResource("15_ec5ko")
-heightmap_source = SubResource("Resource_qigeq")
-terrain_size = Vector2(2048, 1024)
+heightmap_source = SubResource("Resource_obh5s")
+terrain_size = Vector2(1024, 1024)
 height_scale = 256.0
-modifier_stages = Array[ExtResource("7_3mr36")]([SubResource("Resource_xt6x4")])
-prop_placement_rules = Array[ExtResource("13_klsig")]([ExtResource("14_1wxls")])
-base_chunk_resolution = 128
 load_strategy = SubResource("Resource_bqotf")
 use_gpu_heightmap = true
-lod_distances = Array[float]([500.0, 550.0, 1000.0, 40000.0])
+lod_distances = Array[float]([50000.0, 50000.0, 50000.0, 40000.0])
 sea_level = 60.0
 sea_material = ExtResource("16_drqbo")
 terrain_material = ExtResource("17_okpth")
 environment = ExtResource("1_mg48h")
 generate_collision = false
+auto_generate = false
 metadata/_custom_type_script = "uid://cx1d1s65igqbm"

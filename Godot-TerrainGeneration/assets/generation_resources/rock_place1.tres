@@ -19,6 +19,7 @@ metadata/_custom_type_script = "uid://coaoelv6m43ad"
 frequency = 0.0221
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_obh5s"]
+generate_mipmaps = false
 noise = SubResource("FastNoiseLite_a8qn4")
 
 [resource]

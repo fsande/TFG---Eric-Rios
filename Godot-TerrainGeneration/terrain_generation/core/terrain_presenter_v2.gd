@@ -159,7 +159,7 @@ func _setup_containers() -> void:
 	_chunks_container = NodeCreationHelper.get_or_create_node(self, "ChunksContainer", Node3D)
 	NodeCreationHelper.remove_all_children(_chunks_container)
 	_props_container = NodeCreationHelper.get_or_create_node(self, "PropsContainer", Node3D)
-	NodeCreationHelper.remove_all_children(_chunks_container)
+	NodeCreationHelper.remove_all_children(_props_container)
 
 func _update_visible_chunks() -> void:
 	if not _generation_service or not configuration.load_strategy or _is_generating:
@@ -206,7 +206,7 @@ func _apply_lod_hysteresis(coord: Vector2i, target_lod: int, camera_pos: Vector3
 	if hysteresis <= 0.0:
 		return target_lod
 	var chunk_center := _get_chunk_world_center(coord)
-	var distance := camera_pos.distance_to(chunk_center)
+	var distance := Vector2(camera_pos.x - chunk_center.x, camera_pos.z - chunk_center.z).length()
 	var lod_distances := configuration.lod_distances
 	if target_lod > current_lod:
 		var threshold_distance: float = lod_distances[current_lod] if current_lod < lod_distances.size() else lod_distances[-1]
@@ -239,8 +239,9 @@ func update_chunk_lod(coord: Vector2i, new_lod: int, priority: float) -> void:
 		return
 	var lod_difference := absi(state.lod - new_lod)
 	if lod_difference <= 0 and new_lod != 0:
-		return
-	_pending_chunk_requests[coord] = new_lod
+		var pending_lod: int = _pending_chunk_requests[coord]
+		if pending_lod <= new_lod:
+			return
 	if configuration.use_async_loading:
 		_generation_service.request_chunk_async(coord, configuration.chunk_size, new_lod, priority)
 	else:

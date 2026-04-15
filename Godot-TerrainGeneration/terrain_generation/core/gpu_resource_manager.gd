@@ -85,7 +85,6 @@ func get_or_create_shader(shader_path: String) -> RID:
 	_mutex.lock()
 	_shader_cache[shader_path] = shader_rid
 	_mutex.unlock()
-	print("GpuResourceManager: Compiled and cached shader: %s" % shader_path)
 	return shader_rid
 
 func get_or_create_pipeline(shader_rid: RID) -> RID:

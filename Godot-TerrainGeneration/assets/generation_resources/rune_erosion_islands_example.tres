@@ -1,0 +1,97 @@
+[gd_resource type="Resource" script_class="TerrainConfigurationV2" load_steps=30 format=3 uid="uid://ck4fw2sxps5a0"]
+
+[ext_resource type="Environment" uid="uid://ci0fdcxk6hux2" path="res://assets/environment/blue_sky.tres" id="1_bsbdk"]
+[ext_resource type="Script" uid="uid://doxiokddifd55" path="res://terrain_generation/heightmap/processors/normalization_processor.gd" id="2_iqfq2"]
+[ext_resource type="Script" uid="uid://o0lhahullfck" path="res://terrain_generation/heightmap/combiners/multiplication_combiner.gd" id="2_llal7"]
+[ext_resource type="Script" uid="uid://bex5sqputtgkm" path="res://terrain_generation/heightmap/sources/composite_heightmap_source.gd" id="3_iqfq2"]
+[ext_resource type="Script" uid="uid://0igih326n7n3" path="res://terrain_generation/heightmap/sources/heightmap_source.gd" id="4_eb7tc"]
+[ext_resource type="Script" uid="uid://c8woatbkj6p7e" path="res://terrain_generation/heightmap/processors/rune_erosion.gd" id="5_fgtho"]
+[ext_resource type="Script" uid="uid://x7gc7eg20w0b" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="6_3udvc"]
+[ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="7_eiu4j"]
+[ext_resource type="Script" uid="uid://c51qydcxes5yv" path="res://terrain_generation/chunking/strategies/grid_load_strategy_v2.gd" id="8_4kh8a"]
+[ext_resource type="Script" uid="uid://c5ppavb1os4er" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="9_rhogo"]
+[ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="10_gt3yv"]
+[ext_resource type="Script" uid="uid://cx1d1s65igqbm" path="res://terrain_generation/configuration/terrain_configuration_v2.gd" id="11_1xkhc"]
+[ext_resource type="Material" uid="uid://bebs1xgkmteua" path="res://assets/materials/water/water_mat.tres" id="12_avcoq"]
+[ext_resource type="Resource" uid="uid://v5ie01qj4ft2" path="res://assets/generation_resources/tree_place1.tres" id="12_eb7tc"]
+[ext_resource type="Resource" uid="uid://dmjfm4v8myli7" path="res://assets/generation_resources/rock_place1.tres" id="13_fgtho"]
+[ext_resource type="Resource" uid="uid://cslogkn0wqrqg" path="res://assets/generation_resources/bush_place.tres" id="14_3udvc"]
+[ext_resource type="Resource" uid="uid://c3hqgvsqfi3ie" path="res://assets/generation_resources/flower_placement.tres" id="15_eiu4j"]
+[ext_resource type="Material" uid="uid://dauv88yfyh4g5" path="res://assets/materials/terrain_mat_high.tres" id="16_eb7tc"]
+
+[sub_resource type="Resource" id="Resource_eb7tc"]
+script = ExtResource("2_iqfq2")
+metadata/_custom_type_script = "uid://doxiokddifd55"
+
+[sub_resource type="Resource" id="Resource_fsowu"]
+script = ExtResource("2_llal7")
+metadata/_custom_type_script = "uid://o0lhahullfck"
+
+[sub_resource type="Resource" id="Resource_a8qn4"]
+script = ExtResource("5_fgtho")
+erosion_strength = 0.6
+erosion_octaves = 10
+erosion_cell_scale = 0.9
+metadata/_custom_type_script = "uid://c8woatbkj6p7e"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_lhoqm"]
+fractal_type = 0
+
+[sub_resource type="Resource" id="Resource_pjc77"]
+script = ExtResource("7_eiu4j")
+resolution = 3000
+frequency = 2.0
+noise = SubResource("FastNoiseLite_lhoqm")
+metadata/_custom_type_script = "uid://rlx21xot8cjj"
+
+[sub_resource type="Resource" id="Resource_6vgln"]
+script = ExtResource("6_3udvc")
+source = SubResource("Resource_pjc77")
+processor = SubResource("Resource_a8qn4")
+save_path = "eroded_512.png"
+export_size = 512.0
+metadata/_custom_type_script = "uid://x7gc7eg20w0b"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_hw82m"]
+noise_type = 2
+fractal_type = 0
+
+[sub_resource type="Resource" id="Resource_5f8dh"]
+script = ExtResource("7_eiu4j")
+resolution = 3000
+frequency = 0.5
+noise = SubResource("FastNoiseLite_hw82m")
+metadata/_custom_type_script = "uid://rlx21xot8cjj"
+
+[sub_resource type="Resource" id="Resource_3q8xn"]
+script = ExtResource("3_iqfq2")
+sources = Array[ExtResource("4_eb7tc")]([SubResource("Resource_6vgln"), SubResource("Resource_5f8dh")])
+combiner = SubResource("Resource_fsowu")
+metadata/_custom_type_script = "uid://bex5sqputtgkm"
+
+[sub_resource type="Resource" id="Resource_fgtho"]
+script = ExtResource("6_3udvc")
+source = SubResource("Resource_3q8xn")
+processor = SubResource("Resource_eb7tc")
+metadata/_custom_type_script = "uid://x7gc7eg20w0b"
+
+[sub_resource type="Resource" id="Resource_bqotf"]
+script = ExtResource("8_4kh8a")
+load_radius = 5
+
+[resource]
+script = ExtResource("11_1xkhc")
+heightmap_source = SubResource("Resource_fgtho")
+terrain_size = Vector2(10000, 10000)
+height_scale = 1000.0
+prop_placement_rules = Array[ExtResource("10_gt3yv")]([ExtResource("12_eb7tc"), ExtResource("13_fgtho"), ExtResource("14_3udvc"), ExtResource("15_eiu4j")])
+load_strategy = SubResource("Resource_bqotf")
+use_gpu_heightmap = true
+lod_distances = Array[float]([100.0, 200.0, 300.0, 450.0])
+sea_level = 60.0
+sea_material = ExtResource("12_avcoq")
+terrain_material = ExtResource("16_eb7tc")
+environment = ExtResource("1_bsbdk")
+collision_lod = 2
+auto_generate = false
+metadata/_custom_type_script = "uid://cx1d1s65igqbm"
