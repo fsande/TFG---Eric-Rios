@@ -40,7 +40,8 @@ var _load_context: ChunkLoadContextV2 = null
 func _ready() -> void:
 	if (configuration.heightmap_source and configuration.auto_generate) or not Engine.is_editor_hint(): 
 		print("Auto-generating terrain on ready")
-		regenerate()
+		NodeCreationHelper.remove_all_children(self)
+		regenerate.call_deferred()
 
 func _process(delta: float) -> void:
 	if not _terrain_definition or not _generation_service:
@@ -74,7 +75,7 @@ func regenerate() -> void:
 	if not configuration.heightmap_source:
 		push_warning("TerrainPresenterV2: No heightmap source assigned")
 		return
-	_setup_containers()
+	_setup_containers.call_deferred()
 	_is_generating = true
 	clear_all_chunks()
 	var shared_context := ProcessingContext.new(
@@ -116,9 +117,9 @@ func regenerate() -> void:
 	if _props_container:
 		_feature_manager = ChunkFeatureManager.new(_terrain_definition, _props_container)
 	if configuration.enable_sea:
-		_create_sea_plane()
+		_create_sea_plane.call_deferred()
 	if configuration.environment:
-		_create_environment(configuration.environment)
+		_create_environment.call_deferred(configuration.environment)
 	if configuration.show_debug_info:
 		print("TerrainPresenterV2: %s" % _terrain_definition.get_summary())
 	_update_visible_chunks()
