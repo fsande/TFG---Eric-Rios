@@ -49,6 +49,10 @@ static func create_failure(
 	result.elapsed_time_ms = p_elapsed_time_ms
 	return result
 
+func export_deltas(save_path: String) -> void:
+	for delta in height_deltas:
+		delta.export_to_image(save_path + "_delta_%d.png" % delta.creation_timestamp)
+
 ## Add a height delta to the result.
 func add_height_delta(delta: HeightDeltaMap) -> void:
 	if delta:

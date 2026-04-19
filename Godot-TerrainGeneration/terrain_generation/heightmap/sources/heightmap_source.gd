@@ -36,6 +36,7 @@ func export_to_png() -> void:
 	var file_path := save_path if save_path != "" else "res://heightmap.png"
 	if not file_path.begins_with("res://") and not file_path.begins_with("user://"):
 		file_path = "res://" + file_path
+	img.convert(Image.FORMAT_L8)
 	var err := img.save_png(file_path)
 	if err != OK:
 		push_error("HeightmapSource: Failed to save image to %s" % file_path)

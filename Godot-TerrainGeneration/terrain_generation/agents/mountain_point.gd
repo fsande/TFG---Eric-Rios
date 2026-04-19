@@ -1,5 +1,6 @@
 # Small typed data class for path points to replace Dictionary usage
 class_name MountainPoint
+## World coordinates of the point
 var position: Vector2
 var direction: Vector2
 var width_mult: float

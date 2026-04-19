@@ -73,6 +73,27 @@ func sample_at_uv(uv: Vector2) -> float:
 		raw_value *= falloff_factor
 	return raw_value * intensity
 
+func export_to_image(path: String) -> void:
+	if not delta_texture:
+		push_error("HeightDeltaMap: No delta texture to export")
+		return
+	var width  := delta_texture.get_width()
+	var height := delta_texture.get_height()
+	var max_val := 0.0001
+	for y in range(height):
+		for x in range(width):
+			max_val = maxf(max_val, delta_texture.get_pixel(x, y).r)
+	var out := Image.create(width, height, false, Image.FORMAT_L8)
+	for y in range(height):
+		for x in range(width):
+			var normalized := delta_texture.get_pixel(x, y).r / max_val
+			out.set_pixel(x, y, Color(normalized, normalized, normalized, 1.0))
+	var err := out.save_png(path)
+	if err != OK:
+		push_error("HeightDeltaMap: Failed to save image to %s" % path)
+	else:
+		print("HeightDeltaMap: Image saved to %s (max world value: %.2f)" % [path, max_val])
+
 ## Check if this delta has a non-zero modification at a world position.
 ## Useful for zone-based queries (e.g. "is this point inside a river?").
 ## @param world_pos World position (XZ plane)
