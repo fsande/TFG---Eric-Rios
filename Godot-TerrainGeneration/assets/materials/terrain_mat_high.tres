@@ -11,7 +11,7 @@
 [sub_resource type="Resource" id="Resource_4gi05"]
 script = ExtResource("1_q7aaq")
 material = ExtResource("2_o4nh7")
-blend_height = 350.0
+blend_height = 100.0
 metadata/_custom_type_script = "uid://cnri5xq0qldk"
 
 [sub_resource type="Resource" id="Resource_a7faj"]
@@ -48,7 +48,7 @@ shader_parameter/blend_width = 5.0
 shader_parameter/texture_count = 4
 shader_parameter/height_noise = SubResource("NoiseTexture2D_3q2jc")
 shader_parameter/height_noise_strength = 15.0
-shader_parameter/blend_heights = [350.0, 500.0, 800.0, 1000.0]
+shader_parameter/blend_heights = [100.0, 500.0, 800.0, 1000.0]
 shader_parameter/uv_scale = Vector2(15, 15)
 shader_parameter/triplanar_sharpness = 4.0
 shader_parameter/slope_start = 1.0

@@ -114,8 +114,7 @@ func regenerate() -> void:
 	_generation_service.chunk_generated.connect(_on_async_chunk_ready, ConnectFlags.CONNECT_DEFERRED)
 	_generation_service.generation_failed.connect(_on_async_chunk_failed, ConnectFlags.CONNECT_DEFERRED)
 	_load_context = null
-	if _props_container:
-		_feature_manager = ChunkFeatureManager.new(_terrain_definition, _props_container)
+	_create_feature_manager.call_deferred()
 	if configuration.enable_sea:
 		_create_sea_plane.call_deferred()
 	if configuration.environment:
@@ -125,6 +124,10 @@ func regenerate() -> void:
 	_update_visible_chunks()
 	_is_generating = false
 	generation_completed.emit(_terrain_definition)
+
+func _create_feature_manager() -> void:
+	if _props_container:
+		_feature_manager = ChunkFeatureManager.new(_terrain_definition, _props_container)
 
 func clear_all_chunks() -> void:
 	for coord in _chunk_instances.keys():
