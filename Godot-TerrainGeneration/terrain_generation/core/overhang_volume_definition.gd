@@ -8,23 +8,23 @@
 class_name OverhangVolumeDefinition extends VolumeDefinition
 
 ## The world position where the overhang attaches to terrain surface
-@export var attachment_point: Vector3 = Vector3.ZERO
+var attachment_point: Vector3 = Vector3.ZERO
 
 ## Direction the overhang extends outward (normalized, usually near-horizontal)
-@export var overhang_direction: Vector3 = Vector3(-1, 0, 0).normalized()
+var overhang_direction: Vector3 = Vector3(-1, 0, 0).normalized()
 
 ## How far the overhang extends past the attachment point
-@export var extent: float = 5.0
+var extent: float = 5.0
 
 ## Width of the overhang perpendicular to direction
-@export var width: float = 8.0
+var width: float = 8.0
 
 ## Thickness of the overhang slab
-@export var thickness: float = 2.0
+var thickness: float = 2.0
 
 ## How far the back of the slab is buried into the cliff face.
 ## This hides the seam between the overhang and terrain mesh.
-@export var cliff_embed_depth: float = 3.0
+var cliff_embed_depth: float = 3.0
 
 ## Profile curve for the overhang shape (optional).
 ## X axis = distance along extent (0-1), Y axis = thickness multiplier.
@@ -34,9 +34,17 @@ class_name OverhangVolumeDefinition extends VolumeDefinition
 @export_range(2, 16) var length_segments: int = 6
 @export_range(2, 16) var width_segments: int = 4
 
-## Noise variation for natural look
+## Noise variation for natural look.
+## Applied as low-frequency domain warping so the whole slab bulges
+## organically rather than individual vertices jittering independently.
 @export var noise_strength: float = 0.2
 @export var noise_seed: int = 0
+
+## Frequency of the low-frequency blob noise (lower = bigger blobs).
+@export var noise_frequency: float = 0.15
+
+## Secondary high-frequency detail noise layered on top (0 = disabled).
+@export var detail_noise_strength: float = 0.05
 
 func _init() -> void:
 	volume_type = VolumeType.ADDITIVE
@@ -52,119 +60,86 @@ func point_is_inside(point: Vector3) -> bool:
 	var t := clampf(local.x / extent, 0.0, 1.0)
 	return abs(local.y) <= _get_thickness_at(t) * 0.5
 
-## Generate mesh for the overhang.
-## The slab starts cliff_embed_depth behind attachment_point (buried in terrain)
-## and extends `extent` units forward. The buried section ensures no seam.
+## Side length of the base cube that is rounded into a blob.
+@export var blob_cube_size: float = 56
+
+## How much to round the cube edges/corners (0 = sharp cube, 1 ≈ near‑sphere).
+@export_range(0.0, 1.0) var blob_rounding: float = 0.5
+
+## Number of subdivisions along each axis (quad mesh density).
+@export_range(4, 32) var cube_subdivisions: int = 16
+
 func generate_mesh(chunk_bounds: AABB, resolution: int) -> MeshData:
 	if not intersects_chunk(chunk_bounds):
 		return null
-
-	var vertices := PackedVector3Array()
-	var indices  := PackedInt32Array()
-	var uvs      := PackedVector2Array()
-
-	# Build orthonormal basis from overhang direction
-	var forward := overhang_direction.normalized()
-	var right   := forward.cross(Vector3.UP).normalized()
-	if right.length_squared() < 0.01:
-		right = Vector3.RIGHT
-	var up := right.cross(forward).normalized()
-
-	var actual_length_segs := maxi(length_segments * resolution / 32, 2)
-	var actual_width_segs  := maxi(width_segments  * resolution / 32, 2)
-	var total_length       := extent + cliff_embed_depth
-
-	# embed_origin is the buried back of the slab
-	var embed_origin := attachment_point - forward * cliff_embed_depth
-
-	# --- Top surface ---
-	var top_start := 0
-	var rng := RandomNumberGenerator.new()
-	rng.seed = noise_seed
-	for i in range(actual_length_segs + 1):
-		var t_total        := float(i) / float(actual_length_segs)
-		var dist_from_attach := t_total * total_length - cliff_embed_depth
-		var t_profile      := clampf(dist_from_attach / extent, 0.0, 1.0)
-		var half_thick     := _get_thickness_at(t_profile) * 0.5
-		for j in range(actual_width_segs + 1):
-			var s         := float(j) / float(actual_width_segs) - 0.5
-			var world_pos := (embed_origin
-				+ forward * (t_total * total_length)
-				+ right   * (s * width)
-				+ up      * half_thick)
-			# Apply noise only to the visible (non-embedded) section
-			if noise_strength > 0.0 and dist_from_attach > 0.0:
-				world_pos += Vector3(
-					rng.randf_range(-1.0, 1.0),
-					rng.randf_range(-1.0, 1.0),
-					rng.randf_range(-1.0, 1.0)
-				) * noise_strength * (1.0 - t_profile * 0.5)
-			vertices.append(world_pos)
-			uvs.append(Vector2(t_profile, s + 0.5))
-
-	# --- Bottom surface (reset RNG so top/bottom noise are symmetric) ---
-	var bottom_start := vertices.size()
-	rng.seed = noise_seed
-	for i in range(actual_length_segs + 1):
-		var t_total          := float(i) / float(actual_length_segs)
-		var dist_from_attach := t_total * total_length - cliff_embed_depth
-		var t_profile        := clampf(dist_from_attach / extent, 0.0, 1.0)
-		var half_thick       := _get_thickness_at(t_profile) * 0.5
-		for j in range(actual_width_segs + 1):
-			var s         := float(j) / float(actual_width_segs) - 0.5
-			var world_pos := (embed_origin
-				+ forward * (t_total * total_length)
-				+ right   * (s * width)
-				- up      * half_thick)
-			if noise_strength > 0.0 and dist_from_attach > 0.0:
-				world_pos += Vector3(
-					rng.randf_range(-1.0, 1.0),
-					rng.randf_range(-1.0, 1.0),
-					rng.randf_range(-1.0, 1.0)
-				) * noise_strength * (1.0 - t_profile * 0.5)
-			vertices.append(world_pos)
-			uvs.append(Vector2(t_profile, s + 0.5))
-
-	# --- Top face (CCW from above = normals point up) ---
-	for i in range(actual_length_segs):
-		for j in range(actual_width_segs):
-			var v0 := top_start + i * (actual_width_segs + 1) + j
-			var v1 := v0 + 1
-			var v2 := v0 + actual_width_segs + 1
-			var v3 := v2 + 1
-			indices.append(v0); indices.append(v2); indices.append(v1)
-			indices.append(v1); indices.append(v2); indices.append(v3)
-
-	# --- Bottom face (flipped winding = normals point down) ---
-	for i in range(actual_length_segs):
-		for j in range(actual_width_segs):
-			var v0 := bottom_start + i * (actual_width_segs + 1) + j
-			var v1 := v0 + 1
-			var v2 := v0 + actual_width_segs + 1
-			var v3 := v2 + 1
-			indices.append(v0); indices.append(v1); indices.append(v2)
-			indices.append(v1); indices.append(v3); indices.append(v2)
-
-	# Left edge, right edge, and tip cap. Back face is intentionally open
-	# (it is buried inside the terrain mesh).
-	_add_side_edges(vertices, indices, uvs,
-		top_start, bottom_start, actual_length_segs, actual_width_segs)
-
+	var vertices: PackedVector3Array
+	var indices: PackedInt32Array
+	var uvs: PackedVector2Array
+	var segs: int = max(2, cube_subdivisions * resolution / 32)
+	var radius := blob_cube_size * 0.5
+	var face_dirs: Array[Vector3] = [
+		Vector3( 1, 0, 0),
+		Vector3(-1, 0, 0),
+		Vector3( 0, 0, 1),
+		Vector3( 0, 0, -1),
+		Vector3( 0, 1, 0),
+		Vector3( 0, -1, 0)
+	]
+	var tex_ups: Array[Vector3] = [
+		Vector3( 0, 1, 0),
+		Vector3( 0, 1, 0),
+		Vector3( 0, 1, 0),
+		Vector3( 0, 1, 0),
+		Vector3( 0, 0, -1),
+		Vector3( 0, 0, 1)
+	]
+	for face in 6:
+		var normal := face_dirs[face]
+		var tex_up := tex_ups[face]
+		var u_axis := tex_up.cross(normal).normalized()
+		var v_axis := normal.cross(u_axis).normalized()
+		var face_start := vertices.size()
+		for j in segs + 1:
+			var v := float(j) / segs * 2.0 - 1.0
+			for k in segs + 1:
+				var u := float(k) / segs * 2.0 - 1.0
+				# Point on cube (range -1..1)
+				var p := normal + u_axis * u + v_axis * v
+				# --- QUAD SPHERE PROJECTION ---
+				var x2 = p.x * p.x
+				var y2 = p.y * p.y
+				var z2 = p.z * p.z
+				var sphere := Vector3(
+					p.x * sqrt(1.0 - (y2 + z2) * 0.5 + (y2 * z2) / 3.0),
+					p.y * sqrt(1.0 - (z2 + x2) * 0.5 + (z2 * x2) / 3.0),
+					p.z * sqrt(1.0 - (x2 + y2) * 0.5 + (x2 * y2) / 3.0)
+				)
+				var final_pos := sphere * radius + attachment_point
+				vertices.append(final_pos)
+				var uv_u := float(k) / float(segs)
+				var uv_v := 1.0 - float(j) / float(segs)
+				uvs.append(Vector2(uv_u, uv_v))
+		for j in segs:
+			for k in segs:
+				var v0 := face_start + j * (segs + 1) + k
+				var v1 := v0 + 1
+				var v2 := v0 + segs + 1
+				var v3 := v2 + 1
+				indices.append(v0); indices.append(v2); indices.append(v1)
+				indices.append(v1); indices.append(v2); indices.append(v3)
 	return MeshData.new(vertices, indices, uvs)
-
+	
 ## Update bounds to accurately enclose the full embedded+visible slab.
 func update_bounds() -> void:
 	var forward := overhang_direction.normalized()
-	var right   := forward.cross(Vector3.UP).normalized()
+	var right := forward.cross(Vector3.UP).normalized()
 	if right.length_squared() < 0.01:
 		right = Vector3.RIGHT
 	var up := right.cross(forward).normalized()
-
 	var embed_origin := attachment_point - forward * cliff_embed_depth
-	var tip          := attachment_point + forward * extent
-	var half_w       := width     * 0.5
-	var half_t       := thickness * 0.5
-
+	var tip := attachment_point + forward * extent
+	var half_w := width * 0.5
+	var half_t := thickness * 0.5
 	var min_pt := Vector3(INF, INF, INF)
 	var max_pt := Vector3(-INF, -INF, -INF)
 	for base in [embed_origin, tip]:
@@ -174,68 +149,19 @@ func update_bounds() -> void:
 				min_pt = min_pt.min(corner)
 				max_pt = max_pt.max(corner)
 
-	var pad := Vector3.ONE * (noise_strength * 2.0 + 1.0)
-	bounds = AABB(min_pt - pad, (max_pt - min_pt) + pad * 2.0)
-
 ## Get thickness at normalized position along visible extent (0=attach, 1=tip).
 func _get_thickness_at(t: float) -> float:
 	if profile_curve:
 		return profile_curve.sample(t) * thickness
-	# Default: taper to 70% at the tip
-	return thickness * (1.0 - t * 0.3)
+	return thickness * (1.0 - t * 0.4)
 
 ## Transform a world point into local overhang space.
 ## X = along forward, Y = along up, Z = along right.
 func _world_to_local(point: Vector3) -> Vector3:
 	var forward := overhang_direction.normalized()
-	var right   := forward.cross(Vector3.UP).normalized()
+	var right := forward.cross(Vector3.UP).normalized()
 	if right.length_squared() < 0.01:
 		right = Vector3.RIGHT
-	var up      := right.cross(forward).normalized()
-	var rel     := point - attachment_point
+	var up := right.cross(forward).normalized()
+	var rel := point - attachment_point
 	return Vector3(rel.dot(forward), rel.dot(up), rel.dot(right))
-
-## Close the left edge, right edge, and tip of the slab.
-## The back face (buried end) is deliberately left open.
-func _add_side_edges(
-	vertices:     PackedVector3Array,
-	indices:      PackedInt32Array,
-	uvs:          PackedVector2Array,
-	top_start:    int,
-	bottom_start: int,
-	length_segs:  int,
-	width_segs:   int
-) -> void:
-	# Left edge (j = 0)
-	for i in range(length_segs):
-		var tv0 := top_start    + i * (width_segs + 1)
-		var tv1 := top_start    + (i + 1) * (width_segs + 1)
-		var bv0 := bottom_start + i * (width_segs + 1)
-		var bv1 := bottom_start + (i + 1) * (width_segs + 1)
-		indices.append(tv0); indices.append(bv0); indices.append(tv1)
-		indices.append(tv1); indices.append(bv0); indices.append(bv1)
-
-	# Right edge (j = width_segs)
-	for i in range(length_segs):
-		var tv0 := top_start    + i * (width_segs + 1) + width_segs
-		var tv1 := top_start    + (i + 1) * (width_segs + 1) + width_segs
-		var bv0 := bottom_start + i * (width_segs + 1) + width_segs
-		var bv1 := bottom_start + (i + 1) * (width_segs + 1) + width_segs
-		indices.append(tv0); indices.append(tv1); indices.append(bv0)
-		indices.append(tv1); indices.append(bv1); indices.append(bv0)
-
-	# Tip cap (i = length_segs, the far visible end)
-	for j in range(width_segs):
-		var tv0 := top_start    + length_segs * (width_segs + 1) + j
-		var tv1 := tv0 + 1
-		var bv0 := bottom_start + length_segs * (width_segs + 1) + j
-		var bv1 := bv0 + 1
-		indices.append(tv0); indices.append(tv1); indices.append(bv0)
-		indices.append(tv1); indices.append(bv1); indices.append(bv0)
-
-## Get memory usage estimate.
-func get_memory_usage() -> int:
-	var usage := 512
-	if profile_curve:
-		usage += 256
-	return usage

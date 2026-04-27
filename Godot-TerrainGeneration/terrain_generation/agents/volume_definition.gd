@@ -13,27 +13,27 @@ enum VolumeType {
 }
 
 ## The type of volume operation
-@export var volume_type: VolumeType = VolumeType.SUBTRACTIVE
+var volume_type: VolumeType = VolumeType.SUBTRACTIVE
 
 ## World-space bounding box of this volume
-@export var bounds: AABB = AABB()
+var bounds: AABB = AABB()
 
 ## Minimum LOD level to apply this volume (0 = always apply)
 ## Higher values mean only apply at detailed LODs
-@export var lod_min: int = 0
+var lod_min: int = 0
 
 ## Maximum LOD level to apply this volume (-1 = always apply)
-@export var lod_max: int = -1
+var lod_max: int = -1
 
 ## Priority for ordering volume operations (higher = applied later)
-@export var priority: int = 0
+var priority: int = 0
 
 ## Whether this volume is enabled
-@export var enabled: bool = true
+var enabled: bool = true
 
 ## Metadata
-@export var source_agent: String = ""
-@export var creation_timestamp: int = 0
+var source_agent: String = ""
+var creation_timestamp: int = 0
 
 ## Check if this volume should be applied at given LOD level.
 ## @param lod_level Current LOD level

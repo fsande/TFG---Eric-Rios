@@ -124,7 +124,7 @@ func add_river_visual(visual: RiverVisualData) -> void:
 func get_volumes_for_chunk(chunk_bounds: AABB, lod_level: int = 0) -> Array[VolumeDefinition]:
 	var result: Array[VolumeDefinition] = []
 	for volume in volume_definitions:
-		if volume.intersects_chunk(chunk_bounds) and volume.should_apply_at_lod(lod_level):
+		if true:#volume.intersects_chunk(chunk_bounds) and volume.should_apply_at_lod(lod_level):
 			result.append(volume)
 	result.sort_custom(func(a, b): return a.priority < b.priority)
 	return result

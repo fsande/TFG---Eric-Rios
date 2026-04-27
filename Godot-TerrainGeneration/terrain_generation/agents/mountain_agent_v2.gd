@@ -1,7 +1,9 @@
 ## @brief Agent that creates mountain ridges (new architecture).
 ##
-## @details Generates height deltas for the mountain base and optionally
-## overhang volumes for cliff formations. Uses token-based path following.
+## @details Generates height deltas for the mountain base using token-based
+## path following. Overhang generation has been moved to OverhangAgent,
+## which should run in a later pipeline stage after this agent's delta has
+## been committed to TerrainDefinition.
 @tool
 class_name MountainAgentV2 extends TerrainModifierAgent
 
@@ -9,14 +11,11 @@ class_name MountainAgentV2 extends TerrainModifierAgent
 @export var save_deltas_images: bool = false
 @export var save_path: String = "mountain_deltas.png"
 
-
 func _init() -> void:
 	agent_name = "Mountain V2"
 	tokens = 25
 
 func get_modifier_type() -> ModifierType:
-	if config.enable_overhangs:
-		return ModifierType.COMPOSITE
 	return ModifierType.HEIGHT_DELTA
 
 func get_agent_type() -> String:
@@ -45,6 +44,7 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 	delta.intensity = 1.0
 	delta.edge_falloff = 0.1
 	delta.source_agent = get_display_name()
+	delta.zone_tags = [&"mountain"]
 	var accum := PackedFloat32Array()
 	accum.resize(config.delta_resolution * config.delta_resolution)
 	accum.fill(0.0)
@@ -56,24 +56,20 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 			progress_updated.emit(0.4 + 0.4 * float(i) / float(path_points.size()), "Processing token %d/%d" % [i, path_points.size()])
 	for y in range(config.delta_resolution):
 		for x in range(config.delta_resolution):
-			delta.set_at_uv(Vector2(float(x) / float(config.delta_resolution - 1), float(y) / float(config.delta_resolution - 1)), accum[y * config.delta_resolution + x])
+			delta.set_at_uv(
+				Vector2(float(x) / float(config.delta_resolution - 1), float(y) / float(config.delta_resolution - 1)),
+				accum[y * config.delta_resolution + x]
+			)
 	var result := TerrainModifierResult.create_success()
 	result.add_height_delta(delta)
-	if config.enable_overhangs:
-		progress_updated.emit(0.85, "Generating overhangs")
-		var overhangs := _generate_overhangs(path_points, context, rng)
-		for overhang in overhangs:
-			result.add_volume(overhang)
 	progress_updated.emit(1.0, "Complete")
 	var elapsed := Time.get_ticks_msec() - start_time
 	result.elapsed_time_ms = elapsed
 	result.error_message = "Created mountain ridge with %d tokens" % tokens
 	if save_deltas_images:
 		result.export_deltas(save_path)
-	if config.enable_overhangs:
-		result.error_message += ", %d overhangs" % result.volumes.size()
 	return result
-	
+
 ## Calculate the path points for the mountain ridge.
 func _calculate_path(rng: RandomNumberGenerator) -> Array[MountainPoint]:
 	var path: Array[MountainPoint] = []
@@ -82,10 +78,12 @@ func _calculate_path(rng: RandomNumberGenerator) -> Array[MountainPoint]:
 	var current_direction := original_direction
 	var current_position := config.start_position
 	for i in range(tokens):
-		path.append(MountainPoint.new(current_position, current_direction,
+		path.append(MountainPoint.new(
+			current_position, current_direction,
 			1.0 + rng.randf_range(-config.width_variation, config.width_variation),
 			1.0 + rng.randf_range(-config.length_variation, config.length_variation),
-			i))
+			i
+		))
 		current_position += current_direction * config.step_distance
 		if config.direction_change_interval > 0 and (i + 1) % config.direction_change_interval == 0:
 			var angle_offset := rng.randf_range(-config.direction_change_angle, config.direction_change_angle)
@@ -93,7 +91,6 @@ func _calculate_path(rng: RandomNumberGenerator) -> Array[MountainPoint]:
 			current_direction = Vector2(sin(new_angle), cos(new_angle)).normalized()
 	return path
 
-## Calculate bounds that encompass the entire mountain.
 ## Calculate bounds that encompass the entire mountain.
 func _calculate_bounds(path_points: Array[MountainPoint]) -> AABB:
 	if path_points.is_empty():
@@ -112,9 +109,17 @@ func _calculate_bounds(path_points: Array[MountainPoint]) -> AABB:
 		Vector3(min_pos.x, 0, min_pos.y),
 		Vector3(max_pos.x - min_pos.x, max_height * 2, max_pos.y - min_pos.y)
 	)
-	
-## Apply a single wedge elevation to the delta texture.
-func _apply_wedge_to_accum(accum: PackedFloat32Array, bounds: AABB, position: Vector2, direction: Vector2, width_mult: float, length_mult: float, res: int) -> void:
+
+## Apply a single wedge elevation to the accumulation buffer.
+func _apply_wedge_to_accum(
+	accum: PackedFloat32Array,
+	bounds: AABB,
+	position: Vector2,
+	direction: Vector2,
+	width_mult: float,
+	length_mult: float,
+	res: int
+) -> void:
 	var perpendicular := Vector2(-direction.y, direction.x)
 	var actual_width := config.wedge_width * width_mult
 	var actual_length := config.wedge_length * length_mult
@@ -129,45 +134,12 @@ func _apply_wedge_to_accum(accum: PackedFloat32Array, bounds: AABB, position: Ve
 			var dist_perp: float = abs(relative.dot(perpendicular))
 			if abs(dist_along) > actual_length or dist_perp > actual_width:
 				continue
-			var falloff_t := clampf(sqrt(pow(abs(dist_along) / actual_length, 2.0) + pow(dist_perp / actual_width, 2.0)), 0.0, 1.0)
-			var noise_h_mult := 1.0 + config.height_variation_noise.get_noise_2d(world_x * 0.1, world_z * 0.1) * config.height_variation
+			var falloff_t := clampf(
+				sqrt(pow(abs(dist_along) / actual_length, 2.0) + pow(dist_perp / actual_width, 2.0)),
+				0.0, 1.0
+			)
+			var noise_h_mult := 1.0 + config.height_variation_noise.get_noise_2d(
+				world_x * 0.1, world_z * 0.1
+			) * config.height_variation
 			var strength := pow(1.0 - falloff_t, config.elevation_falloff + 1.0)
 			accum[y * res + x] += config.elevation_height * noise_h_mult * strength
-
-## Generate overhang volumes for steep cliff sections along the ridge.
-func _generate_overhangs(
-	path_points: Array[MountainPoint],
-	context: TerrainGenerationContext,
-	rng: RandomNumberGenerator
-) -> Array[OverhangVolumeDefinition]:
-	var overhangs: Array[OverhangVolumeDefinition] = []
-	print("Generating overhang at ", path_points[0].position)
-	for point_data in path_points:
-		if rng.randf() > config.overhang_probability:
-			continue
-		var position  : Vector2 = point_data.position
-		var direction : Vector2 = point_data.direction
-		var side := 1.0 if rng.randf() > 0.5 else -1.0
-		var perpendicular := Vector2(-direction.y, direction.x) * side
-		var edge_dist := config.wedge_width * 0.75
-		var attach_xz := position + perpendicular * edge_dist
-		var slope := context.calculate_slope_at(attach_xz)
-		if slope < config.overhang_min_slope:
-			continue
-		var attach_height := context.get_scaled_height_at(attach_xz)
-		var overhang := OverhangVolumeDefinition.new()
-		overhang.attachment_point = Vector3(attach_xz.x, attach_height, attach_xz.y)
-		overhang.overhang_direction = Vector3(
-			perpendicular.x, -0.1, perpendicular.y
-		).normalized()
-		overhang.extent  = config.overhang_extent * rng.randf_range(0.7, 1.3)
-		overhang.width = config.wedge_length * rng.randf_range(0.4, 0.8)
-		overhang.thickness = 2.0 * rng.randf_range(0.8, 1.2)
-		overhang.cliff_embed_depth = minf(3.0, config.overhang_extent * 0.3)
-		overhang.noise_strength = 0.25
-		overhang.noise_seed = rng.randi()
-		overhang.source_agent = get_display_name()
-		overhang.update_bounds()
-		overhangs.append(overhang)
-
-	return overhangs

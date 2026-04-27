@@ -253,9 +253,11 @@
     <Content Include="SIMPLE_VERTEX_SNAPPING_PLAN.md" />
     <Content Include="SPLINE_TUNNEL_IMPLEMENTATION.md" />
     <Content Include="terrain_generation\agents\config\mountain_agent_config.gd" />
+    <Content Include="terrain_generation\agents\config\overhang_agent_config.gd" />
     <Content Include="terrain_generation\agents\config\river_agent_config.gd" />
     <Content Include="terrain_generation\agents\mountain_agent_v2.gd" />
     <Content Include="terrain_generation\agents\mountain_agent_v2.gd.uid" />
+    <Content Include="terrain_generation\agents\overhang_agent.gd" />
     <Content Include="terrain_generation\agents\river\river_agent.gd" />
     <Content Include="terrain_generation\agents\terrain_modifier_agent.gd" />
     <Content Include="terrain_generation\agents\terrain_raise_agent_v2.gd" />

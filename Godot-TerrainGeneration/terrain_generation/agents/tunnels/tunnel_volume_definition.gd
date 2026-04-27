@@ -14,29 +14,29 @@ enum CrossSectionType {
 }
 
 ## The path the tunnel follows (centerline)
-@export var path: Curve3D = null
+var path: Curve3D = null
 
 ## Radius at each point along the path (0-1 maps to path length)
 ## If null, uses constant base_radius
-@export var radius_curve: Curve = null
+var radius_curve: Curve = null
 
 ## Base radius when radius_curve is not set
-@export var base_radius: float = 3.0
+var base_radius: float = 3.0
 
 ## Cross-section type
-@export var cross_section: CrossSectionType = CrossSectionType.CIRCLE
+var cross_section: CrossSectionType = CrossSectionType.CIRCLE
 
 ## Number of radial segments for mesh generation
-@export_range(4, 32) var radial_segments: int = 12
+var radial_segments: int = 12
 
 ## Number of segments along the path length
-@export_range(4, 64) var length_segments: int = 16
+var length_segments: int = 16
 
 ## Entry point position (for reference)
-@export var entry_point: Vector3 = Vector3.ZERO
+var entry_point: Vector3 = Vector3.ZERO
 
 ## Direction the tunnel goes at entry
-@export var entry_direction: Vector3 = Vector3.FORWARD
+var entry_direction: Vector3 = Vector3.FORWARD
 
 func _init() -> void:
 	volume_type = VolumeType.SUBTRACTIVE
