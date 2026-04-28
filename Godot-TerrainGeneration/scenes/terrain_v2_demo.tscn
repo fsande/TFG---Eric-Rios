@@ -45,10 +45,6 @@ metadata/_custom_type_script = "uid://cx1d1s65igqbm"
 script = ExtResource("1_presenter")
 configuration = SubResource("Resource_mm01p")
 
-[node name="ChunksContainer" type="Node3D" parent="Terrain"]
-
-[node name="PropsContainer" type="Node3D" parent="Terrain"]
-
 [node name="DebugHUD" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 15

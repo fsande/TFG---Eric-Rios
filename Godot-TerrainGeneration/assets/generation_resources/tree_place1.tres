@@ -34,7 +34,9 @@ metadata/_custom_type_script = "uid://coaoelv6m43ad"
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_ih7yn"]
 noise_type = 2
+frequency = 0.008
 fractal_type = 0
+cellular_return_type = 0
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_3l8p1"]
 noise = SubResource("FastNoiseLite_ih7yn")

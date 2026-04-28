@@ -119,12 +119,31 @@ func _benchmark_pipeline(
 			"pipeline_stage_%s" % stage_name, "pipeline", "ms", stage_timings[stage_name], stage_meta
 		))
 	var height_map_samples := PackedFloat64Array()
+	
+	var processor_timings: Dictionary = {}   # processor_name -> PackedFloat64Array
 	for _i in profile.iterations:
+		var per_processor: Dictionary = {}   # processor_name -> float (single run)
 		var context := _make_context(config)
+		context.heightmap_processor_completed.connect(
+			func(processor_name: String, elapsed_ms: float) -> void:
+				per_processor[processor_name] = elapsed_ms
+		)
 		var t := Time.get_ticks_usec()
 		config.heightmap_source.generate(context)
 		height_map_samples.append((Time.get_ticks_usec() - t) / 1000.0)
 		context.dispose()
+		for processor_name in per_processor:
+			if not processor_timings.has(processor_name):
+				processor_timings[processor_name] = PackedFloat64Array()
+			processor_timings[processor_name].append(per_processor[processor_name])
+	for processor_name in processor_timings:
+		var proc_meta := meta.duplicate()
+		proc_meta["processor"] = processor_name
+		processor_timings[processor_name].sort()
+		results.append(BenchmarkResult.new(
+			"heightmap_processor_%s" % processor_name, "pipeline", "ms",
+			processor_timings[processor_name], proc_meta
+		))
 	results.append(BenchmarkResult.new("heightmap_generation", "pipeline", "ms", height_map_samples, meta))
 	return results
 

@@ -15,6 +15,10 @@ enum ProcessorType {
 	GPU
 }
 
+signal heightmap_source_completed(source_name: String, elapsed_ms: float)
+signal heightmap_processor_completed(processor_name: String, elapsed_ms: float)
+
+
 ## Core configuration
 var terrain_size: float
 var generation_seed: int
