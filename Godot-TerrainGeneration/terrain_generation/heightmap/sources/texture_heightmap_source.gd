@@ -8,8 +8,11 @@ class_name TextureHeightmapSource extends HeightmapSource
 
 func generate(context: ProcessingContext) -> Image:
 	if heightmap_texture:
+		var start_time := Time.get_ticks_msec()
 		var image := heightmap_texture.get_image()
 		image.convert(Image.FORMAT_RF)
+		var elapsed := Time.get_ticks_msec() - start_time
+		context.source_completed("Texture Source", elapsed)
 		return image
 	else:
 		return null

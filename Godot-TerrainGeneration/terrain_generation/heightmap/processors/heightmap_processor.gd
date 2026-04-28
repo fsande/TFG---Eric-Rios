@@ -9,12 +9,12 @@ func process(input: Image, context: ProcessingContext) -> Image:
 	if context.heightmap_use_gpu():
 		var result := process_gpu(input, context)
 		var elapsed := Time.get_ticks_msec() - start_time
-		context.heightmap_processor_completed.emit(get_processor_name(), elapsed)
+		context.processor_completed(get_processor_name(), elapsed)
 		return result
 	else:
 		var result := process_cpu(input, context)
 		var elapsed := Time.get_ticks_msec() - start_time
-		context.heightmap_processor_completed.emit(get_processor_name(), elapsed)
+		context.processor_completed(get_processor_name(), elapsed)
 		return result
 
 ## CPU implementation - must be overridden

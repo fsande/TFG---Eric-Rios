@@ -1,20 +1,17 @@
-[gd_resource type="Resource" script_class="TerrainConfigurationV2" load_steps=23 format=3 uid="uid://bgqcvdn3n4iy"]
+[gd_resource type="Resource" script_class="TerrainConfigurationV2" load_steps=20 format=3 uid="uid://bgqcvdn3n4iy"]
 
 [ext_resource type="Environment" uid="uid://ci0fdcxk6hux2" path="res://assets/environment/blue_sky.tres" id="1_mg48h"]
 [ext_resource type="Texture2D" uid="uid://cr2a2obyfalmm" path="res://assets/heightmaps/ultrapalma.png" id="2_mg48h"]
-[ext_resource type="Script" uid="uid://byh53w6k375jl" path="res://terrain_generation/heightmap/sources/texture_heightmap_source.gd" id="3_ve3ac"]
-[ext_resource type="Script" uid="uid://c51qydcxes5yv" path="res://terrain_generation/chunking/strategies/grid_load_strategy_v2.gd" id="6_8vwua"]
-[ext_resource type="Script" uid="uid://2wt0wp5vkq0f" path="res://terrain_generation/agents/terrain_modifier_agent.gd" id="6_10fri"]
-[ext_resource type="Script" uid="uid://c5ppavb1os4er" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="7_3mr36"]
-[ext_resource type="Script" uid="uid://birb17b0dkd41" path="res://terrain_generation/agents/config/river_agent_config.gd" id="7_oeiu2"]
+[ext_resource type="Script" uid="uid://d286rlamkewxo" path="res://terrain_generation/heightmap/sources/texture_heightmap_source.gd" id="3_ve3ac"]
+[ext_resource type="Script" uid="uid://cigean3do3u4x" path="res://terrain_generation/chunking/strategies/grid_load_strategy_v2.gd" id="6_8vwua"]
+[ext_resource type="Script" uid="uid://dcrwxgkwmq53s" path="res://terrain_generation/agents/terrain_modifier_agent.gd" id="6_10fri"]
+[ext_resource type="Script" uid="uid://bqu7gooko30qm" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="7_3mr36"]
+[ext_resource type="Script" uid="uid://bta52it86lk5y" path="res://terrain_generation/agents/config/river_agent_config.gd" id="7_oeiu2"]
 [ext_resource type="Material" uid="uid://bg6hotk2ler2n" path="res://assets/materials/water/river_water.tres" id="8_nu8o5"]
-[ext_resource type="Script" uid="uid://ikunl5bx48x1" path="res://terrain_generation/agents/river/river_agent.gd" id="9_8vwua"]
+[ext_resource type="Script" uid="uid://bao5cieha3fth" path="res://terrain_generation/agents/river/river_agent.gd" id="9_8vwua"]
 [ext_resource type="Script" uid="uid://d1uj11l5nqaog" path="res://terrain_generation/core/stages/sequential_modifier_stage.gd" id="10_3mr36"]
-[ext_resource type="Resource" uid="uid://dmjfm4v8myli7" path="res://assets/generation_resources/rock_place1.tres" id="12_farwy"]
-[ext_resource type="Resource" uid="uid://v5ie01qj4ft2" path="res://assets/generation_resources/tree_place1.tres" id="13_jbs5o"]
-[ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="13_klsig"]
-[ext_resource type="Resource" uid="uid://cslogkn0wqrqg" path="res://assets/generation_resources/bush_place.tres" id="14_kpkxc"]
-[ext_resource type="Script" uid="uid://cx1d1s65igqbm" path="res://terrain_generation/configuration/terrain_configuration_v2.gd" id="15_ec5ko"]
+[ext_resource type="Script" uid="uid://c102x3r645g6y" path="res://terrain_generation/props/prop_placement_rule.gd" id="13_klsig"]
+[ext_resource type="Script" uid="uid://bjfjkbai6lnva" path="res://terrain_generation/configuration/terrain_configuration_v2.gd" id="15_ec5ko"]
 [ext_resource type="Material" uid="uid://bebs1xgkmteua" path="res://assets/materials/water/water_mat.tres" id="16_drqbo"]
 [ext_resource type="Material" uid="uid://dmlbneowgjfqy" path="res://assets/materials/terrain_mat2.tres" id="17_okpth"]
 
@@ -48,7 +45,6 @@ heightmap_source = SubResource("Resource_8wopk")
 terrain_size = Vector2(1024, 1024)
 height_scale = 128.0
 modifier_stages = Array[ExtResource("7_3mr36")]([SubResource("Resource_1wxls")])
-prop_placement_rules = Array[ExtResource("13_klsig")]([ExtResource("12_farwy"), ExtResource("13_jbs5o"), ExtResource("14_kpkxc")])
 load_strategy = SubResource("Resource_bqotf")
 use_gpu_heightmap = true
 lod_distances = Array[float]([50000.0, 50000.0, 50000.0, 40000.0])

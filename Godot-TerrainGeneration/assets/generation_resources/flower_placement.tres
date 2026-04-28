@@ -1,13 +1,13 @@
 [gd_resource type="Resource" script_class="PropPlacementRule" load_steps=16 format=3 uid="uid://c3hqgvsqfi3ie"]
 
-[ext_resource type="Script" uid="uid://cu0sy48pu3x7x" path="res://terrain_generation/props/constraints/prop_placement_constraint.gd" id="1_nlxsd"]
-[ext_resource type="Script" uid="uid://cspt83l5vc3gw" path="res://terrain_generation/props/constraints/height_range_constraint.gd" id="2_qbiun"]
-[ext_resource type="Script" uid="uid://c6mv7i4kfpatp" path="res://terrain_generation/props/constraints/slope_range_constraint.gd" id="3_t8rw7"]
-[ext_resource type="Script" uid="uid://coaoelv6m43ad" path="res://terrain_generation/props/constraints/spacing_constraint.gd" id="4_w1vly"]
-[ext_resource type="Script" uid="uid://2kq5pkuiluj8" path="res://terrain_generation/props/constraints/volume_exclusion_constraint.gd" id="5_0e86p"]
-[ext_resource type="Script" uid="uid://0hd1s1iaj40t" path="res://terrain_generation/props/constraints/zone_constraint.gd" id="6_qbiun"]
+[ext_resource type="Script" uid="uid://dfj6tvyliq72c" path="res://terrain_generation/props/constraints/prop_placement_constraint.gd" id="1_nlxsd"]
+[ext_resource type="Script" uid="uid://cgekdnc88dn7l" path="res://terrain_generation/props/constraints/height_range_constraint.gd" id="2_qbiun"]
+[ext_resource type="Script" uid="uid://b21jxmdkcxufw" path="res://terrain_generation/props/constraints/slope_range_constraint.gd" id="3_t8rw7"]
+[ext_resource type="Script" uid="uid://chus0ya38wnpu" path="res://terrain_generation/props/constraints/spacing_constraint.gd" id="4_w1vly"]
+[ext_resource type="Script" uid="uid://by55fqudu8iv0" path="res://terrain_generation/props/constraints/volume_exclusion_constraint.gd" id="5_0e86p"]
+[ext_resource type="Script" uid="uid://djk7rjk0dkpll" path="res://terrain_generation/props/constraints/zone_constraint.gd" id="6_qbiun"]
 [ext_resource type="PackedScene" uid="uid://j2p7a62id35p" path="res://assets/models/environment/flower/flower_blue.glb" id="6_tka8f"]
-[ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="7_s22wt"]
+[ext_resource type="Script" uid="uid://c102x3r645g6y" path="res://terrain_generation/props/prop_placement_rule.gd" id="7_s22wt"]
 
 [sub_resource type="Resource" id="Resource_x5og1"]
 script = ExtResource("2_qbiun")

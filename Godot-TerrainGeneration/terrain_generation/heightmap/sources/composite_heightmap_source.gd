@@ -39,7 +39,11 @@ func generate(context: ProcessingContext) -> Image:
 	if images.is_empty():
 		return null
 	if combiner:
-		return combiner.combine(images, context)
+		var start_time := Time.get_ticks_msec()
+		var result := combiner.combine(images, context)
+		var elapsed := Time.get_ticks_msec() - start_time
+		context.source_completed("Combiner " + combiner.get_combiner_name(), elapsed)
+		return result
 	else:
 		return images[0]
 

@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="PropPlacementRule" load_steps=14 format=3 uid="uid://cslogkn0wqrqg"]
 
-[ext_resource type="Script" uid="uid://cu0sy48pu3x7x" path="res://terrain_generation/props/constraints/prop_placement_constraint.gd" id="1_xpem2"]
-[ext_resource type="Script" uid="uid://coaoelv6m43ad" path="res://terrain_generation/props/constraints/spacing_constraint.gd" id="3_v2y57"]
-[ext_resource type="Script" uid="uid://2kq5pkuiluj8" path="res://terrain_generation/props/constraints/volume_exclusion_constraint.gd" id="4_qnpo8"]
-[ext_resource type="Script" uid="uid://bcic8hhde3pp6" path="res://terrain_generation/props/constraints/sea_level_constraint.gd" id="5_1b281"]
-[ext_resource type="Script" uid="uid://0hd1s1iaj40t" path="res://terrain_generation/props/constraints/zone_constraint.gd" id="5_xpem2"]
+[ext_resource type="Script" uid="uid://dfj6tvyliq72c" path="res://terrain_generation/props/constraints/prop_placement_constraint.gd" id="1_xpem2"]
+[ext_resource type="Script" uid="uid://chus0ya38wnpu" path="res://terrain_generation/props/constraints/spacing_constraint.gd" id="3_v2y57"]
+[ext_resource type="Script" uid="uid://by55fqudu8iv0" path="res://terrain_generation/props/constraints/volume_exclusion_constraint.gd" id="4_qnpo8"]
+[ext_resource type="Script" uid="uid://xhugo1ik73qn" path="res://terrain_generation/props/constraints/sea_level_constraint.gd" id="5_1b281"]
+[ext_resource type="Script" uid="uid://djk7rjk0dkpll" path="res://terrain_generation/props/constraints/zone_constraint.gd" id="5_xpem2"]
 [ext_resource type="PackedScene" uid="uid://c0adabc2fckco" path="res://assets/models/environment/bush/bush.glb" id="6_asebs"]
-[ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="7_vqwmm"]
+[ext_resource type="Script" uid="uid://c102x3r645g6y" path="res://terrain_generation/props/prop_placement_rule.gd" id="7_vqwmm"]
 
 [sub_resource type="Resource" id="Resource_i2fpo"]
 script = ExtResource("3_v2y57")

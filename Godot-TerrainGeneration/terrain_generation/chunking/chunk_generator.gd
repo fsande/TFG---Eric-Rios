@@ -25,7 +25,7 @@ func update_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: i
 	if not _terrain_definition or not _terrain_definition.is_valid():
 		push_error("ChunkGenerator: Invalid terrain definition")
 		return null
-	if cache.has_chunk_with_lod(coord, lod_level):
+	if cache and cache.has_chunk_with_lod(coord, lod_level):
 		return cache.get_chunk(coord)
 	var chunk_bounds = _calculate_chunk_bounds(_terrain_definition, coord, chunk_size)
 	var resolution = _generation_strategy.calculate_resolution_for_lod(_base_resolution, lod_level)
@@ -43,7 +43,8 @@ func update_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: i
 		chunk_bounds.position.z + chunk_bounds.size.z / 2.0
 	)
 	var chunk_mesh_data = ChunkMeshData.new(coord, world_center, chunk_size, mesh_data, lod_level)
-	cache.store_chunk(coord, chunk_mesh_data)
+	if cache:
+		cache.store_chunk(coord, chunk_mesh_data)
 	return chunk_mesh_data
 
 func duplicate() -> ChunkGenerator:

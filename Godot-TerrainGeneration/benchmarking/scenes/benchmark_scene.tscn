@@ -1,29 +1,43 @@
-[gd_scene load_steps=17 format=3 uid="uid://b3h5as2lrqe0f"]
+[gd_scene load_steps=20 format=3 uid="uid://b3h5as2lrqe0f"]
 
-[ext_resource type="Script" uid="uid://da44gnex6q0b" path="res://benchmarking/scenes/benchmark_scene_runner.gd" id="1_runner"]
-[ext_resource type="Script" uid="uid://bxs2dr6xxfyed" path="res://terrain_generation/configuration/terrain_configuration_v2.gd" id="2_oep7r"]
-[ext_resource type="Script" uid="uid://d30u6ur3uvl8d" path="res://terrain_generation/heightmap/processors/blur_processor.gd" id="3_lenwj"]
+[ext_resource type="Script" uid="uid://otrn6jotvwpp" path="res://benchmarking/scenes/benchmark_scene_runner.gd" id="1_runner"]
+[ext_resource type="Script" uid="uid://bjfjkbai6lnva" path="res://terrain_generation/configuration/terrain_configuration_v2.gd" id="2_oep7r"]
+[ext_resource type="Script" uid="uid://jrrv5cmc3lry" path="res://terrain_generation/heightmap/processors/blur_processor.gd" id="3_lenwj"]
 [ext_resource type="Script" uid="uid://dbmft27bprosp" path="res://benchmarking/config/benchmark_profile.gd" id="4_4bmmm"]
-[ext_resource type="Script" uid="uid://x7gc7eg20w0b" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="4_bybnt"]
-[ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="5_k7i58"]
-[ext_resource type="Script" uid="uid://d20wukn6i78rj" path="res://terrain_generation/chunking/strategies/grid_load_strategy_v2.gd" id="6_0imjm"]
-[ext_resource type="Script" uid="uid://bnxkyhqx7vwqh" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="7_r0umn"]
+[ext_resource type="Script" uid="uid://bjxhi6wmxplaf" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="4_bybnt"]
+[ext_resource type="Script" uid="uid://kedkjk5kadi4" path="res://terrain_generation/heightmap/processors/rune_erosion.gd" id="5_bybnt"]
+[ext_resource type="Script" uid="uid://c8wmwlbv83h8u" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="5_k7i58"]
+[ext_resource type="Script" uid="uid://cigean3do3u4x" path="res://terrain_generation/chunking/strategies/grid_load_strategy_v2.gd" id="6_0imjm"]
+[ext_resource type="Script" uid="uid://bqu7gooko30qm" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="7_r0umn"]
 [ext_resource type="Script" uid="uid://c102x3r645g6y" path="res://terrain_generation/props/prop_placement_rule.gd" id="8_iqgnf"]
 
 [sub_resource type="Resource" id="Resource_dulm3"]
 script = ExtResource("3_lenwj")
 metadata/_custom_type_script = "uid://d30u6ur3uvl8d"
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_ryst3"]
+[sub_resource type="Resource" id="Resource_k7i58"]
+script = ExtResource("5_bybnt")
+erosion_octaves = 10
+metadata/_custom_type_script = "uid://kedkjk5kadi4"
 
-[sub_resource type="Resource" id="Resource_3caxs"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_0imjm"]
+fractal_type = 0
+
+[sub_resource type="Resource" id="Resource_r0umn"]
 script = ExtResource("5_k7i58")
-noise = SubResource("FastNoiseLite_ryst3")
-metadata/_custom_type_script = "uid://rlx21xot8cjj"
+frequency = 2.0
+noise = SubResource("FastNoiseLite_0imjm")
+metadata/_custom_type_script = "uid://c8wmwlbv83h8u"
+
+[sub_resource type="Resource" id="Resource_iqgnf"]
+script = ExtResource("4_bybnt")
+source = SubResource("Resource_r0umn")
+processor = SubResource("Resource_k7i58")
+metadata/_custom_type_script = "uid://bjxhi6wmxplaf"
 
 [sub_resource type="Resource" id="Resource_it56r"]
 script = ExtResource("4_bybnt")
-source = SubResource("Resource_3caxs")
+source = SubResource("Resource_iqgnf")
 processor = SubResource("Resource_dulm3")
 metadata/_custom_type_script = "uid://x7gc7eg20w0b"
 
@@ -34,11 +48,15 @@ script = ExtResource("6_0imjm")
 script = ExtResource("2_oep7r")
 heightmap_source = SubResource("Resource_it56r")
 load_strategy = SubResource("Resource_gldav")
+use_gpu_heightmap = true
 metadata/_custom_type_script = "uid://bxs2dr6xxfyed"
 
 [sub_resource type="Resource" id="Resource_1g8c6"]
 script = ExtResource("4_4bmmm")
 configurations = Array[ExtResource("2_oep7r")]([SubResource("Resource_tqjsr")])
+warmup_iterations = 5
+iterations = 25
+chunks_to_generate = 1
 metadata/_custom_type_script = "uid://cfi161tjwfbq5"
 
 [node name="BenchmarkScene" type="Node"]

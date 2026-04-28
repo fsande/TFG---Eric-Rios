@@ -119,32 +119,34 @@ func _benchmark_pipeline(
 			"pipeline_stage_%s" % stage_name, "pipeline", "ms", stage_timings[stage_name], stage_meta
 		))
 	var height_map_samples := PackedFloat64Array()
-	
-	var processor_timings: Dictionary = {}   # processor_name -> PackedFloat64Array
+	var substep_timings: Dictionary = {}   # substep_name -> PackedFloat64Array
 	for _i in profile.iterations:
-		var per_processor: Dictionary = {}   # processor_name -> float (single run)
+		var per_substep: Dictionary = {}   # substep_name -> float (single run)
 		var context := _make_context(config)
 		context.heightmap_processor_completed.connect(
-			func(processor_name: String, elapsed_ms: float) -> void:
-				per_processor[processor_name] = elapsed_ms
+			func(substep_name: String, elapsed_ms: float) -> void:
+				per_substep[substep_name] = elapsed_ms
+		)
+		context.heightmap_source_completed.connect(
+			func(substep_name: String, elapsed_ms: float) -> void:
+				per_substep[substep_name] = elapsed_ms
 		)
 		var t := Time.get_ticks_usec()
 		config.heightmap_source.generate(context)
 		height_map_samples.append((Time.get_ticks_usec() - t) / 1000.0)
 		context.dispose()
-		for processor_name in per_processor:
-			if not processor_timings.has(processor_name):
-				processor_timings[processor_name] = PackedFloat64Array()
-			processor_timings[processor_name].append(per_processor[processor_name])
-	for processor_name in processor_timings:
+		for substep_name in per_substep:
+			if not substep_timings.has(substep_name):
+				substep_timings[substep_name] = PackedFloat64Array()
+			substep_timings[substep_name].append(per_substep[substep_name])
+	for substep_name in substep_timings:
 		var proc_meta := meta.duplicate()
-		proc_meta["processor"] = processor_name
-		processor_timings[processor_name].sort()
+		proc_meta["processor"] = substep_name
+		substep_timings[substep_name].sort()
 		results.append(BenchmarkResult.new(
-			"heightmap_processor_%s" % processor_name, "pipeline", "ms",
-			processor_timings[processor_name], proc_meta
+			"heightmap_substep_%s" % substep_name, "pipeline", "ms",
+			substep_timings[substep_name], proc_meta
 		))
-	results.append(BenchmarkResult.new("heightmap_generation", "pipeline", "ms", height_map_samples, meta))
 	return results
 
 func _benchmark_chunks(
@@ -178,13 +180,13 @@ func _benchmark_chunks(
 				substep_timings[substep_name].append(elapsed_ms)
 		)
 		for _w in profile.warmup_iterations:
-			chunk_generator.generate_chunk(coords[0], chunk_size, lod)
+			chunk_generator.update_or_generate_chunk(coords[0], chunk_size, lod)
 			substep_timings.clear()
 		var gen_samples := PackedFloat64Array()
 		var last_chunk: ChunkMeshData = null
 		for coord in coords:
 			var t := Time.get_ticks_usec()
-			last_chunk = chunk_generator.generate_chunk(coord, chunk_size, lod)
+			last_chunk = chunk_generator.update_or_generate_chunk(coord, chunk_size, lod)
 			gen_samples.append((Time.get_ticks_usec() - t) / 1000.0)
 		results.append(BenchmarkResult.new(
 			"chunk_gen_lod%d" % lod, "chunk_generation", "ms", gen_samples, meta
@@ -194,30 +196,30 @@ func _benchmark_chunks(
 				"chunk_substep_%s_lod%d" % [substep_name, lod],
 				"chunk_generation", "ms", substep_timings[substep_name], meta
 			))
-		results.append_array(_benchmark_chunk_mesh(profile, last_chunk.mesh_data, lod, meta))
+		#results.append_array(_benchmark_chunk_mesh(profile, last_chunk.mesh_data, lod, meta))
 	return results
 
-func _benchmark_chunk_mesh(profile: BenchmarkProfile, last_chunk_mesh: MeshData, lod: int, meta: Dictionary) -> Array[BenchmarkResult]:
-	var results: Array[BenchmarkResult] = []
-	if last_chunk_mesh:
-		var mb_samples := PackedFloat64Array()
-		for _n in profile.iterations:
-			var t := Time.get_ticks_usec()
-			ArrayMeshBuilder.build_mesh(last_chunk_mesh)
-			mb_samples.append((Time.get_ticks_usec() - t) / 1000.0)
-		results.append(BenchmarkResult.new(
-			"array_mesh_build_lod%d" % lod, "chunk_generation", "ms", mb_samples, meta
-		))
-		meta["actual_vertices"] = last_chunk_mesh.get_vertex_count()
-		meta["actual_triangles"] = last_chunk_mesh.get_triangle_count()
-		results.append(BenchmarkResult.new(
-			"vertex_count_lod%d" % lod, "chunk_generation", "count",
-			PackedFloat64Array([float(last_chunk_mesh.get_vertex_count())]), meta
-		))
-		results.append(BenchmarkResult.new(
-			"triangle_count_lod%d" % lod, "chunk_generation", "count",
-			PackedFloat64Array([float(last_chunk_mesh.get_triangle_count())]), meta
-		))
+#func _benchmark_chunk_mesh(profile: BenchmarkProfile, last_chunk_mesh: MeshData, lod: int, meta: Dictionary) -> Array[BenchmarkResult]:
+	#var results: Array[BenchmarkResult] = []
+	#if last_chunk_mesh:
+		#var mb_samples := PackedFloat64Array()
+		#for _n in profile.iterations:
+			#var t := Time.get_ticks_usec()
+			#ArrayMeshBuilder.build_mesh(last_chunk_mesh)
+			#mb_samples.append((Time.get_ticks_usec() - t) / 1000.0)
+		#results.append(BenchmarkResult.new(
+			#"array_mesh_build_lod%d" % lod, "chunk_generation", "ms", mb_samples, meta
+		#))
+		#meta["actual_vertices"] = last_chunk_mesh.get_vertex_count()
+		#meta["actual_triangles"] = last_chunk_mesh.get_triangle_count()
+		#results.append(BenchmarkResult.new(
+			#"vertex_count_lod%d" % lod, "chunk_generation", "count",
+			#PackedFloat64Array([float(last_chunk_mesh.get_vertex_count())]), meta
+		#))
+		#results.append(BenchmarkResult.new(
+			#"triangle_count_lod%d" % lod, "chunk_generation", "count",
+			#PackedFloat64Array([float(last_chunk_mesh.get_triangle_count())]), meta
+		#))
 	return results
 
 func _benchmark_cache(

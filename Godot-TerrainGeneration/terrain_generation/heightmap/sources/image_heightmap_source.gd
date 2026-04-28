@@ -7,7 +7,11 @@ class_name ImageHeightmapSource extends HeightmapSource
 		heightmap_changed.emit()
 
 func generate(context: ProcessingContext) -> Image:
-	return heightmap_image.duplicate() if heightmap_image else null
+	var start_time := Time.get_ticks_msec()
+	var result := heightmap_image.duplicate() if heightmap_image else null
+	var elapsed := Time.get_ticks_msec() - start_time
+	context.source_completed("Image Source", elapsed)
+	return result
 
 func get_metadata() -> Dictionary:
 	return {
