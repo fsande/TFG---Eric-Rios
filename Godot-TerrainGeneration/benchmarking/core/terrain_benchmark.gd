@@ -87,6 +87,17 @@ func _benchmark_pipeline(
 	print("[Pipeline] Measuring full pipeline generation...")
 	for _w in profile.warmup_iterations:
 		_generate_definition_quiet(config)
+	var full_pipeline_results := _benchmark_full_pipeline(config, profile, meta)
+	results.append_array(full_pipeline_results)
+	var heightmap_generation_results := _benchmark_heightmap(config, profile, meta)
+	results.append_array(heightmap_generation_results)
+	return results
+
+func _benchmark_full_pipeline(
+	config: TerrainConfigurationV2,
+	profile: BenchmarkProfile,
+	meta: Dictionary
+) -> Array[BenchmarkResult]:
 	var total_samples := PackedFloat64Array()
 	var stage_timings: Dictionary = {}   # stage_name -> PackedFloat64Array
 	for _i in profile.iterations:
@@ -111,23 +122,27 @@ func _benchmark_pipeline(
 			if not stage_timings.has(stage_name):
 				stage_timings[stage_name] = PackedFloat64Array()
 			stage_timings[stage_name].append(per_stage[stage_name])
-	results.append(BenchmarkResult.new("pipeline_total", "pipeline", "ms", total_samples, meta))
+	var results: Array[BenchmarkResult]= [BenchmarkResult.new("pipeline_total", "pipeline", "ms", total_samples, meta)]
 	for stage_name in stage_timings:
 		var stage_meta := meta.duplicate()
 		stage_meta["stage"] = stage_name
 		results.append(BenchmarkResult.new(
 			"pipeline_stage_%s" % stage_name, "pipeline", "ms", stage_timings[stage_name], stage_meta
 		))
+	return results
+
+# TODO: Unify entire pipeline benchmarking into single function, single loop. Record everything there
+func _benchmark_heightmap(
+	config: TerrainConfigurationV2,
+	profile: BenchmarkProfile,
+	meta: Dictionary
+) -> Array[BenchmarkResult]:
 	var height_map_samples := PackedFloat64Array()
 	var substep_timings: Dictionary = {}   # substep_name -> PackedFloat64Array
 	for _i in profile.iterations:
 		var per_substep: Dictionary = {}   # substep_name -> float (single run)
 		var context := _make_context(config)
-		context.heightmap_processor_completed.connect(
-			func(substep_name: String, elapsed_ms: float) -> void:
-				per_substep[substep_name] = elapsed_ms
-		)
-		context.heightmap_source_completed.connect(
+		context.heightmap_substep_completed.connect(
 			func(substep_name: String, elapsed_ms: float) -> void:
 				per_substep[substep_name] = elapsed_ms
 		)
@@ -139,14 +154,16 @@ func _benchmark_pipeline(
 			if not substep_timings.has(substep_name):
 				substep_timings[substep_name] = PackedFloat64Array()
 			substep_timings[substep_name].append(per_substep[substep_name])
+	var results: Array[BenchmarkResult] = []
 	for substep_name in substep_timings:
 		var proc_meta := meta.duplicate()
-		proc_meta["processor"] = substep_name
+		proc_meta["substep"] = substep_name
 		substep_timings[substep_name].sort()
 		results.append(BenchmarkResult.new(
 			"heightmap_substep_%s" % substep_name, "pipeline", "ms",
 			substep_timings[substep_name], proc_meta
 		))
+	results.append(BenchmarkResult.new("heightmap_generation", "pipeline", "ms", height_map_samples, meta))
 	return results
 
 func _benchmark_chunks(

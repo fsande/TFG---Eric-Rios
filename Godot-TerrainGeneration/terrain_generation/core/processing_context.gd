@@ -15,8 +15,7 @@ enum ProcessorType {
 	GPU
 }
 
-signal heightmap_source_completed(source_name: String, elapsed_ms: float)
-signal heightmap_processor_completed(processor_name: String, elapsed_ms: float)
+signal heightmap_substep_completed(source_name: String, elapsed_ms: float)
 
 ## Core configuration
 var terrain_size: float
@@ -62,11 +61,8 @@ func _is_on_main_thread() -> bool:
 		return false
 	return manager.is_main_thread()
 
-func processor_completed(processor_name: String, elapsed_ms: float) -> void:
-	heightmap_processor_completed.emit(processor_name, elapsed_ms)
-
-func source_completed(source_name: String, elapsed_ms: float) -> void:
-	heightmap_source_completed.emit(source_name, elapsed_ms)
+func complete_substep(source_name: String, elapsed_ms: float) -> void:
+	heightmap_substep_completed.emit(source_name, elapsed_ms)
 
 ## Check if GPU can be used for heightmap processing.
 ## GPU is only available when on the main thread to avoid render thread errors.

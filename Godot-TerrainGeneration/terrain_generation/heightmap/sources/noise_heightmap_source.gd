@@ -27,7 +27,7 @@ func generate(context: ProcessingContext) -> Image:
 	if not noise:
 		push_error("NoiseHeightmapSource: No noise configured")
 		var elapsed := Time.get_ticks_msec() - start_time
-		context.source_completed("Noise Source", elapsed)
+		context.complete_substep("Noise Source", elapsed)
 		return null
 	var img := Image.create(resolution, resolution, false, Image.FORMAT_RF)
 	var new_noise: FastNoiseLite = noise.duplicate()
@@ -41,7 +41,7 @@ func generate(context: ProcessingContext) -> Image:
 			var h := (new_noise.get_noise_2d(nx, ny) + 1.0) / 2.0
 			img.set_pixel(x, y, Color(h, 0, 0))
 	var elapsed := Time.get_ticks_msec() - start_time
-	context.source_completed("Noise Source", elapsed)
+	context.complete_substep("Noise Source", elapsed)
 	return img
 
 func _on_noise_changed():
