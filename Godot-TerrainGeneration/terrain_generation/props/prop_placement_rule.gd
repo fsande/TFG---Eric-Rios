@@ -102,7 +102,7 @@ func build_for_chunk(
 		if not terrain_sample or not terrain_sample.is_valid:
 			continue
 		if density_map: 
-			var uv := _world_to_density_uv(pos_2d, chunk_bounds)
+			var uv := _world_to_density_uv(pos_2d, chunk_bounds, terrain_definition.terrain_size)
 			var density_sample := _sample_density_map(uv)
 			if rng.randf() > density_sample:
 				continue
@@ -145,9 +145,9 @@ func build_for_chunk(
 	return placements
 
 ## Convert world position to density map UV.
-func _world_to_density_uv(world_pos: Vector2, chunk_bounds: AABB) -> Vector2:
-	var u := (world_pos.x - chunk_bounds.position.x) / chunk_bounds.size.x
-	var v := (world_pos.y - chunk_bounds.position.z) / chunk_bounds.size.z
+func _world_to_density_uv(world_pos: Vector2, chunk_bounds: AABB, terrain_size: Vector2) -> Vector2:
+	var u := (world_pos.x + terrain_size.x / 2) / terrain_size.x
+	var v := (world_pos.y + terrain_size.y / 2) / terrain_size.y
 	return Vector2(clampf(u, 0, 1), clampf(v, 0, 1))
 
 ## Sample density map at UV coordinates.
