@@ -167,7 +167,7 @@ func _build_overhang(
 	overhang.thickness = thickness
 	overhang.cliff_embed_depth = config.cliff_embed_depth
 	overhang.noise_strength = config.noise_strength
-	overhang.noise_seed = rng.randi()
+	overhang.noise_seed = _context.generation_seed + 42
 	overhang.lod_min = config.lod_min
 	overhang.lod_max = config.lod_max
 	overhang.source_agent = get_display_name()

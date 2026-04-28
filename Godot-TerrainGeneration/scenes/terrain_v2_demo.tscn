@@ -46,12 +46,13 @@ metadata/_custom_type_script = "uid://ceglbhv6gfplo"
 [sub_resource type="Resource" id="Resource_7f1po"]
 script = ExtResource("8_b4i1g")
 search_mode = 1
-extent_min = 15.0
-extent_max = 25.0
-width_min = 12.0
-width_max = 28.0
-thickness_min = 5.0
-thickness_max = 15.0
+max_overhangs = 12
+extent_min = 6.0
+width_min = 3.0
+width_max = 9.0
+thickness_min = 2.0
+thickness_max = 5.0
+noise_strength = 0.0
 
 [sub_resource type="Resource" id="Resource_215up"]
 script = ExtResource("9_ibtys")

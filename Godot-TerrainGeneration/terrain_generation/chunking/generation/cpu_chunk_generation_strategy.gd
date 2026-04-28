@@ -32,10 +32,8 @@ func generate_chunk(
 	if not mesh_data:
 		return null
 	var volumes := terrain_definition.get_volumes_for_chunk(chunk_bounds, 0)
-	print("VOLUMES FOR CHUNK: %d" % volumes.size())
 	if not volumes.is_empty():
 		current_time = Time.get_ticks_usec()
-		print("APPLYING %d VOLUMES" % volumes.size())
 		mesh_data = apply_volumes(mesh_data, volumes, chunk_bounds, resolution)
 		_emit_substep("volumes", (Time.get_ticks_usec() - current_time) / 1000.0)
 	if mesh_data.cached_normals.is_empty():
