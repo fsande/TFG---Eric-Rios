@@ -1,18 +1,18 @@
 [gd_scene load_steps=28 format=3 uid="uid://dxeaepbn0e70i"]
 
-[ext_resource type="Script" uid="uid://bgpjvppda2u8x" path="res://terrain_generation/core/terrain_presenter_v2.gd" id="1_presenter"]
+[ext_resource type="Script" uid="uid://d4kx2s55wfs1e" path="res://terrain_generation/core/terrain_presenter_v2.gd" id="1_presenter"]
 [ext_resource type="Script" uid="uid://byh53w6k375jl" path="res://terrain_generation/heightmap/sources/texture_heightmap_source.gd" id="2_oqt66"]
-[ext_resource type="Script" uid="uid://c51qydcxes5yv" path="res://terrain_generation/chunking/strategies/grid_load_strategy_v2.gd" id="3_b4i1g"]
-[ext_resource type="Script" uid="uid://dy56g8e3x673x" path="res://terrain_generation/debug/terrain_debug_hud.gd" id="4_hud"]
-[ext_resource type="Script" uid="uid://c5ppavb1os4er" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="4_ibtys"]
-[ext_resource type="Script" uid="uid://2wt0wp5vkq0f" path="res://terrain_generation/agents/terrain_modifier_agent.gd" id="5_7f1po"]
-[ext_resource type="Script" uid="uid://cfkwjo8knjl17" path="res://terrain_generation/agents/config/mountain_agent_config.gd" id="6_215up"]
-[ext_resource type="Script" uid="uid://ceglbhv6gfplo" path="res://terrain_generation/agents/mountain_agent_v2.gd" id="7_a8qn4"]
-[ext_resource type="Script" uid="uid://yhbp6wox2ew3" path="res://terrain_generation/agents/config/overhang_agent_config.gd" id="8_b4i1g"]
+[ext_resource type="Script" uid="uid://d20wukn6i78rj" path="res://terrain_generation/chunking/strategies/grid_load_strategy_v2.gd" id="3_b4i1g"]
+[ext_resource type="Script" uid="uid://deo7c5axedvvw" path="res://terrain_generation/debug/terrain_debug_hud.gd" id="4_hud"]
+[ext_resource type="Script" uid="uid://bnxkyhqx7vwqh" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="4_ibtys"]
+[ext_resource type="Script" uid="uid://dy5gejvj7ladi" path="res://terrain_generation/agents/terrain_modifier_agent.gd" id="5_7f1po"]
+[ext_resource type="Script" uid="uid://cbl5ijc0jic6o" path="res://terrain_generation/agents/config/mountain_agent_config.gd" id="6_215up"]
+[ext_resource type="Script" uid="uid://ic1l7wfwys7i" path="res://terrain_generation/agents/mountain_agent_v2.gd" id="7_a8qn4"]
+[ext_resource type="Script" uid="uid://g86alaypdpab" path="res://terrain_generation/agents/config/overhang_agent_config.gd" id="8_b4i1g"]
 [ext_resource type="Script" uid="uid://d1uj11l5nqaog" path="res://terrain_generation/core/stages/sequential_modifier_stage.gd" id="8_obh5s"]
-[ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="9_dk27i"]
-[ext_resource type="Script" uid="uid://bp1ts1mx3lyf8" path="res://terrain_generation/agents/overhang_agent.gd" id="9_ibtys"]
-[ext_resource type="Script" uid="uid://cx1d1s65igqbm" path="res://terrain_generation/configuration/terrain_configuration_v2.gd" id="10_00p1n"]
+[ext_resource type="Script" uid="uid://c102x3r645g6y" path="res://terrain_generation/props/prop_placement_rule.gd" id="9_dk27i"]
+[ext_resource type="Script" uid="uid://b728n4ix6bpx0" path="res://terrain_generation/agents/overhang_agent.gd" id="9_ibtys"]
+[ext_resource type="Script" uid="uid://bxs2dr6xxfyed" path="res://terrain_generation/configuration/terrain_configuration_v2.gd" id="10_00p1n"]
 [ext_resource type="Material" uid="uid://vpdbt1a33c2s" path="res://assets/materials/mixed_moss/mixed_moss.tres" id="13_b4i1g"]
 [ext_resource type="PackedScene" uid="uid://c5010npvryyqd" path="res://scenes/fly_camera.tscn" id="15_b4i1g"]
 
@@ -72,6 +72,7 @@ load_strategy = SubResource("Resource_qigeq")
 lod_distances = Array[float]([500.0, 100.0, 200.0, 400.0])
 enable_sea = false
 terrain_material = ExtResource("13_b4i1g")
+generate_collision = false
 metadata/_custom_type_script = "uid://cx1d1s65igqbm"
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qigeq"]
@@ -113,4 +114,4 @@ light_color = Color(0.862678, 0.5543531, 0.6468668, 1)
 shadow_enabled = true
 
 [node name="FlyCamera" parent="." instance=ExtResource("15_b4i1g")]
-transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, 8.555199, -26.466377, 4.697465)
+transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, 37.76455, 36.021534, -42.651657)

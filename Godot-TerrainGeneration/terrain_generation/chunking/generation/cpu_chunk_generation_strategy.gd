@@ -171,6 +171,7 @@ func _apply_additive_volume(
 ) -> MeshData:
 	var volume_mesh := volume.generate_mesh(chunk_bounds, resolution)
 	if not volume_mesh or volume_mesh.vertices.is_empty():
+		print("NO VOLUME MESH")
 		return mesh_data
 	var chunk_center := Vector3(
 		chunk_bounds.position.x + chunk_bounds.size.x / 2.0,
@@ -192,5 +193,3 @@ func _apply_additive_volume(
 	result.height = mesh_data.height
 	result.mesh_size = mesh_data.mesh_size
 	return result
-
-

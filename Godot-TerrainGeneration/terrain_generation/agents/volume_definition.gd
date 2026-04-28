@@ -82,4 +82,3 @@ func get_type_name() -> String:
 ## Get memory usage estimate in bytes.
 func get_memory_usage() -> int:
 	return 256  # Base overhead, subclasses override with actual data
-

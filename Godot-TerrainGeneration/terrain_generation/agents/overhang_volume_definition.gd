@@ -61,7 +61,7 @@ func point_is_inside(point: Vector3) -> bool:
 	return abs(local.y) <= _get_thickness_at(t) * 0.5
 
 ## Side length of the base cube that is rounded into a blob.
-@export var blob_cube_size: float = 56
+@export var blob_cube_size: float = 12
 
 ## How much to round the cube edges/corners (0 = sharp cube, 1 ≈ near‑sphere).
 @export_range(0.0, 1.0) var blob_rounding: float = 0.5
@@ -75,7 +75,7 @@ func generate_mesh(chunk_bounds: AABB, resolution: int) -> MeshData:
 	var vertices: PackedVector3Array
 	var indices: PackedInt32Array
 	var uvs: PackedVector2Array
-	var segs: int = max(2, cube_subdivisions * resolution / 32)
+	var segs: int = max(2, cube_subdivisions)
 	var radius := blob_cube_size * 0.5
 	var face_dirs: Array[Vector3] = [
 		Vector3( 1, 0, 0),
@@ -131,23 +131,9 @@ func generate_mesh(chunk_bounds: AABB, resolution: int) -> MeshData:
 	
 ## Update bounds to accurately enclose the full embedded+visible slab.
 func update_bounds() -> void:
-	var forward := overhang_direction.normalized()
-	var right := forward.cross(Vector3.UP).normalized()
-	if right.length_squared() < 0.01:
-		right = Vector3.RIGHT
-	var up := right.cross(forward).normalized()
-	var embed_origin := attachment_point - forward * cliff_embed_depth
-	var tip := attachment_point + forward * extent
-	var half_w := width * 0.5
-	var half_t := thickness * 0.5
-	var min_pt := Vector3(INF, INF, INF)
-	var max_pt := Vector3(-INF, -INF, -INF)
-	for base in [embed_origin, tip]:
-		for r in [-half_w, half_w]:
-			for u in [-half_t, half_t]:
-				var corner: Vector3 = base + right * r + up * u
-				min_pt = min_pt.min(corner)
-				max_pt = max_pt.max(corner)
+	var radius := blob_cube_size * 0.5
+	var pad := Vector3.ONE * radius
+	bounds = AABB(attachment_point - pad, pad * 2.0)
 
 ## Get thickness at normalized position along visible extent (0=attach, 1=tip).
 func _get_thickness_at(t: float) -> float:

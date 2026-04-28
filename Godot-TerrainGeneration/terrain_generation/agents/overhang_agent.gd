@@ -171,4 +171,5 @@ func _build_overhang(
 	overhang.lod_min = config.lod_min
 	overhang.lod_max = config.lod_max
 	overhang.source_agent = get_display_name()
+	overhang.update_bounds()
 	return overhang
