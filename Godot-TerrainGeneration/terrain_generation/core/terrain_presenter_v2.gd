@@ -117,7 +117,7 @@ func regenerate() -> void:
 	_create_feature_manager.call_deferred()
 	if configuration.enable_sea:
 		_create_sea_plane.call_deferred()
-	if configuration.environment:
+	if configuration.environment != null:
 		_create_environment.call_deferred(configuration.environment)
 	if configuration.show_debug_info:
 		print("TerrainPresenterV2: %s" % _terrain_definition.get_summary())
@@ -160,10 +160,9 @@ func _on_load_strategy_changed() -> void:
 	_load_context = null
 
 func _setup_containers() -> void:
+	NodeCreationHelper.remove_all_children(self)
 	_chunks_container = NodeCreationHelper.get_or_create_node(self, "ChunksContainer", Node3D)
-	NodeCreationHelper.remove_all_children(_chunks_container)
 	_props_container = NodeCreationHelper.get_or_create_node(self, "PropsContainer", Node3D)
-	NodeCreationHelper.remove_all_children(_props_container)
 
 func _update_visible_chunks() -> void:
 	if not _generation_service or not configuration.load_strategy or _is_generating:
