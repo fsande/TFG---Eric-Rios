@@ -31,7 +31,6 @@ func generate_chunk(
 	height_grid: PackedFloat32Array
 ) -> MeshData
 
-
 @abstract
 func supports_async() -> bool
 

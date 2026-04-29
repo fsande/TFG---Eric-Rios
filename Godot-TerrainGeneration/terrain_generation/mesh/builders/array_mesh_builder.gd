@@ -1,4 +1,4 @@
-﻿## @brief Builds Godot ArrayMesh from mesh data.
+## @brief Builds Godot ArrayMesh from mesh data.
 ##
 ## @details Handles conversion from internal format to Godot's mesh format.
 @tool
@@ -38,4 +38,3 @@ static func _tangents_to_packed_float32(tangent_vec4: PackedVector4Array) -> Pac
 		tangent_array[base + 2] = t.z
 		tangent_array[base + 3] = t.w
 	return tangent_array
-
