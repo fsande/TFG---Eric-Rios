@@ -132,7 +132,7 @@ func generate_mesh(chunk_bounds: AABB, resolution: int) -> MeshData:
 		slab_pos
 	)
 
-	return MeshData.new(vertices, indices, uvs)
+	return MeshData.create(vertices, indices, uvs)
 
 
 func update_bounds() -> void:

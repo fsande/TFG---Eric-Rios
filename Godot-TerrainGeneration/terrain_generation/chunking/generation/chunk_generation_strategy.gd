@@ -29,13 +29,13 @@ func generate_chunk(
 	lod_level: int,
 	resolution: int,
 	height_grid: PackedFloat32Array
-) -> MeshData
+	) -> MeshData
 
 @abstract
 func supports_async() -> bool
 
 @abstract
-func generate_height_grid(terrain_definition: TerrainDefinition, sampler: HeightmapSamplerNative, chunk_bounds: AABB, resolution: int) -> PackedFloat32Array
+func generate_height_grid(terrain_definition: TerrainDefinition, chunk_bounds: AABB, resolution: int) -> PackedFloat32Array
 
 func dispose() -> void:
 	pass

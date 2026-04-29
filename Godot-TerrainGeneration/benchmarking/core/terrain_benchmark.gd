@@ -181,7 +181,8 @@ func _benchmark_chunks(
 	var coords := _spiral_chunk_coords(config, profile.chunks_to_generate)
 	print("[Chunks] %d chunks × LODs %s ..." % [coords.size(), str(lod_levels)])
 	var use_gpu := config.use_gpu_mesh_generation
-	var strategy := CpuChunkGenerationStrategy.new()
+	var heightmap := definition.get_base_heightmap()
+	var strategy := CpuChunkGenerationStrategy.new(heightmap)
 	for lod in lod_levels:
 		var effective_resolution := strategy.calculate_resolution_for_lod(config.base_chunk_resolution, lod)
 		var meta := {
@@ -289,7 +290,8 @@ func _benchmark_prop_placement(
 	if config.prop_placement_rules.is_empty():
 		return results
 	print("[Props] Measuring prop placement runtime...")
-	var gen_strategy := CpuChunkGenerationStrategy.new()
+	var heightmap := definition.get_base_heightmap()
+	var gen_strategy := CpuChunkGenerationStrategy.new(heightmap)
 	for rule in config.prop_placement_rules:
 		if not rule or not rule is PropPlacementRule:
 			continue

@@ -61,8 +61,6 @@ metadata/_custom_type_script = "uid://bxs2dr6xxfyed"
 script = ExtResource("4_4bmmm")
 configurations = Array[ExtResource("2_oep7r")]([SubResource("Resource_tqjsr")])
 warmup_iterations = 5
-benchmark_height_pipelien = null
-benchmark_props = null
 metadata/_custom_type_script = "uid://cfi161tjwfbq5"
 
 [node name="BenchmarkScene" type="Node"]

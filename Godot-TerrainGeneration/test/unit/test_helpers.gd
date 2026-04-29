@@ -116,7 +116,7 @@ static func create_test_mesh_data(grid_size: int = 10) -> MeshData:
 			indices.append(i + 1)
 			indices.append(i + grid_size)
 			indices.append(i + grid_size + 1)
-	var mesh_data := MeshData.new(vertices, indices, uvs)
+	var mesh_data := MeshData.create(vertices, indices, uvs)
 	mesh_data.width = grid_size
 	mesh_data.height = grid_size
 	return mesh_data

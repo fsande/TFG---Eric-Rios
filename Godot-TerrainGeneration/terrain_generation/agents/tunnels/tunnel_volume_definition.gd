@@ -96,7 +96,7 @@ func generate_mesh(chunk_bounds: AABB, resolution: int) -> MeshData:
 			indices.append(i * actual_radial_segments + next_j)
 	_add_end_cap(vertices, indices, uvs, 0, actual_radial_segments, true)
 	_add_end_cap(vertices, indices, uvs, actual_length_segments * actual_radial_segments, actual_radial_segments, false)
-	var mesh_data := MeshData.new(vertices, indices, uvs)
+	var mesh_data := MeshData.create(vertices, indices, uvs)
 	return mesh_data
 
 ## Update bounds based on path and radius.

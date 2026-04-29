@@ -60,7 +60,7 @@ var slope_normal_map: Image:
 
 ## Construct a result with essential mesh data and metrics.
 func _init(p_vertices: PackedVector3Array, p_indices: PackedInt32Array, p_uvs: PackedVector2Array, p_time: float, p_type: String) -> void:
-	mesh_data = MeshData.new(p_vertices, p_indices, p_uvs)
+	mesh_data = MeshData.create(p_vertices, p_indices, p_uvs)
 	mesh_data.elapsed_time_ms = p_time
 	mesh_data.processor_type = p_type
 	_topology_modifier = MeshTopologyModifier.new(mesh_data)

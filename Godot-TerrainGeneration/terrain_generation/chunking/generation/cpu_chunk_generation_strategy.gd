@@ -1,10 +1,17 @@
 ## @brief CPU-based chunk generation strategy.
 ##
-## @details Generates chunk meshes using CPU processing. Extracts the original
-## ChunkGenerator logic into a strategy implementation for consistent interface.
+## @details Hot path (height grid, mesh build, normals, tangents) runs in
+## CpuChunkGeneratorNative (GDExtension). Volume application stays in GDScript
+## since VolumeDefinition is a GDScript type.
 ## Thread-safe for concurrent chunk generation.
 @tool
 class_name CpuChunkGenerationStrategy extends ChunkGenerationStrategy
+
+var _native_generator := CpuChunkGeneratorNative.new() 
+
+func _init(heightmap: Image) ->void:
+	if heightmap:
+		_native_generator.bake_heightmap(heightmap)
 
 func get_processor_type() -> ProcessorType:
 	return ProcessorType.CPU
@@ -12,6 +19,9 @@ func get_processor_type() -> ProcessorType:
 func supports_async() -> bool:
 	return true
 
+## Generate a complete chunk. The native generator handles the full pipeline.
+## If volumes are present, we generate the height grid first (GDScript applies
+## deltas), then pass it back into the native mesh builder.
 func generate_chunk(
 	terrain_definition: TerrainDefinition,
 	chunk_bounds: AABB,
@@ -23,79 +33,68 @@ func generate_chunk(
 		push_error("CpuChunkGenerationStrategy: Invalid terrain definition")
 		return null
 	var current_time := Time.get_ticks_usec()
+	var volumes := terrain_definition.get_volumes_for_chunk(chunk_bounds, 0)
+	if volumes.is_empty():
+		_emit_substep("height_grid", 0.0)
+		var mesh_data: MeshData = _native_generator.generate_chunk(
+			chunk_bounds, resolution,
+			terrain_definition.terrain_size.x,
+			terrain_definition.height_scale
+		)
+		_emit_substep("mesh_build", (Time.get_ticks_usec() - current_time) / 1000.0)
+		return mesh_data
 	_emit_substep("height_grid", (Time.get_ticks_usec() - current_time) / 1000.0)
 	if height_grid.is_empty():
 		return null
 	current_time = Time.get_ticks_usec()
-	var mesh_data := _build_mesh_from_height_grid(height_grid, chunk_bounds, resolution)
+	var modified_grid := height_grid.duplicate()
+	current_time = Time.get_ticks_usec()
+	var mesh_data: MeshData = _native_generator.generate_chunk_from_grid(
+		modified_grid, chunk_bounds, resolution
+	)
 	_emit_substep("mesh_build", (Time.get_ticks_usec() - current_time) / 1000.0)
 	if not mesh_data:
 		return null
-	var volumes := terrain_definition.get_volumes_for_chunk(chunk_bounds, 0)
 	if not volumes.is_empty():
 		current_time = Time.get_ticks_usec()
 		mesh_data = apply_volumes(mesh_data, volumes, chunk_bounds, resolution)
 		_emit_substep("volumes", (Time.get_ticks_usec() - current_time) / 1000.0)
-	if mesh_data.cached_normals.is_empty():
-		current_time = Time.get_ticks_usec()
-		mesh_data.cached_normals = MeshNormalCalculator.calculate_normals(mesh_data)
-		_emit_substep("normals", (Time.get_ticks_usec() - current_time) / 1000.0)
-	if mesh_data.cached_tangents.is_empty():
-		current_time = Time.get_ticks_usec()
-		mesh_data.cached_tangents = MeshTangentCalculator.calculate_tangents(mesh_data, mesh_data.cached_normals)
-		_emit_substep("tangents", (Time.get_ticks_usec() - current_time) / 1000.0)
 	return mesh_data
 
+## Generate height grid via native, then apply GDScript delta maps.
+## Returns the modified grid ready for generate_chunk_from_grid.
 func generate_height_grid(
 	terrain_definition: TerrainDefinition,
-	sampler: HeightmapSamplerNative,
 	chunk_bounds: AABB,
 	resolution: int
 ) -> PackedFloat32Array:
-	return sampler.generate_height_grid(
+	var grid: PackedFloat32Array = _native_generator.generate_height_grid(
 		chunk_bounds,
 		resolution,
 		terrain_definition.terrain_size.x,
 		terrain_definition.height_scale
 	)
-
-func _build_mesh_from_height_grid(
-	height_grid: PackedFloat32Array,
-	chunk_bounds: AABB,
-	resolution: int
-) -> MeshData:
-	var vertices := PackedVector3Array()
-	var uvs := PackedVector2Array()
-	var indices := PackedInt32Array()
-	vertices.resize(resolution * resolution)
-	uvs.resize(resolution * resolution)
+	# Apply GDScript delta maps on top of the native height grid
+	var deltas := terrain_definition.get_deltas_for_chunk(chunk_bounds)
+	if deltas.is_empty():
+		return grid
+	var terrain_size := terrain_definition.terrain_size.x
+	var inv_res := 1.0 / float(resolution - 1) if resolution > 1 else 0.0
 	for z in range(resolution):
+		var v_local := float(z) * inv_res if resolution > 1 else 0.5
+		var world_z := chunk_bounds.position.z + v_local * chunk_bounds.size.z
 		for x in range(resolution):
-			var u := float(x) / float(resolution - 1) if resolution > 1 else 0.5
-			var v := float(z) / float(resolution - 1) if resolution > 1 else 0.5
-			var local_x := (u - 0.5) * chunk_bounds.size.x
-			var local_z := (v - 0.5) * chunk_bounds.size.z
-			var index := z * resolution + x
-			var height := height_grid[index]
-			vertices[index] = Vector3(local_x, height, local_z)
-			uvs[index] = Vector2(u, v)
-	for z in range(resolution - 1):
-		for x in range(resolution - 1):
-			var v0 := z * resolution + x
-			var v1 := v0 + 1
-			var v2 := v0 + resolution
-			var v3 := v2 + 1
-			indices.append(v0)
-			indices.append(v1)
-			indices.append(v2)
-			indices.append(v1)
-			indices.append(v3)
-			indices.append(v2)
-	var mesh_data := MeshData.new(vertices, indices, uvs)
-	mesh_data.width = resolution
-	mesh_data.height = resolution
-	mesh_data.mesh_size = Vector2(chunk_bounds.size.x, chunk_bounds.size.z)
-	return mesh_data
+			var u_local := float(x) * inv_res if resolution > 1 else 0.5
+			var world_x := chunk_bounds.position.x + u_local * chunk_bounds.size.x
+			var world_pos := Vector2(world_x, world_z)
+			var idx := z * resolution + x
+			var height := grid[idx]
+			for delta in deltas:
+				var delta_value := delta.sample_at(world_pos)
+				if absf(delta_value) >= 0.0001:
+					height = delta.apply_blend(height, delta_value)
+			grid[idx] = height
+	return grid
 
 func apply_volumes(
 	mesh_data: MeshData,
@@ -129,17 +128,19 @@ func _apply_subtractive_volume(
 		var v0 := mesh_data.vertices[idx0] + chunk_center
 		var v1 := mesh_data.vertices[idx1] + chunk_center
 		var v2 := mesh_data.vertices[idx2] + chunk_center
-		var all_inside := volume.point_is_inside(v0) and volume.point_is_inside(v1) and volume.point_is_inside(v2)
-		if all_inside:
+		if volume.point_is_inside(v0) and volume.point_is_inside(v1) and volume.point_is_inside(v2):
 			continue
 		new_indices.append(idx0)
 		new_indices.append(idx1)
 		new_indices.append(idx2)
 	if new_indices.size() < mesh_data.indices.size():
-		var result := MeshData.new(mesh_data.vertices, new_indices, mesh_data.uvs)
+		var result := MeshData.new()
+		result.initialize(mesh_data.vertices, new_indices, mesh_data.uvs)
 		result.width = mesh_data.width
 		result.height = mesh_data.height
 		result.mesh_size = mesh_data.mesh_size
+		result.cached_normals = mesh_data.cached_normals
+		result.cached_tangents = mesh_data.cached_tangents
 		return result
 	return mesh_data
 
@@ -151,7 +152,6 @@ func _apply_additive_volume(
 ) -> MeshData:
 	var volume_mesh := volume.generate_mesh(chunk_bounds, resolution)
 	if not volume_mesh or volume_mesh.vertices.is_empty():
-		print("NO VOLUME MESH")
 		return mesh_data
 	var chunk_center := Vector3(
 		chunk_bounds.position.x + chunk_bounds.size.x / 2.0,
@@ -168,7 +168,8 @@ func _apply_additive_volume(
 		new_uvs.append(uv)
 	for idx in volume_mesh.indices:
 		new_indices.append(idx + base_vertex_count)
-	var result := MeshData.new(new_vertices, new_indices, new_uvs)
+	var result := MeshData.new()
+	result.initialize(new_vertices, new_indices, new_uvs)
 	result.width = mesh_data.width
 	result.height = mesh_data.height
 	result.mesh_size = mesh_data.mesh_size

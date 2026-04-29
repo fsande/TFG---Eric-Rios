@@ -17,6 +17,7 @@
 
 [sub_resource type="Resource" id="Resource_oqt66"]
 script = ExtResource("2_rm4ox")
+frequency = 12.0
 noise = SubResource("FastNoiseLite_4fayk")
 
 [sub_resource type="Resource" id="Resource_b4i1g"]
@@ -43,9 +44,12 @@ metadata/_custom_type_script = "uid://d1uj11l5nqaog"
 [sub_resource type="Resource" id="Resource_ibtys"]
 script = ExtResource("6_ap5ce")
 heightmap_source = SubResource("Resource_oqt66")
+terrain_size = Vector2(2048, 2048)
 modifier_stages = Array[ExtResource("4_4puc5")]([SubResource("Resource_a8qn4")])
+base_chunk_resolution = 256
 load_strategy = SubResource("Resource_b4i1g")
 enable_sea = false
+generate_collision = false
 metadata/_custom_type_script = "uid://cx1d1s65igqbm"
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qigeq"]
@@ -87,4 +91,4 @@ light_color = Color(0.862678, 0.5543531, 0.6468668, 1)
 shadow_enabled = true
 
 [node name="FlyCamera" parent="." instance=ExtResource("15_b4i1g")]
-transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, -28.661388, 49.24135, 32.518963)
+transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, -23.54876, 49.24135, 149.81888)

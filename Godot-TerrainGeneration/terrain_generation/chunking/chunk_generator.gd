@@ -11,21 +11,15 @@ const MAX_RESOLUTION := 256
 var _terrain_definition: TerrainDefinition
 var _base_resolution: int = 64
 var _generation_strategy: ChunkGenerationStrategy
-var _owned_heightmap: Image = null
-
-var _native_sampler: HeightmapSamplerNative = null
 
 func _init(terrain_def: TerrainDefinition, base_resolution: int, use_gpu: bool) -> void:
 	_terrain_definition = terrain_def
 	_base_resolution = clampi(base_resolution, MIN_RESOLUTION, MAX_RESOLUTION)
-	_native_sampler = HeightmapSamplerNative.new()
-	var hmap := terrain_def.get_base_heightmap()
-	if hmap:
-		_native_sampler.bake_heightmap(hmap)
+	var heightmap := terrain_def.get_base_heightmap()
 	if use_gpu:
-		_generation_strategy = GpuChunkGenerationStrategy.new()
+		_generation_strategy = GpuChunkGenerationStrategy.new(heightmap)
 	else:
-		_generation_strategy = CpuChunkGenerationStrategy.new()
+		_generation_strategy = CpuChunkGenerationStrategy.new(heightmap)
 
 func update_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int, cache: ChunkCache = null) -> ChunkMeshData:
 	if not _terrain_definition or not _terrain_definition.is_valid():
@@ -36,10 +30,10 @@ func update_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: i
 	var chunk_bounds = _calculate_chunk_bounds(_terrain_definition, coord, chunk_size)
 	var resolution = _generation_strategy.calculate_resolution_for_lod(_base_resolution, lod_level)
 	var height_grid := _generation_strategy.generate_height_grid(
-		_terrain_definition, _native_sampler, chunk_bounds, resolution
+		_terrain_definition, chunk_bounds, resolution, 
 	)
 	#OS.delay_msec(25)
-	#return ChunkMeshData.new(coord, Vector3(0,0, 0), chunk_size, MeshData.new(PackedVector3Array()), lod_level)
+	#return ChunkMeshData.new(coord, Vector3(0,0, 0), chunk_size, MeshData.create(PackedVector3Array()), lod_level)
 	var mesh_data = _generation_strategy.generate_chunk(
 		_terrain_definition, chunk_bounds, lod_level, resolution, height_grid
 	)
