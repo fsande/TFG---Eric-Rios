@@ -11,16 +11,19 @@ const MAX_RESOLUTION := 256
 var _terrain_definition: TerrainDefinition
 var _base_resolution: int = 64
 var _generation_strategy: ChunkGenerationStrategy
+var _owned_heightmap: Image = null
 
 func _init(terrain_def: TerrainDefinition, base_resolution: int, use_gpu: bool) -> void:
 	_terrain_definition = terrain_def
-	_terrain_definition.get_base_heightmap()
 	_base_resolution = clampi(base_resolution, MIN_RESOLUTION, MAX_RESOLUTION)
+	var source_heightmap := terrain_def.get_base_heightmap()
+	if source_heightmap:
+		_owned_heightmap = source_heightmap.duplicate()
 	if use_gpu:
 		_generation_strategy = GpuChunkGenerationStrategy.new()
 	else:
 		_generation_strategy = CpuChunkGenerationStrategy.new()
-
+		
 func update_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int, cache: ChunkCache = null) -> ChunkMeshData:
 	if not _terrain_definition or not _terrain_definition.is_valid():
 		push_error("ChunkGenerator: Invalid terrain definition")
@@ -29,23 +32,27 @@ func update_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: i
 		return cache.get_chunk(coord)
 	var chunk_bounds = _calculate_chunk_bounds(_terrain_definition, coord, chunk_size)
 	var resolution = _generation_strategy.calculate_resolution_for_lod(_base_resolution, lod_level)
-	var height_grid := _generation_strategy.generate_height_grid(_terrain_definition, chunk_bounds, resolution)
-	var mesh_data = _generation_strategy.generate_chunk(
-		_terrain_definition, chunk_bounds, lod_level, resolution, height_grid
+	var height_grid := _generation_strategy.generate_height_grid(
+		_terrain_definition, _owned_heightmap, chunk_bounds, resolution
 	)
-	var cached := cache.get_chunk(coord) if cache else null
-	if cached:
-		cached.add_lod_mesh(mesh_data, lod_level)
-		return cached
-	var world_center := Vector3(
-		chunk_bounds.position.x + chunk_bounds.size.x / 2.0,
-		0,
-		chunk_bounds.position.z + chunk_bounds.size.z / 2.0
-	)
-	var chunk_mesh_data = ChunkMeshData.new(coord, world_center, chunk_size, mesh_data, lod_level)
-	if cache:
-		cache.store_chunk(coord, chunk_mesh_data)
-	return chunk_mesh_data
+	OS.delay_msec(25)
+	return ChunkMeshData.new(coord, Vector3(0,0, 0), chunk_size, MeshData.new(PackedVector3Array()), lod_level)
+	#var mesh_data = _generation_strategy.generate_chunk(
+		#_terrain_definition, chunk_bounds, lod_level, resolution, height_grid
+	#)
+	#var cached := cache.get_chunk(coord) if cache else null
+	#if cached:
+		#cached.add_lod_mesh(mesh_data, lod_level)
+		#return cached
+	#var world_center := Vector3(
+		#chunk_bounds.position.x + chunk_bounds.size.x / 2.0,
+		#0,
+		#chunk_bounds.position.z + chunk_bounds.size.z / 2.0
+	#)
+	#var chunk_mesh_data = ChunkMeshData.new(coord, world_center, chunk_size, mesh_data, lod_level)
+	#if cache:
+		#cache.store_chunk(coord, chunk_mesh_data)
+	#return chunk_mesh_data
 
 func duplicate() -> ChunkGenerator:
 	var copy := ChunkGenerator.new(_terrain_definition, _base_resolution, false)

@@ -27,6 +27,9 @@ class_name BenchmarkProfile extends Resource
 @export_group("Optional Overrides")
 ## If non-empty, benchmark these LOD levels instead of deriving from config.
 @export var lod_level_overrides: Array[int] = []
+@export var benchmark_height_pipelien: bool = true
+@export var benchmark_mesh_pipeline: bool = true
+@export var benchmark_props: bool = true
 
 func get_config_name(index: int) -> String:
 	if index < 0 or index >= configurations.size():

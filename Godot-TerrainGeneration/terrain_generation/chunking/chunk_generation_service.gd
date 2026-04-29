@@ -98,6 +98,7 @@ func set_use_threading(enabled: bool) -> void:
 		push_error("ChunkGenerationService: cannot enable threading in GPU mode (GPU requires main thread)")
 		return
 	_use_threading = enabled
+	_replace_queue()
 
 func set_max_concurrent_requests(count: int) -> void:
 	_max_concurrent_requests = maxi(1, count)
@@ -144,7 +145,7 @@ func _make_queue() -> ChunkRequestQueue:
 ## Cancels all requests on the current queue. Safe to call at any time
 func _replace_queue() -> void:
 	if _request_queue:
-		_request_queue.cancel_all()
+		_request_queue.shutdown()
 	_request_queue = _make_queue()
 
 func _on_queue_chunk_completed(coord: Vector2i, lod: int, chunk: ChunkMeshData) -> void:

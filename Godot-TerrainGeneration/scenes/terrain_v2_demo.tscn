@@ -64,4 +64,4 @@ light_color = Color(0.862678, 0.5543531, 0.6468668, 1)
 shadow_enabled = true
 
 [node name="FlyCamera" parent="." instance=ExtResource("15_b4i1g")]
-transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, -316.77203, 282.3184, 299.212)
+transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, -8.825471, 49.24135, -3.1763458)

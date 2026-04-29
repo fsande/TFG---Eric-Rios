@@ -65,19 +65,22 @@ func _benchmark_single_config(
 	profile: BenchmarkProfile
 ) -> Array[BenchmarkResult]:
 	var results: Array[BenchmarkResult] = []
-	results.append_array(_benchmark_pipeline(config, config_name, profile))
+	if profile.benchmark_height_pipelien:
+		results.append_array(_benchmark_height_pipeline(config, config_name, profile))
 	var definition := _generate_definition_quiet(config)
 	if not definition:
 		push_error("TerrainBenchmark: Failed to generate definition for %s" % config_name)
 		return results
-	results.append_array(_benchmark_chunks(config, config_name, definition, profile))
-	results.append_array(_benchmark_cache(config, config_name, definition, profile, _spiral_chunk_coords(config, profile.chunks_to_generate)))
-	results.append_array(_benchmark_prop_placement(config, config_name, definition, profile, _spiral_chunk_coords(config, profile.chunks_to_generate)))
-	if not config.use_gpu_mesh_generation:
-		results.append_array(await _benchmark_async_loading(config, config_name, definition, profile))
+	if profile.benchmark_mesh_pipeline:
+		results.append_array(_benchmark_chunks(config, config_name, definition, profile))
+		results.append_array(_benchmark_cache(config, config_name, definition, profile, _spiral_chunk_coords(config, profile.chunks_to_generate)))
+		if not config.use_gpu_mesh_generation:
+			results.append_array(await _benchmark_async_loading(config, config_name, definition, profile))
+	if profile.benchmark_props:
+		results.append_array(_benchmark_prop_placement(config, config_name, definition, profile, _spiral_chunk_coords(config, profile.chunks_to_generate)))
 	return results
 
-func _benchmark_pipeline(
+func _benchmark_height_pipeline(
 	config: TerrainConfigurationV2,
 	config_name: String,
 	profile: BenchmarkProfile
@@ -332,15 +335,15 @@ func _benchmark_async_loading(
 	var coords := _spiral_chunk_coords(config, profile.chunks_to_generate)
 	if coords.is_empty():
 		return results
-	var hw_count := OS.get_processor_count()
+	var hardware_count := OS.get_processor_count()
 	var configured_count := maxi(1, config.max_concurrent_chunk_requests)
 	var tiers: Array[Dictionary] = []
 	tiers.append({"label": "sequential", "concurrency": 1})
-	if configured_count != 1 and configured_count != hw_count:
+	if configured_count != 1 and configured_count != hardware_count:
 		tiers.append({"label": "configured_%d" % configured_count, "concurrency": configured_count})
-	tiers.append({"label": "hw_ceiling_%d" % hw_count, "concurrency": hw_count})
+	tiers.append({"label": "hw_ceiling_%d" % hardware_count, "concurrency": hardware_count})
 	print("[Async] %d chunks × %d tiers | hw=%d configured=%d" % [
-		coords.size(), tiers.size(), hw_count, configured_count
+		coords.size(), tiers.size(), hardware_count, configured_count
 	])
 	for tier in tiers:
 		var concurrency: int = tier["concurrency"]
@@ -349,7 +352,7 @@ func _benchmark_async_loading(
 			"config_name": config_name,
 			"concurrency": concurrency,
 			"chunk_count": coords.size(),
-			"hw_thread_count": hw_count,
+			"hw_thread_count": hardware_count,
 			"configured_concurrency": configured_count,
 			"tier": label,
 		}
@@ -369,11 +372,18 @@ func _benchmark_async_loading(
 					per_chunk_latencies.append(
 						float(Time.get_ticks_usec() - dispatch_times[key]) / 1000.0
 					)
+#				print("Completed chunk %d,%d (latency: %.1f ms)" % [
+#					_coord.x, _coord.y,
+#					per_chunk_latencies[per_chunk_latencies.size() - 1] if not per_chunk_latencies.is_empty() else 0.0
+#				])
 				state["completed"] = int(state["completed"]) + 1
 		)
 		var wall_start := Time.get_ticks_usec()
 		for coord in coords:
 			dispatch_times["%d,%d" % [coord.x, coord.y]] = Time.get_ticks_usec()
+#			print("Requesting chunk %d,%d" % [
+#				coord.x, coord.y
+#			])
 			service.request_chunk_async(coord, config.chunk_size, 0, 0.0)
 		var deadline_usec: int = Time.get_ticks_usec() + int(ASYNC_TIMEOUT_MS * 1000.0)
 		while state["completed"] < coords.size():
@@ -417,7 +427,7 @@ func _benchmark_async_loading(
 		results.append(BenchmarkResult.new(
 			"async_speedup_hw_vs_sequential", "async_loading", "x",
 			PackedFloat64Array([seq_wall / hw_wall]),
-			{"config_name": config_name, "hw_thread_count": hw_count,
+			{"config_name": config_name, "hw_thread_count": hardware_count,
 			"configured_concurrency": configured_count}
 		))
 	return results

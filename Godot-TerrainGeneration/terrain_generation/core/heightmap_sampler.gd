@@ -81,4 +81,3 @@ static func calculate_lod_resolution(_chunk_size: Vector2, base_resolution: int,
 	var divisor := 1 << lod_level  # 2^lod_level
 	var res := maxi(int(float(base_resolution) / float(divisor)), 2)  # Minimum 2x2
 	return Vector2i(res, res)
-

@@ -83,11 +83,11 @@ func _generate_chunk_gpu(
 
 func generate_height_grid(
 	terrain_definition: TerrainDefinition,
+	base_heightmap: Image,
 	chunk_bounds: AABB,
 	resolution: int
 ) -> PackedFloat32Array:
 	var rd := _gpu_manager.get_rendering_device()
-	var base_heightmap := terrain_definition.get_base_heightmap()
 	if not base_heightmap:
 		push_error("GpuChunkGenerationStrategy: No base heightmap available")
 		return PackedFloat32Array()
