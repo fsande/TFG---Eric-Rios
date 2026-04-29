@@ -1,0 +1,3 @@
+[submodule "Godot-TerrainGeneration/terrain_native/godot-cpp"]
+	path = Godot-TerrainGeneration/terrain_native/godot-cpp
+	url = https://github.com/godotengine/godot-cpp
