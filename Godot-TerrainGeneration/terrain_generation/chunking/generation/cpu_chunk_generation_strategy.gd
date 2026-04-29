@@ -48,38 +48,16 @@ func generate_chunk(
 
 func generate_height_grid(
 	terrain_definition: TerrainDefinition,
-	base_heightmap: Image,
+	sampler: HeightmapSamplerNative,
 	chunk_bounds: AABB,
 	resolution: int
 ) -> PackedFloat32Array:
-	OS.delay_msec(25)  # simulate C++ work time
-	var height_grid := PackedFloat32Array()
-	height_grid.resize(resolution * resolution)
-	height_grid.fill(0.5 * terrain_definition.height_scale)
-	return height_grid
-	if not base_heightmap:
-		push_error("CpuChunkGenerationStrategy: No heightmap provided")
-		return PackedFloat32Array()
-	#var height_grid := PackedFloat32Array()
-	height_grid.resize(resolution * resolution)
-	var terrain_size := terrain_definition.terrain_size.x
-	var height_scale := terrain_definition.height_scale
-	var deltas := terrain_definition.get_deltas_for_chunk(chunk_bounds)
-	for z in range(resolution):
-		for x in range(resolution):
-			var u := float(x) / float(resolution - 1) if resolution > 1 else 0.5
-			var v := float(z) / float(resolution - 1) if resolution > 1 else 0.5
-			var world_x := chunk_bounds.position.x + u * chunk_bounds.size.x
-			var world_z := chunk_bounds.position.z + v * chunk_bounds.size.z
-			var world_pos := Vector2(world_x, world_z)
-			var base_height := HeightmapSampler.sample_height_at(base_heightmap, world_pos, terrain_size)
-			var height := base_height * height_scale
-			for delta in deltas:
-				var delta_value := delta.sample_at(world_pos)
-				if absf(delta_value) >= 0.0001:
-					height = delta.apply_blend(height, delta_value)
-			height_grid[z * resolution + x] = height
-	return height_grid
+	return sampler.generate_height_grid(
+		chunk_bounds,
+		resolution,
+		terrain_definition.terrain_size.x,
+		terrain_definition.height_scale
+	)
 
 func _build_mesh_from_height_grid(
 	height_grid: PackedFloat32Array,

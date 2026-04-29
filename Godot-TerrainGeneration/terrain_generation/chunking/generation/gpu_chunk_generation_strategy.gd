@@ -83,83 +83,16 @@ func _generate_chunk_gpu(
 
 func generate_height_grid(
 	terrain_definition: TerrainDefinition,
-	base_heightmap: Image,
+	sampler: HeightmapSamplerNative,
 	chunk_bounds: AABB,
 	resolution: int
 ) -> PackedFloat32Array:
-	var rd := _gpu_manager.get_rendering_device()
-	if not base_heightmap:
-		push_error("GpuChunkGenerationStrategy: No base heightmap available")
-		return PackedFloat32Array()
-	var shader_rid := _gpu_manager.get_or_create_shader(HEIGHT_GRID_SHADER)
-	if not shader_rid.is_valid():
-		push_error("GpuChunkGenerationStrategy: Failed to load height grid shader")
-		return PackedFloat32Array()
-	var pipeline_rid := _gpu_manager.get_or_create_pipeline(shader_rid)
-	if not pipeline_rid.is_valid():
-		return PackedFloat32Array()
-	var heightmap_texture := GpuTextureHelper.create_heightmap_texture(rd, base_heightmap)
-	var sampler := GpuResourceHelper.create_linear_clamp_sampler(rd)
-	var output_size := resolution * resolution * 4
-	var output_buffer := rd.storage_buffer_create(output_size)
-	var deltas := terrain_definition.get_deltas_for_chunk(chunk_bounds)
-	var delta_data := PackedFloat32Array()
-	var delta_resolution := 0
-	var delta_bounds := AABB()
-	var delta_intensity := 1.0
-	var blend_mode := 0
-	if not deltas.is_empty():
-		var first_delta := deltas[0]
-		if first_delta.delta_texture:
-			delta_resolution = first_delta.delta_texture.get_width()
-			delta_bounds = first_delta.world_bounds
-			delta_intensity = first_delta.intensity
-			blend_mode = _get_blend_mode_int(first_delta.blend_strategy)
-			for y in range(delta_resolution):
-				for x in range(delta_resolution):
-					delta_data.append(first_delta.delta_texture.get_pixel(x, y).r)
-	if delta_data.is_empty():
-		delta_data.resize(1)
-		delta_data[0] = 0.0
-		delta_resolution = 1
-	var delta_buffer := rd.storage_buffer_create(delta_data.size() * 4, delta_data.to_byte_array())
-	var delta_params := PackedByteArray()
-	delta_params.append_array(PackedInt32Array([deltas.size()]).to_byte_array())
-	delta_params.append_array(PackedInt32Array([delta_resolution]).to_byte_array())
-	delta_params.append_array(PackedFloat32Array([delta_bounds.position.x]).to_byte_array())
-	delta_params.append_array(PackedFloat32Array([delta_bounds.position.z]).to_byte_array())
-	delta_params.append_array(PackedFloat32Array([delta_bounds.size.x]).to_byte_array())
-	delta_params.append_array(PackedFloat32Array([delta_bounds.size.z]).to_byte_array())
-	delta_params.append_array(PackedFloat32Array([delta_intensity]).to_byte_array())
-	delta_params.append_array(PackedInt32Array([blend_mode]).to_byte_array())
-	var delta_params_buffer := rd.storage_buffer_create(delta_params.size(), delta_params)
-	var uniforms: Array[RDUniform] = []
-	uniforms.append(GpuResourceHelper.create_sampler_texture_uniform(0, sampler, heightmap_texture))
-	uniforms.append(GpuResourceHelper.create_storage_buffer_uniform(1, output_buffer))
-	uniforms.append(GpuResourceHelper.create_storage_buffer_uniform(2, delta_buffer))
-	uniforms.append(GpuResourceHelper.create_storage_buffer_uniform(3, delta_params_buffer))
-	var uniform_set := rd.uniform_set_create(uniforms, shader_rid, 0)
-	var push_constants := GpuResourceHelper.pack_push_constants([
-		chunk_bounds.position.x,
-		chunk_bounds.position.z,
-		chunk_bounds.size.x,
-		chunk_bounds.size.z,
-		terrain_definition.terrain_size.x,
-		terrain_definition.height_scale,
+	return sampler.generate_height_grid(
+		chunk_bounds,
 		resolution,
-		0  # padding
-	])
-	GpuResourceHelper.dispatch_compute_2d(
-		rd, pipeline_rid, uniform_set,
-		push_constants, resolution, resolution, 8
+		terrain_definition.terrain_size.x,
+		terrain_definition.height_scale
 	)
-	var result_bytes := rd.buffer_get_data(output_buffer)
-	var result := result_bytes.to_float32_array()
-	GpuResourceHelper.free_rids(rd, [
-		uniform_set, output_buffer, delta_buffer, delta_params_buffer,
-		heightmap_texture, sampler
-	])
-	return result
 
 func _build_mesh_gpu(
 	rd: RenderingDevice,

@@ -13,12 +13,15 @@ var _base_resolution: int = 64
 var _generation_strategy: ChunkGenerationStrategy
 var _owned_heightmap: Image = null
 
+var _native_sampler: HeightmapSamplerNative = null
+
 func _init(terrain_def: TerrainDefinition, base_resolution: int, use_gpu: bool) -> void:
 	_terrain_definition = terrain_def
 	_base_resolution = clampi(base_resolution, MIN_RESOLUTION, MAX_RESOLUTION)
-	var source_heightmap := terrain_def.get_base_heightmap()
-	if source_heightmap:
-		_owned_heightmap = source_heightmap.duplicate()
+	_native_sampler = HeightmapSamplerNative.new()
+	var hmap := terrain_def.get_base_heightmap()
+	if hmap:
+		_native_sampler.bake_heightmap(hmap)
 	if use_gpu:
 		_generation_strategy = GpuChunkGenerationStrategy.new()
 	else:
@@ -28,15 +31,15 @@ func update_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: i
 	if not _terrain_definition or not _terrain_definition.is_valid():
 		push_error("ChunkGenerator: Invalid terrain definition")
 		return null
-
 	if cache and cache.has_chunk_with_lod(coord, lod_level):
 		return cache.get_chunk(coord)
 	var chunk_bounds = _calculate_chunk_bounds(_terrain_definition, coord, chunk_size)
 	var resolution = _generation_strategy.calculate_resolution_for_lod(_base_resolution, lod_level)
-	var height_grid := _generation_strategy.generate_height_grid(_terrain_definition, _owned_heightmap, chunk_bounds, resolution)
-	OS.delay_msec(25)
-	return ChunkMeshData.new(coord, Vector3(0,0, 0), chunk_size, MeshData.new(PackedVector3Array()), lod_level)
-
+	var height_grid := _generation_strategy.generate_height_grid(
+		_terrain_definition, _native_sampler, chunk_bounds, resolution
+	)
+	#OS.delay_msec(25)
+	#return ChunkMeshData.new(coord, Vector3(0,0, 0), chunk_size, MeshData.new(PackedVector3Array()), lod_level)
 	var mesh_data = _generation_strategy.generate_chunk(
 		_terrain_definition, chunk_bounds, lod_level, resolution, height_grid
 	)
@@ -55,12 +58,8 @@ func update_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: i
 	return chunk_mesh_data
 
 func duplicate() -> ChunkGenerator:
-	var copy := ChunkGenerator.new(_terrain_definition, _base_resolution, false)
-	if _generation_strategy.get_processor_type() == ChunkGenerationStrategy.ProcessorType.GPU:
-		copy._generation_strategy = GpuChunkGenerationStrategy.new()
-	else:
-		copy._generation_strategy = CpuChunkGenerationStrategy.new()
-	return copy
+	return ChunkGenerator.new(_terrain_definition, _base_resolution,
+		_generation_strategy.get_processor_type() == ChunkGenerationStrategy.ProcessorType.GPU)
 
 func _calculate_chunk_bounds(
 	terrain_definition: TerrainDefinition,

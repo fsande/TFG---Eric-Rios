@@ -35,7 +35,7 @@ func generate_chunk(
 func supports_async() -> bool
 
 @abstract
-func generate_height_grid(terrain_definition: TerrainDefinition, base_heightmap: Image, chunk_bounds: AABB, resolution: int) -> PackedFloat32Array
+func generate_height_grid(terrain_definition: TerrainDefinition, sampler: HeightmapSamplerNative, chunk_bounds: AABB, resolution: int) -> PackedFloat32Array
 
 func dispose() -> void:
 	pass

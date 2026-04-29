@@ -1,0 +1,12 @@
+[configuration]
+entry_symbol = "terrain_native_init"
+compatibility_minimum = "4.2"
+reloadable = true
+
+[libraries]
+windows.debug.x86_64   = "res://terrain_native/bin/libterrain_native.windows.template_debug.x86_64.dll"
+windows.release.x86_64 = "res://terrain_native/bin/libterrain_native.windows.template_release.x86_64.dll"
+linux.debug.x86_64     = "res://terrain_native/bin/libterrain_native.linux.template_debug.x86_64.so"
+linux.release.x86_64   = "res://terrain_native/bin/libterrain_native.linux.template_release.x86_64.so"
+macos.debug             = "res://terrain_native/bin/libterrain_native.macos.template_debug.framework"
+macos.release           = "res://terrain_native/bin/libterrain_native.macos.template_release.framework"
