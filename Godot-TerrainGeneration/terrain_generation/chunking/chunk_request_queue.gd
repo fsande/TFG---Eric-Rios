@@ -9,9 +9,8 @@ var _max_concurrent_requests: int = 16
 var _cache: ChunkCache = null
 var _generator_pool: Array[ChunkGenerator] = []
 
-# One thread + one generator per slot
 var _threads: Array[Thread] = []
-var _work_semaphore: Semaphore = Semaphore.new()  # posted when new work arrives
+var _work_semaphore: Semaphore = Semaphore.new()
 var _shutdown: bool = false
 
 func _init(generator: ChunkGenerator, cache: ChunkCache, max_concurrent: int) -> void:
@@ -35,7 +34,7 @@ func request_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int, collisi
 	var request := ChunkRequest.new(coord, chunk_size, lod_level, collision_lod, required_lod_for_collision, priority)
 	_pending_requests[key] = request
 	_request_mutex.unlock()
-	_work_semaphore.post()  # wake one worker
+	_work_semaphore.post()
 
 func _worker_loop(slot: int) -> void:
 	var generator := _generator_pool[slot]
@@ -115,14 +114,13 @@ func cancel_all() -> void:
 		_pending_requests[key].mark_cancelled()
 	_pending_requests.clear()
 	_request_mutex.unlock()
-	# Wake all threads so they can see _shutdown if needed
 	for i in _threads.size():
 		_work_semaphore.post()
 
 func shutdown() -> void:
 	_shutdown = true
 	for i in _threads.size():
-		_work_semaphore.post()  # unblock each waiting thread
+		_work_semaphore.post() 
 	for thread in _threads:
 		thread.wait_to_finish()
 	_threads.clear()

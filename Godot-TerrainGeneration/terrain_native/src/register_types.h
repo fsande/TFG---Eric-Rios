@@ -1,4 +1,5 @@
-#pragma once
+#ifndef REGISTER_TYPES_H
+#define REGISTER_TYPES_H
 
 #include <godot_cpp/core/class_db.hpp>
 
@@ -21,3 +22,5 @@ void initialize_terrain_native(godot::ModuleInitializationLevel p_level);
  *  @param p_level Current initialization level.
  */
 void uninitialize_terrain_native(godot::ModuleInitializationLevel p_level);
+
+#endif // REGISTER_TYPES_H

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HEIGHTMAP_SAMPLER_H
+#define HEIGHTMAP_SAMPLER_H
 
 #include <godot_cpp/classes/image.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
@@ -87,3 +88,5 @@ private:
 };
 
 } // namespace godot
+
+#endif // HEIGHTMAP_SAMPLER_H

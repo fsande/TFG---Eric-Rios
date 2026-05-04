@@ -22,36 +22,26 @@ void MeshData::_bind_methods() {
   ClassDB::bind_method(D_METHOD("set_cached_tangents", "t"), &MeshData::set_cached_tangents);
   ClassDB::bind_method(D_METHOD("get_width"), &MeshData::get_width);
   ClassDB::bind_method(D_METHOD("set_width", "w"), &MeshData::set_width);
-
   ClassDB::bind_method(D_METHOD("get_height_val"), &MeshData::get_height_val);
   ClassDB::bind_method(D_METHOD("set_height_val", "h"), &MeshData::set_height_val);
-
   ClassDB::bind_method(D_METHOD("get_mesh_size"), &MeshData::get_mesh_size);
   ClassDB::bind_method(D_METHOD("set_mesh_size", "s"), &MeshData::set_mesh_size);
   ClassDB::bind_method(D_METHOD("get_elapsed_time_ms"), &MeshData::get_elapsed_time_ms);
   ClassDB::bind_method(D_METHOD("set_elapsed_time_ms", "t"), &MeshData::set_elapsed_time_ms);
   ClassDB::bind_method(D_METHOD("get_processor_type"), &MeshData::get_processor_type);
   ClassDB::bind_method(D_METHOD("set_processor_type", "s"), &MeshData::set_processor_type);
-
   ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices"), "set_vertices", "get_vertices");
   ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "indices"), "set_indices", "get_indices");
   ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "uvs"), "set_uvs", "get_uvs");
   ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "cached_normals"), "set_cached_normals", "get_cached_normals");
   ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR4_ARRAY, "cached_tangents"), "set_cached_tangents", "get_cached_tangents");
   ADD_PROPERTY(PropertyInfo(Variant::INT, "width"), "set_width", "get_width");
-
-  // GDScript accesses this as .height
   ADD_PROPERTY(PropertyInfo(Variant::INT, "height"), "set_height_val", "get_height_val");
-
   ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "mesh_size"), "set_mesh_size", "get_mesh_size");
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "elapsed_time_ms"), "set_elapsed_time_ms", "get_elapsed_time_ms");
   ADD_PROPERTY(PropertyInfo(Variant::STRING, "processor_type"), "set_processor_type", "get_processor_type");
-
   ClassDB::bind_method(D_METHOD("initialize", "vertices", "indices", "uvs"), &MeshData::initialize);
-
-  // One-step factory for scripts (avoid the reserved `new()` constructor syntax).
   ClassDB::bind_static_method(get_class_static(), D_METHOD("create", "vertices", "indices", "uvs"), &MeshData::create);
-
   ClassDB::bind_method(D_METHOD("get_vertex_count"), &MeshData::get_vertex_count);
   ClassDB::bind_method(D_METHOD("get_triangle_count"), &MeshData::get_triangle_count);
   ClassDB::bind_method(D_METHOD("is_valid_index", "i"), &MeshData::is_valid_index);

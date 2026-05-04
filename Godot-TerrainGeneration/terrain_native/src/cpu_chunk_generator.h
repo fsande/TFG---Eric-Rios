@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CPU_CHUNK_GENERATOR_H
+#define CPU_CHUNK_GENERATOR_H
 
 #include "heightmap_sampler.h"
 #include "mesh_data.h"
@@ -118,3 +119,4 @@ private:
 };
 
 } // namespace godot
+#endif // CPU_CHUNK_GENERATOR_H

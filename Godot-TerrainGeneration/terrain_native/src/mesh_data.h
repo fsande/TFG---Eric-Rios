@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MESH_DATA_H
+#define MESH_DATA_H
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/core/object.hpp>
@@ -98,3 +99,4 @@ protected:
 };
 
 } // namespace godot
+#endif // MESH_DATA_H

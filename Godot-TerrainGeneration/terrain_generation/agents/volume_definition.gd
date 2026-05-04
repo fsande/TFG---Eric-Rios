@@ -9,7 +9,7 @@ class_name VolumeDefinition extends Resource
 ## Type of volume operation
 enum VolumeType {
 	SUBTRACTIVE,  ## Carves into terrain
-	ADDITIVE      ## Adds geometry
+	ADDITIVE  ## Adds geometry
 }
 
 ## The type of volume operation
@@ -52,7 +52,6 @@ func should_apply_at_lod(lod_level: int) -> bool:
 ## @return True if volume affects this chunk
 func intersects_chunk(chunk_bounds: AABB) -> bool:
 	return bounds.intersects(chunk_bounds)
-
 
 ## Check if a point is inside this volume.
 ## @param point World-space point to check

@@ -69,12 +69,10 @@ void CpuChunkGeneratorNative::_build_height_grid(float *dst,
                                                 float inv_terrain,
                                                 float height_scale) const {
   const float inv_res = resolution > 1 ? 1.0f / float(resolution - 1) : 0.0f;
-
   for (int z = 0; z < resolution; ++z) {
     const float v_local = resolution > 1 ? float(z) * inv_res : 0.5f;
     const float world_z = bz + v_local * sz;
     const float map_v = (world_z + half_terrain) * inv_terrain;
-
     for (int x = 0; x < resolution; ++x) {
       const float u_local = resolution > 1 ? float(x) * inv_res : 0.5f;
       const float world_x = bx + u_local * sx;
@@ -93,7 +91,6 @@ PackedFloat32Array CpuChunkGeneratorNative::generate_height_grid(AABB chunk_boun
     UtilityFunctions::push_error("CpuChunkGeneratorNative: not baked");
     return result;
   }
-
   result.resize(resolution * resolution);
   _build_height_grid(result.ptrw(),
                      resolution,
@@ -114,23 +111,18 @@ PackedFloat32Array CpuChunkGeneratorNative::generate_height_grid(AABB chunk_boun
 Ref<MeshData> CpuChunkGeneratorNative::_build_mesh(const float *height_grid, int resolution, AABB chunk_bounds) const {
   const int vert_count = resolution * resolution;
   const int quad_count = (resolution - 1) * (resolution - 1);
-
   PackedVector3Array vertices;
   PackedVector2Array uvs;
   PackedInt32Array indices;
   vertices.resize(vert_count);
   uvs.resize(vert_count);
   indices.resize(quad_count * 6);
-
   Vector3 *vptr = vertices.ptrw();
   Vector2 *uptr = uvs.ptrw();
   int *iptr = indices.ptrw();
-
   const float inv_res = resolution > 1 ? 1.0f / float(resolution - 1) : 0.0f;
   const float hsx = chunk_bounds.size.x;
   const float hsz = chunk_bounds.size.z;
-
-  // Vertices and UVs
   for (int z = 0; z < resolution; ++z) {
     const float v = resolution > 1 ? float(z) * inv_res : 0.5f;
     for (int x = 0; x < resolution; ++x) {
@@ -141,8 +133,6 @@ Ref<MeshData> CpuChunkGeneratorNative::_build_mesh(const float *height_grid, int
       uptr[idx] = Vector2(u, v);
     }
   }
-
-  // Indices — two triangles per quad, matching GDScript winding order
   int i = 0;
   for (int z = 0; z < resolution - 1; ++z) {
     for (int x = 0; x < resolution - 1; ++x) {
@@ -158,7 +148,6 @@ Ref<MeshData> CpuChunkGeneratorNative::_build_mesh(const float *height_grid, int
       iptr[i++] = v2;
     }
   }
-
   Ref<MeshData> mesh;
   mesh.instantiate();
   mesh->initialize(vertices, indices, uvs);
@@ -167,10 +156,6 @@ Ref<MeshData> CpuChunkGeneratorNative::_build_mesh(const float *height_grid, int
   mesh->mesh_size = Vector2(hsx, hsz);
   return mesh;
 }
-
-// ---------------------------------------------------------------------------
-// Normal calculation — matches MeshNormalCalculator.calculate_normals exactly
-// ---------------------------------------------------------------------------
 
 void CpuChunkGeneratorNative::_calculate_normals(PackedVector3Array &out_normals,
                                                 const PackedVector3Array &vertices,
@@ -256,7 +241,6 @@ void CpuChunkGeneratorNative::_calculate_tangents(PackedVector4Array &out_tangen
   }
 }
 
-// Public API
 
 Ref<MeshData> CpuChunkGeneratorNative::generate_chunk(AABB chunk_bounds,
                                                      int resolution,

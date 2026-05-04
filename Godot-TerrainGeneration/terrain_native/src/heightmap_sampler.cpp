@@ -23,14 +23,10 @@ void HeightmapSamplerNative::bake_heightmap(const Ref<Image> &heightmap) {
     UtilityFunctions::push_error("HeightmapSamplerNative: null heightmap passed to bake_heightmap");
     return;
   }
-
   _width = heightmap->get_width();
   _height = heightmap->get_height();
   _data.resize(_width * _height);
-
   float *dst = _data.ptrw();
-  // Read all pixels once. Image::get_pixel is not thread-safe to call concurrently, so we bake here
-  // on the main thread and read in parallel later.
   for (int y = 0; y < _height; ++y) {
     for (int x = 0; x < _width; ++x) {
       dst[y * _width + x] = heightmap->get_pixel(x, y).r;
@@ -64,12 +60,10 @@ PackedFloat32Array HeightmapSamplerNative::generate_height_grid(AABB chunk_bound
                                                                 float terrain_size,
                                                                 float height_scale) const {
   PackedFloat32Array result;
-
   if (_width == 0 || _height == 0) {
     UtilityFunctions::push_error("HeightmapSamplerNative: not baked — call bake_heightmap first");
     return result;
   }
-
   result.resize(resolution * resolution);
   float *dst = result.ptrw();
   const float half_size = terrain_size * 0.5f;
@@ -83,7 +77,6 @@ PackedFloat32Array HeightmapSamplerNative::generate_height_grid(AABB chunk_bound
     const float v_local = resolution > 1 ? float(z) * inv_res_1 : 0.5f;
     const float world_z = bz + v_local * sz;
     const float map_v = (world_z + half_size) * inv_terrain;
-
     for (int x = 0; x < resolution; ++x) {
       const float u_local = resolution > 1 ? float(x) * inv_res_1 : 0.5f;
       const float world_x = bx + u_local * sx;
@@ -91,7 +84,6 @@ PackedFloat32Array HeightmapSamplerNative::generate_height_grid(AABB chunk_bound
       dst[z * resolution + x] = _sample(map_u, map_v) * height_scale;
     }
   }
-
   return result;
 }
 
