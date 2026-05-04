@@ -32,8 +32,6 @@ func update_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: i
 	var height_grid := _generation_strategy.generate_height_grid(
 		_terrain_definition, chunk_bounds, resolution, 
 	)
-	#OS.delay_msec(25)
-	#return ChunkMeshData.new(coord, Vector3(0,0, 0), chunk_size, MeshData.create(PackedVector3Array()), lod_level)
 	var mesh_data = _generation_strategy.generate_chunk(
 		_terrain_definition, chunk_bounds, lod_level, resolution, height_grid
 	)
