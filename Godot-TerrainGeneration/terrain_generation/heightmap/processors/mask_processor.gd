@@ -107,13 +107,11 @@ func _simple_mask_multiply(heightmap: Image, mask: Image) -> Image:
 	var result := heightmap.duplicate()
 	var width := heightmap.get_width()
 	var height := heightmap.get_height()
-	
 	for y in height:
 		for x in width:
 			var height_value := heightmap.get_pixel(x, y).r
 			var mask_value := mask.get_pixel(x, y).r
 			result.set_pixel(x, y, Color(height_value * mask_value, 0, 0))
-	
 	return result
 
 ## Advanced masking with edge transitions

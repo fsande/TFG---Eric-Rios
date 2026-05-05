@@ -378,7 +378,6 @@
     <Content Include="terrain_generation\heightmap\processors\mask_processor.gd" />
     <Content Include="terrain_generation\heightmap\processors\normalization_processor.gd" />
     <Content Include="terrain_generation\heightmap\processors\rune_erosion.gd" />
-    <Content Include="terrain_generation\heightmap\processors\shaders\base_rune.glsl" />
     <Content Include="terrain_generation\heightmap\processors\shaders\blur_processor.glsl" />
     <Content Include="terrain_generation\heightmap\processors\shaders\normalization_processor.glsl" />
     <Content Include="terrain_generation\heightmap\processors\shaders\rune_erosion.glsl" />

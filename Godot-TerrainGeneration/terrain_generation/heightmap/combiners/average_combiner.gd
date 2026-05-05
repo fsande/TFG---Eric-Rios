@@ -22,14 +22,15 @@ func _get_shader_path() -> String:
 func _combine_average_cpu(images: Array[Image]) -> Image:
 	if images.is_empty():
 		return null
-	var resized_images := ImageHelper.resize_images_to_largest(images)	
+	var resized_images := ImageHelper.resize_images_to_largest(images)
 	var max_width := resized_images[0].get_width()
 	var max_height := resized_images[0].get_height()
-	var result := Image.create(max_width, max_height, false, Image.FORMAT_RF)
-	for y in max_height:
-		for x in max_width:
-			var sum := 0.0
-			for img in resized_images:
-				sum += img.get_pixel(x, y).r
-			result.set_pixel(x, y, Color(sum / resized_images.size(), 0, 0))
-	return result
+	var data := PackedFloat32Array()
+	data.resize(max_width * max_height)
+	for img in resized_images:
+		var img_data := img.get_data().to_float32_array()
+		for i in data.size():
+			data[i] += img_data[i]
+	for i in data.size():
+		data[i] /= resized_images.size()
+	return Image.create_from_data(max_width, max_height, false, Image.FORMAT_RF, data.to_byte_array())

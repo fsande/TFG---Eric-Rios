@@ -23,23 +23,17 @@ class_name NoiseHeightmapSource extends HeightmapSource
 		heightmap_changed.emit()
 
 func generate(context: ProcessingContext) -> Image:
-	var start_time := Time.get_ticks_msec()
 	if not noise:
 		push_error("NoiseHeightmapSource: No noise configured")
-		var elapsed := Time.get_ticks_msec() - start_time
-		context.complete_substep("Noise Source", elapsed)
+		context.complete_substep("Noise Source", 0)
 		return null
-	var img := Image.create(resolution, resolution, false, Image.FORMAT_RF)
+	var start_time := Time.get_ticks_msec()
 	var new_noise: FastNoiseLite = noise.duplicate()
 	new_noise.frequency = frequency / context.terrain_size
 	if context.generation_seed != 0:
 		new_noise.seed = context.generation_seed
-	for y in resolution:
-		for x in resolution:
-			var nx := float(x) / resolution * context.terrain_size
-			var ny := float(y) / resolution * context.terrain_size
-			var h := (new_noise.get_noise_2d(nx, ny) + 1.0) / 2.0
-			img.set_pixel(x, y, Color(h, 0, 0))
+	var img := new_noise.get_image(resolution, resolution, false, false, true)
+	img.convert(Image.FORMAT_RF)
 	var elapsed := Time.get_ticks_msec() - start_time
 	context.complete_substep("Noise Source", elapsed)
 	return img

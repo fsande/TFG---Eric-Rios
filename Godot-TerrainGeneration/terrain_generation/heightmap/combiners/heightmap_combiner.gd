@@ -83,46 +83,37 @@ func _create_default_params_buffer(rd: RenderingDevice, width: int, height: int,
 
 ## Generalized GPU combine execution - resizes images, creates textures, executes shader
 func _execute_gpu_combine(images: Array[Image], rd: RenderingDevice, shader: RID) -> Image:
-	var pipeline := rd.compute_pipeline_create(shader)
-	if images.is_empty():
-		return null
 	var resized_images: Array[Image] = ImageHelper.resize_images_to_largest(images)
-	var max_width := resized_images[0].get_width()
-	var max_height := resized_images[0].get_height()
+	var width := resized_images[0].get_width()
+	var height := resized_images[0].get_height()
+	var num_actual_images := resized_images.size()
 	var input_textures: Array[RID] = []
 	for img in resized_images:
 		input_textures.append(GpuTextureHelper.create_texture_from_image(rd, img))
-	var num_actual_images := resized_images.size()
-	if input_textures.size() > 0:
-		while input_textures.size() < MAX_GPU_IMAGES:
-			input_textures.append(input_textures[0])
-	var output_texture := GpuTextureHelper.create_empty_texture(rd, max_width, max_height)
-	_dispatch_compute_shader(rd, pipeline, shader, input_textures, output_texture, max_width, max_height, num_actual_images)
-	var result := GpuTextureHelper.read_texture_to_image(rd, output_texture, max_width, max_height)
-	var rids: Array[RID] = [output_texture, pipeline]
-	for i in range(num_actual_images):
-		rids.append(input_textures[i])
-	GpuResourceHelper.free_rids(rd, rids)
-	return result
-
-## Dispatch compute shader with uniform sets
-func _dispatch_compute_shader(rd: RenderingDevice, pipeline: RID, shader: RID, input_textures: Array[RID], output_tex: RID, width: int, height: int, num_images: int) -> void:
-	var uniform_output := GpuResourceHelper.create_image_uniform(0, output_tex)
+	while input_textures.size() < MAX_GPU_IMAGES:
+		input_textures.append(input_textures[0])
+	var output_texture := GpuTextureHelper.create_empty_texture(rd, width, height)
+	var params_buffer := _create_params_buffer(rd, width, height, num_actual_images)
+	var pipeline := rd.compute_pipeline_create(shader)
+	var uniform_output := GpuResourceHelper.create_image_uniform(0, output_texture)
 	var uniform_inputs := GpuResourceHelper.create_image_uniform(1, input_textures[0])
 	for i in range(1, input_textures.size()):
 		uniform_inputs.add_id(input_textures[i])
-	var texture_uniform_set := rd.uniform_set_create([uniform_output, uniform_inputs], shader, 0)
-	var params_buffer := _create_params_buffer(rd, width, height, num_images)
-	var params_uniform_set := GpuTextureHelper.create_params_uniform_set(rd, params_buffer, shader)
-	var groups_x := ceili(float(width) / 8.0)
-	var groups_y := ceili(float(height) / 8.0)
+	var texture_set := rd.uniform_set_create([uniform_output, uniform_inputs], shader, 0)
+	var params_set := GpuTextureHelper.create_params_uniform_set(rd, params_buffer, shader, 0, 1)
+	var groups_x := ceili(float(width) / 16.0)
+	var groups_y := ceili(float(height) / 16.0)
 	var compute_list := rd.compute_list_begin()
 	rd.compute_list_bind_compute_pipeline(compute_list, pipeline)
-	rd.compute_list_bind_uniform_set(compute_list, texture_uniform_set, 0)
-	rd.compute_list_bind_uniform_set(compute_list, params_uniform_set, 1)
+	rd.compute_list_bind_uniform_set(compute_list, texture_set, 0)
+	rd.compute_list_bind_uniform_set(compute_list, params_set, 1)
 	rd.compute_list_dispatch(compute_list, groups_x, groups_y, 1)
 	rd.compute_list_end()
 	rd.submit()
 	rd.sync()
-	var rids: Array[RID] = [texture_uniform_set, params_uniform_set, params_buffer]
-	GpuResourceHelper.free_rids(rd, rids)
+	var result := GpuTextureHelper.read_texture_to_image(rd, output_texture, width, height)
+	var rids_to_free: Array[RID] = [output_texture, params_buffer, pipeline]
+	for i in num_actual_images:
+		rids_to_free.append(input_textures[i])
+	GpuResourceHelper.free_rids(rd, rids_to_free)
+	return result

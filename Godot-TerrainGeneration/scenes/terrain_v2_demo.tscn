@@ -1,44 +1,64 @@
-[gd_scene load_steps=18 format=3 uid="uid://dxeaepbn0e70i"]
+[gd_scene load_steps=24 format=3 uid="uid://dxeaepbn0e70i"]
 
 [ext_resource type="Script" uid="uid://d4kx2s55wfs1e" path="res://terrain_generation/core/terrain_presenter_v2.gd" id="1_presenter"]
-[ext_resource type="Script" uid="uid://d30u6ur3uvl8d" path="res://terrain_generation/heightmap/processors/blur_processor.gd" id="2_4puc5"]
-[ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="2_rm4ox"]
-[ext_resource type="Script" uid="uid://x7gc7eg20w0b" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="3_52bqv"]
+[ext_resource type="Script" uid="uid://kitxbuupmn2j" path="res://terrain_generation/heightmap/combiners/weighted_combiner.gd" id="2_ap5ce"]
+[ext_resource type="Script" uid="uid://bex5sqputtgkm" path="res://terrain_generation/heightmap/sources/composite_heightmap_source.gd" id="3_4fayk"]
 [ext_resource type="Script" uid="uid://d20wukn6i78rj" path="res://terrain_generation/chunking/strategies/grid_load_strategy_v2.gd" id="3_cvtr7"]
 [ext_resource type="Script" uid="uid://bnxkyhqx7vwqh" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="4_4puc5"]
 [ext_resource type="Script" uid="uid://deo7c5axedvvw" path="res://terrain_generation/debug/terrain_debug_hud.gd" id="4_hud"]
+[ext_resource type="Script" uid="uid://0igih326n7n3" path="res://terrain_generation/heightmap/sources/heightmap_source.gd" id="4_oqt66"]
 [ext_resource type="Script" uid="uid://c102x3r645g6y" path="res://terrain_generation/props/prop_placement_rule.gd" id="5_52bqv"]
+[ext_resource type="Script" uid="uid://byh53w6k375jl" path="res://terrain_generation/heightmap/sources/texture_heightmap_source.gd" id="5_b4i1g"]
 [ext_resource type="Script" uid="uid://bxs2dr6xxfyed" path="res://terrain_generation/configuration/terrain_configuration_v2.gd" id="6_ap5ce"]
+[ext_resource type="Material" uid="uid://dmlbneowgjfqy" path="res://assets/materials/terrain_mat2.tres" id="10_ap5ce"]
 [ext_resource type="PackedScene" uid="uid://c5010npvryyqd" path="res://scenes/fly_camera.tscn" id="15_b4i1g"]
 
-[sub_resource type="Resource" id="Resource_4puc5"]
-script = ExtResource("2_4puc5")
-metadata/_custom_type_script = "uid://d30u6ur3uvl8d"
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_4fayk"]
-
-[sub_resource type="Resource" id="Resource_oqt66"]
-script = ExtResource("2_rm4ox")
-frequency = 12.0
-noise = SubResource("FastNoiseLite_4fayk")
-
 [sub_resource type="Resource" id="Resource_4fayk"]
-script = ExtResource("3_52bqv")
-source = SubResource("Resource_oqt66")
-processor = SubResource("Resource_4puc5")
-metadata/_custom_type_script = "uid://x7gc7eg20w0b"
+script = ExtResource("2_ap5ce")
+weights = Array[float]([10.0, 0.1])
+metadata/_custom_type_script = "uid://kitxbuupmn2j"
+
+[sub_resource type="Gradient" id="Gradient_215up"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_a8qn4"]
+gradient = SubResource("Gradient_215up")
+fill_to = Vector2(1, 1)
+
+[sub_resource type="Resource" id="Resource_obh5s"]
+script = ExtResource("5_b4i1g")
+heightmap_texture = SubResource("GradientTexture2D_a8qn4")
+metadata/_custom_type_script = "uid://byh53w6k375jl"
+
+[sub_resource type="Gradient" id="Gradient_dk27i"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_00p1n"]
+gradient = SubResource("Gradient_dk27i")
+
+[sub_resource type="Resource" id="Resource_bqotf"]
+script = ExtResource("5_b4i1g")
+heightmap_texture = SubResource("GradientTexture2D_00p1n")
+metadata/_custom_type_script = "uid://byh53w6k375jl"
+
+[sub_resource type="Resource" id="Resource_spfy5"]
+script = ExtResource("3_4fayk")
+sources = Array[ExtResource("4_oqt66")]([SubResource("Resource_obh5s"), SubResource("Resource_bqotf")])
+combiner = SubResource("Resource_4fayk")
+metadata/_custom_type_script = "uid://bex5sqputtgkm"
 
 [sub_resource type="Resource" id="Resource_b4i1g"]
 script = ExtResource("3_cvtr7")
 
 [sub_resource type="Resource" id="Resource_ibtys"]
 script = ExtResource("6_ap5ce")
-heightmap_source = SubResource("Resource_4fayk")
+heightmap_source = SubResource("Resource_spfy5")
 terrain_size = Vector2(2048, 2048)
+height_scale = 200.0
 base_chunk_resolution = 256
 load_strategy = SubResource("Resource_b4i1g")
+max_concurrent_chunk_requests = 28
 use_gpu_heightmap = true
 enable_sea = false
+terrain_material = ExtResource("10_ap5ce")
 generate_collision = false
 metadata/_custom_type_script = "uid://cx1d1s65igqbm"
 
@@ -81,4 +101,4 @@ light_color = Color(0.862678, 0.5543531, 0.6468668, 1)
 shadow_enabled = true
 
 [node name="FlyCamera" parent="." instance=ExtResource("15_b4i1g")]
-transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, 10.092766, 31.02716, 1.9351826)
+transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, 7.570442, 31.02716, 8.867163)

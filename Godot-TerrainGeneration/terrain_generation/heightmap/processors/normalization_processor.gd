@@ -34,48 +34,37 @@ class_name NormalizationProcessor extends HeightmapProcessor
 ## @param _context: Processing context (unused for this processor)
 ## @return: A new image with normalized values
 func process_cpu(input: Image, _context: ProcessingContext) -> Image:
-	var result := input.duplicate()
-	var current_min := 1.0
-	var current_max := 0.0
-	for y in input.get_height():
-		for x in input.get_width():
-			var value := input.get_pixel(x, y).r
-			current_min = min(current_min, value)
-			current_max = max(current_max, value)
+	var data := input.get_data().to_float32_array()
+	var current_min := data[0]
+	var current_max := data[0]
+	for v in data:
+		if v < current_min: current_min = v
+		if v > current_max: current_max = v
 	var range_current := current_max - current_min
 	var range_target := max_value - min_value
 	if range_current > 0.0001:
-		for y in input.get_height():
-			for x in input.get_width():
-				var value := input.get_pixel(x, y).r
-				var normalized := (value - current_min) / range_current
-				var remapped := normalized * range_target + min_value
-				result.set_pixel(x, y, Color(remapped, 0, 0))
+		var inv_range := range_target / range_current
+		for i in data.size():
+			data[i] = (data[i] - current_min) * inv_range + min_value
 	else:
 		var midpoint := (min_value + max_value) * 0.5
-		for y in input.get_height():
-			for x in input.get_width():
-				result.set_pixel(x, y, Color(midpoint, 0, 0))
-	print("CPU ALL ALONG")
-	return result
-
+		for i in data.size():
+			data[i] = midpoint
+	return Image.create_from_data(input.get_width(), input.get_height(), false, Image.FORMAT_RF, data.to_byte_array())
 
 func process_gpu(input: Image, context: ProcessingContext) -> Image:
 	var rd := context.get_rendering_device()
 	if not rd:
-		push_warning("NormalizationProcessor: No rendering device available, using CPU")
 		return process_cpu(input, context)
 	var shader := context.get_or_create_shader("res://terrain_generation/heightmap/processors/shaders/normalization_processor.glsl")
 	if not shader.is_valid():
-		push_warning("NormalizationProcessor: GPU shader not available, using CPU")
 		return process_cpu(input, context)
-	var min_input := 1.0
-	var max_input := 0.0
-	for y in input.get_height():
-		for x in input.get_width():
-			var v := input.get_pixel(x, y).r
-			min_input = min(min_input, v)
-			max_input = max(max_input, v)
+	var data := input.get_data().to_float32_array()
+	var min_input := data[0]
+	var max_input := data[0]
+	for v in data:
+		if v < min_input: min_input = v
+		if v > max_input: max_input = v
 	var width := input.get_width()
 	var height := input.get_height()
 	var input_tex := GpuTextureHelper.create_texture_from_image(rd, input)
@@ -89,20 +78,21 @@ func process_gpu(input: Image, context: ProcessingContext) -> Image:
 	params_bytes.encode_float(16, min_input)
 	params_bytes.encode_float(20, max_input)
 	var params_buffer := rd.storage_buffer_create(params_bytes.size(), params_bytes)
-	var params_uniform_set := GpuTextureHelper.create_params_uniform_set(rd, params_buffer, shader, 2)
-	var uniform_set := GpuTextureHelper.create_image_uniform_set(rd, input_tex, output_tex, shader)
-	var groups_x := ceili(float(width) / 8.0)
-	var groups_y := ceili(float(height) / 8.0)
+	var params_set := GpuTextureHelper.create_params_uniform_set(rd, params_buffer, shader, 0, 1)
+	var image_set := GpuTextureHelper.create_image_uniform_set(rd, input_tex, output_tex, shader)
+	var pipeline := rd.compute_pipeline_create(shader)
+	var groups_x := ceili(float(width) / 16.0)
+	var groups_y := ceili(float(height) / 16.0)
 	var cl := rd.compute_list_begin()
-	rd.compute_list_bind_compute_pipeline(cl, rd.compute_pipeline_create(shader))
-	rd.compute_list_bind_uniform_set(cl, uniform_set, 0)
-	rd.compute_list_bind_uniform_set(cl, params_uniform_set, 1)
+	rd.compute_list_bind_compute_pipeline(cl, pipeline)
+	rd.compute_list_bind_uniform_set(cl, image_set, 0)
+	rd.compute_list_bind_uniform_set(cl, params_set, 1)
 	rd.compute_list_dispatch(cl, groups_x, groups_y, 1)
 	rd.compute_list_end()
 	rd.submit()
 	rd.sync()
 	var result := GpuTextureHelper.read_texture_to_image(rd, output_tex, width, height)
-	GpuResourceHelper.free_rids(rd, [input_tex, output_tex, params_buffer])
+	GpuResourceHelper.free_rids(rd, [input_tex, output_tex, params_buffer, pipeline])
 	return result
 
 ## Returns a human-readable name for this processor.

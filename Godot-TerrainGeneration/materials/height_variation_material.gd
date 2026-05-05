@@ -59,16 +59,22 @@ func _get_orm_textures(layers: Array[HeightLayer]) -> Array[Image]:
 		rough_img.decompress()
 		var metal_img := _get_single_channel(layer.material.metallic_texture, base_size, 0.0)
 		metal_img.decompress()
-		var orm := Image.create(base_size.x, base_size.y, false, ORM_FORMAT)
-		for y in base_size.y:
-			for x in base_size.x:
-				orm.set_pixel(x, y, Color(
-					ao_img.get_pixel(x, y).r,
-					rough_img.get_pixel(x, y).r,
-					metal_img.get_pixel(x, y).r,
-					1.0
-				))
-		images.append(orm)
+		ao_img.convert(Image.FORMAT_RGBA8)
+		rough_img.convert(Image.FORMAT_RGBA8)
+		metal_img.convert(Image.FORMAT_RGBA8)
+		var ao_data := ao_img.get_data()
+		var rough_data := rough_img.get_data()
+		var metal_data := metal_img.get_data()
+		var pixel_count := base_size.x * base_size.y
+		var orm_data := PackedByteArray()
+		orm_data.resize(pixel_count * 4)
+		for i in pixel_count:
+			var src := i * 4
+			orm_data[src] = ao_data[src]
+			orm_data[src + 1] = rough_data[src]
+			orm_data[src + 2] = metal_data[src]
+			orm_data[src + 3] = 255
+		images.append(Image.create_from_data(base_size.x, base_size.y, false, ORM_FORMAT, orm_data))
 	return images
 
 ## Extracts a single-channel image from a texture, or returns a flat fallback
