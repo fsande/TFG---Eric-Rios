@@ -76,11 +76,11 @@ func _generate_chunk_gpu(
 		_emit_substep("volumes", (Time.get_ticks_usec() - t) / 1000.0)
 	if mesh_data.cached_normals.is_empty():
 		t = Time.get_ticks_usec()
-		mesh_data.cached_normals = MeshNormalCalculator.calculate_normals(mesh_data)
+#		mesh_data.cached_normals = MeshNormalCalculator.calculate_normals(mesh_data)
 		_emit_substep("normals", (Time.get_ticks_usec() - t) / 1000.0)
 	if mesh_data.cached_tangents.is_empty():
 		t = Time.get_ticks_usec()
-		mesh_data.cached_tangents = MeshTangentCalculator.calculate_tangents(mesh_data, mesh_data.cached_normals)
+#		mesh_data.cached_tangents = MeshTangentCalculator.calculate_tangents(mesh_data, mesh_data.cached_normals)
 		_emit_substep("tangents", (Time.get_ticks_usec() - t) / 1000.0)
 	return mesh_data
 

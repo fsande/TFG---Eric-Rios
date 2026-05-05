@@ -32,11 +32,19 @@ func generate(context: ProcessingContext) -> Image:
 	new_noise.frequency = frequency / context.terrain_size
 	if context.generation_seed != 0:
 		new_noise.seed = context.generation_seed
-	var img := new_noise.get_image(resolution, resolution, false, false, true)
-	img.convert(Image.FORMAT_RF)
+	var pixel_count := resolution * resolution
+	var data := PackedFloat32Array()
+	data.resize(pixel_count)
+	var terrain_size := context.terrain_size
+	var inv_resolution := 1.0 / resolution
+	for y in resolution:
+		var row_offset := y * resolution
+		var ny := y * inv_resolution * terrain_size
+		for x in resolution:
+			data[row_offset + x] = (new_noise.get_noise_2d(x * inv_resolution * terrain_size, ny) + 1.0) * 0.5
 	var elapsed := Time.get_ticks_msec() - start_time
 	context.complete_substep("Noise Source", elapsed)
-	return img
+	return Image.create_from_data(resolution, resolution, false, Image.FORMAT_RF, data.to_byte_array())
 
 func _on_noise_changed():
 	heightmap_changed.emit()

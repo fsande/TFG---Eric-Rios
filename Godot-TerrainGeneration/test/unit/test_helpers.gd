@@ -121,20 +121,6 @@ static func create_test_mesh_data(grid_size: int = 10) -> MeshData:
 	mesh_data.height = grid_size
 	return mesh_data
 
-## Create a test MeshGenerationResult with specified dimensions.
-static func create_test_mesh_generation_result(width: int = 10, height: int = 10) -> MeshGenerationResult:
-	var mesh_data := create_test_mesh_data(width)
-	var result := MeshGenerationResult.new(
-		mesh_data.vertices,
-		mesh_data.indices,
-		mesh_data.uvs,
-		0.0,
-		"CPU"
-	)
-	result.width = width
-	result.height = height
-	result.mesh_size = Vector2(100.0, 100.0)
-	return result
 
 ## Create a test ProcessingContext 
 static func create_test_processing_context(
@@ -310,39 +296,3 @@ static func count_vertices_at_height(vertices: PackedVector3Array, height: float
 		if floats_are_close(vertex.y, height, tolerance):
 			count += 1
 	return count
-
-## Create a test mesh with a linear slope.
-## @param mesh_size The width and height of the mesh grid
-## @param slope_x_multiplier Multiplier for X coordinate to create slope in X direction (0.0 for flat)
-## @param slope_y_multiplier Multiplier for Y coordinate to create slope in Z direction (0.0 for no Z slope)
-## @param slope_combined_multiplier Multiplier for (X+Y) to create diagonal slope (0.0 for no diagonal)
-## @returns MeshGenerationResult with the specified slope characteristics
-static func create_linear_slope_mesh(
-	mesh_size: int,
-	slope_x_multiplier: float = 0.0,
-	slope_y_multiplier: float = 0.0,
-	slope_combined_multiplier: float = 0.0
-) -> MeshGenerationResult:
-	var vertices := PackedVector3Array()
-	var indices := PackedInt32Array()
-	var uvs := PackedVector2Array()
-	for y in mesh_size:
-		for x in mesh_size:
-			var height := float(x) * slope_x_multiplier + \
-				float(y) * slope_y_multiplier + \
-				float(x + y) * slope_combined_multiplier
-			vertices.append(Vector3(float(x), height, float(y)))
-			uvs.append(Vector2(float(x) / float(mesh_size - 1), float(y) / float(mesh_size - 1)))
-	for y in mesh_size - 1:
-		for x in mesh_size - 1:
-			var i := y * mesh_size + x
-			indices.append(i)
-			indices.append(i + mesh_size)
-			indices.append(i + 1)
-			indices.append(i + 1)
-			indices.append(i + mesh_size)
-			indices.append(i + mesh_size + 1)
-	var result := MeshGenerationResult.new(vertices, indices, uvs, 0.0, "CPU")
-	result.width = mesh_size
-	result.height = mesh_size
-	return result

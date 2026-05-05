@@ -15,25 +15,30 @@ class_name WeightedCombiner extends HeightmapCombiner
 ## Combine images using the configured weights on CPU.
 func combine_cpu(images: Array[Image], _context: ProcessingContext) -> Image:
 	if images.is_empty():
-		return null	
+		return null
 	var resized_images := ImageHelper.resize_images_to_largest(images)
-	var max_width := resized_images[0].get_width()
-	var max_height := resized_images[0].get_height()
-	var result := Image.create(max_width, max_height, false, Image.FORMAT_RF)
-	var total_weight: float = 0.0
+	var width := resized_images[0].get_width()
+	var height := resized_images[0].get_height()
+	var pixel_count := width * height
+	var total_weight := 0.0
 	for i in resized_images.size():
-		var weight: float = weights[i] if i < weights.size() else 1.0
-		total_weight += weight
+		total_weight += weights[i] if i < weights.size() else 1.0
 	if total_weight == 0.0:
 		total_weight = 1.0
-	for y in max_height:
-		for x in max_width:
-			var weighted_sum := 0.0
-			for i in resized_images.size():
-				var weight: float = weights[i] if i < weights.size() else 1.0
-				weighted_sum += resized_images[i].get_pixel(x, y).r * weight
-			result.set_pixel(x, y, Color(weighted_sum / total_weight, 0, 0))
-	return result
+	var inv_total := 1.0 / total_weight
+	var image_data: Array[PackedFloat32Array] = []
+	for img in resized_images:
+		image_data.append(img.get_data().to_float32_array())
+	var output := PackedFloat32Array()
+	output.resize(pixel_count)
+	for i in pixel_count:
+		var weighted_sum := 0.0
+		for j in image_data.size():
+			var weight: float = weights[j] if j < weights.size() else 1.0
+			weighted_sum += image_data[j][i] * weight
+		output[i] = weighted_sum * inv_total
+	return Image.create_from_data(width, height, false, Image.FORMAT_RF, output.to_byte_array())
+
 
 ## Human-readable combiner name.
 func get_combiner_name() -> String:
