@@ -65,7 +65,7 @@ func _benchmark_single_config(
 	profile: BenchmarkProfile
 ) -> Array[BenchmarkResult]:
 	var results: Array[BenchmarkResult] = []
-	if profile.benchmark_height_pipelien:
+	if profile.benchmark_height_pipeline:
 		results.append_array(_benchmark_height_pipeline(config, config_name, profile))
 	var definition := _generate_definition_quiet(config)
 	if not definition:
@@ -241,7 +241,7 @@ func _benchmark_chunks(
 			#"triangle_count_lod%d" % lod, "chunk_generation", "count",
 			#PackedFloat64Array([float(last_chunk_mesh.get_triangle_count())]), meta
 		#))
-	return results
+	#return results
 
 func _benchmark_cache(
 	config: TerrainConfigurationV2,

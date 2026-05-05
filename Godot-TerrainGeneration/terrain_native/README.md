@@ -1,5 +1,13 @@
 # terrain_native GDExtension
 
+## Before building
+
+Ensure the submodule is initialized and updated:
+
+```
+git submodule update --init --recursive
+```
+
 ## Building
 
 Needs c++ build tools and SCons installed. Install SCons with pip:
