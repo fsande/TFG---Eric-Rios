@@ -96,60 +96,41 @@ func get_processor_name() -> String:
 ## Prepare mask: binarize and resize to match input dimensions
 func _prepare_mask(ref: Image, mask: Image) -> Image:
 	var prepared := mask.duplicate()
-	
 	if prepared.get_width() != ref.get_width() or prepared.get_height() != ref.get_height():
 		prepared.resize(ref.get_width(), ref.get_height(), Image.INTERPOLATE_NEAREST)
-	
 	return prepared
 
-## Simple mask application: heightmap * mask
 func _simple_mask_multiply(heightmap: Image, mask: Image) -> Image:
-	var result := heightmap.duplicate()
-	var width := heightmap.get_width()
-	var height := heightmap.get_height()
-	for y in height:
-		for x in width:
-			var height_value := heightmap.get_pixel(x, y).r
-			var mask_value := mask.get_pixel(x, y).r
-			result.set_pixel(x, y, Color(height_value * mask_value, 0, 0))
-	return result
+	var height_data := heightmap.get_data().to_float32_array()
+	var mask_data := mask.get_data().to_float32_array()
+	for i in height_data.size():
+		height_data[i] *= mask_data[i]
+	return Image.create_from_data(heightmap.get_width(), heightmap.get_height(), false, Image.FORMAT_RF, height_data.to_byte_array())
 
-## Advanced masking with edge transitions
 func _advanced_mask_with_transitions(heightmap: Image, mask: Image, context: ProcessingContext) -> Image:
 	if not _transition_noise or not _transition_factory:
 		_init_transition_noise()
 	_blur_processor.blur_radius = blur_radius
 	var blurred_mask := _blur_processor.process(mask, context)
-	var result := Image.create(heightmap.get_width(), heightmap.get_height(), false, Image.FORMAT_RF)
 	var width := heightmap.get_width()
 	var height := heightmap.get_height()
+	var height_data := heightmap.get_data().to_float32_array()
+	var mask_data := mask.get_data().to_float32_array()
+	var blur_data := blurred_mask.get_data().to_float32_array()
+	var output := PackedFloat32Array()
+	output.resize(width * height)
+	var cliff := _transition_factory.create_transition(TransitionFactory.TransitionType.CLIFF)
+	var beach := _transition_factory.create_transition(TransitionFactory.TransitionType.BEACH)
 	for y in height:
+		var row := y * width
 		for x in width:
-			var base_height := heightmap.get_pixel(x, y).r
-			var mask_value := mask.get_pixel(x, y).r
-			var blur_value := blurred_mask.get_pixel(x, y).r
-			var is_transition: bool = abs(mask_value - blur_value) > transition_threshold
-			var final_height: float
-			if is_transition:
-				var transition := _select_transition_for_point(Vector2(x, y))
-				final_height = transition.calculate_height(
-					base_height,
-					mask_value,
-					blur_value,
-					Vector2(x, y)
-				)
+			var i := row + x
+			var mask_value := mask_data[i]
+			var blur_value := blur_data[i]
+			if abs(mask_value - blur_value) > transition_threshold:
+				var noise_val := _transition_noise.get_noise_2d(x, y) * 0.5 + 0.5
+				var transition := cliff if noise_val < beach_threshold else beach
+				output[i] = transition.calculate_height(height_data[i], mask_value, blur_value, Vector2(x, y))
 			else:
-				final_height = base_height * mask_value
-			result.set_pixel(x, y, Color(final_height, 0, 0))
-	return result
-
-## Select transition type based on noise value at position
-func _select_transition_for_point(position: Vector2) -> TransitionStrategy:
-	var noise_val := _transition_noise.get_noise_2d(position.x, position.y) * 0.5 + 0.5
-	
-	if noise_val < cliff_threshold:
-		return _transition_factory.create_transition(TransitionFactory.TransitionType.CLIFF)
-	elif noise_val < beach_threshold:
-		return _transition_factory.create_transition(TransitionFactory.TransitionType.CLIFF)
-	else:
-		return _transition_factory.create_transition(TransitionFactory.TransitionType.BEACH)
+				output[i] = height_data[i] * mask_value
+	return Image.create_from_data(width, height, false, Image.FORMAT_RF, output.to_byte_array())
