@@ -11,7 +11,7 @@ var success: bool = false
 var error_message: String = ""
 
 ## Execution time in milliseconds
-var elapsed_time_ms: float = 0.0
+var elapsed_ms: float = 0.0
 
 ## Generated height delta maps
 var height_deltas: Array[HeightDeltaMap] = []
@@ -27,13 +27,13 @@ var metadata: Dictionary = {}
 
 ## Create a successful result.
 static func create_success(
-	p_elapsed_time_ms: float = 0.0,
+	p_elapsed_ms: float = 0.0,
 	p_message: String = "",
 	p_metadata: Dictionary = {}
 ) -> TerrainModifierResult:
 	var result := TerrainModifierResult.new()
 	result.success = true
-	result.elapsed_time_ms = p_elapsed_time_ms
+	result.elapsed_ms = p_elapsed_ms
 	result.error_message = p_message
 	result.metadata = p_metadata
 	return result
@@ -41,12 +41,12 @@ static func create_success(
 ## Create a failed result.
 static func create_failure(
 	p_error: String,
-	p_elapsed_time_ms: float = 0.0
+	p_elapsed_ms: float = 0.0
 ) -> TerrainModifierResult:
 	var result := TerrainModifierResult.new()
 	result.success = false
 	result.error_message = p_error
-	result.elapsed_time_ms = p_elapsed_time_ms
+	result.elapsed_ms = p_elapsed_ms
 	return result
 
 func export_deltas(save_path: String) -> void:
@@ -81,4 +81,4 @@ func get_summary() -> String:
 		parts.append("%d chunk feature(s)" % chunk_features.size())
 	if parts.is_empty():
 		return "Success (no output)"
-	return "Success: %s in %.1f ms" % [", ".join(parts), elapsed_time_ms]
+	return "Success: %s in %.1f ms" % [", ".join(parts), elapsed_ms]

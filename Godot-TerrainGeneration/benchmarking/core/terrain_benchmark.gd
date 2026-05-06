@@ -88,11 +88,11 @@ func _benchmark_height_pipeline(
 	var results: Array[BenchmarkResult] = []
 	var meta := {"config_name": config_name, "terrain_size": config.terrain_size.x}
 	print("[Pipeline] Measuring full pipeline generation...")
+	var heightmap_generation_results := _benchmark_heightmap(config, profile, meta)
 	for _w in profile.warmup_iterations:
 		_generate_definition_quiet(config)
 	var full_pipeline_results := _benchmark_full_pipeline(config, profile, meta)
 	results.append_array(full_pipeline_results)
-	var heightmap_generation_results := _benchmark_heightmap(config, profile, meta)
 	results.append_array(heightmap_generation_results)
 	return results
 
@@ -103,13 +103,19 @@ func _benchmark_full_pipeline(
 ) -> Array[BenchmarkResult]:
 	var total_samples := PackedFloat64Array()
 	var stage_timings: Dictionary = {}   # stage_name -> PackedFloat64Array
+	var agent_timings: Dictionary = {}   # agent_name -> PackedFloat64Array
 	for _i in profile.iterations:
 		var per_stage: Dictionary = {}   # stage_name -> float (single run)
+		var per_agent: Dictionary = {}   # agent_name -> float (single run)
 		var generator := TerrainDefinitionGenerator.new()
 		generator.verbose = false
 		generator.stage_completed.connect(
 			func(stage_name: String, elapsed_ms: float) -> void:
 				per_stage[stage_name] = elapsed_ms
+		)
+		generator.agent_completed.connect(
+			func(agent_name: String, result: TerrainModifierResult) -> void:
+				per_agent[agent_name] = result.elapsed_ms
 		)
 		var context := _make_context(config)
 		var start_time := Time.get_ticks_usec()
@@ -125,12 +131,22 @@ func _benchmark_full_pipeline(
 			if not stage_timings.has(stage_name):
 				stage_timings[stage_name] = PackedFloat64Array()
 			stage_timings[stage_name].append(per_stage[stage_name])
-	var results: Array[BenchmarkResult]= [BenchmarkResult.new("pipeline_total", "pipeline", "ms", total_samples, meta)]
+		for agent_name in per_agent:
+			if not agent_timings.has(agent_name):
+				agent_timings[agent_name] = PackedFloat64Array()
+			agent_timings[agent_name].append(per_agent[agent_name])
+	var results: Array[BenchmarkResult] = [BenchmarkResult.new("pipeline_total", "pipeline", "ms", total_samples, meta)]
 	for stage_name in stage_timings:
 		var stage_meta := meta.duplicate()
 		stage_meta["stage"] = stage_name
 		results.append(BenchmarkResult.new(
 			"pipeline_stage_%s" % stage_name, "pipeline", "ms", stage_timings[stage_name], stage_meta
+		))
+	for agent_name in agent_timings:
+		var agent_meta := meta.duplicate()
+		agent_meta["agent"] = agent_name
+		results.append(BenchmarkResult.new(
+			"pipeline_agent_%s" % agent_name, "pipeline", "ms", agent_timings[agent_name], agent_meta
 		))
 	return results
 

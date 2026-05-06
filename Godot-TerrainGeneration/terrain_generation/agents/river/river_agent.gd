@@ -102,7 +102,7 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 #	_spawn_debug_trail(path, context)
 	progress_updated.emit(1.0, "Complete")
 	var elapsed := Time.get_ticks_msec() - start_time
-	result.elapsed_time_ms = elapsed
+	result.elapsed_ms = elapsed
 	result.error_message = "Created river with %d path points (%.1fm length)" % [
 		path.size(),
 		_calculate_path_length(path)

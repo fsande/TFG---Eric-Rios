@@ -59,4 +59,3 @@ func insert_agent(index: int, agent: TerrainModifierAgent) -> void:
 func remove_agent(index: int) -> void:
 	if index >= 0 and index < agents.size():
 		agents.remove_at(index)
-

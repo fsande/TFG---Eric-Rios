@@ -62,7 +62,7 @@ func _execute_agent_threaded(agent: TerrainModifierAgent, context: TerrainGenera
 	else:
 		var start_time := Time.get_ticks_msec()
 		result = agent.generate(context)
-		result.elapsed_time_ms = Time.get_ticks_msec() - start_time
+		result.elapsed_ms = Time.get_ticks_msec() - start_time
 	_mutex.lock()
 	_results[index] = result
 	_completed_count += 1
@@ -79,4 +79,3 @@ func get_agents() -> Array[TerrainModifierAgent]:
 
 func add_agent(agent: TerrainModifierAgent) -> void:
 	agents.append(agent)
-

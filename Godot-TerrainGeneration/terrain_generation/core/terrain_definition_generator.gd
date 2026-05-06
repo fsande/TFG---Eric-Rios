@@ -60,6 +60,8 @@ func generate(
 		if not stage or not stage.enabled:
 			print("Skipping disabled stage: %s" % stage._get_display_name())
 			continue
+		stage.agent_started.connect(agent_started.emit)
+		stage.agent_completed.connect(agent_completed.emit)
 		stage_index += 1
 		if verbose:
 			print("\n=== Stage %d/%d: %s ===" % [stage_index, stages.size(), stage._get_display_name()])

@@ -44,13 +44,13 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 	progress_updated.emit(0.0, "Collecting search bounds")
 	var search_bounds := _collect_search_bounds(context)
 	if search_bounds.is_empty():
-		result.elapsed_time_ms = Time.get_ticks_msec() - start_time
+		result.elapsed_ms = Time.get_ticks_msec() - start_time
 		result.error_message = "No search area found (check zone_tag or search_mode)"
 		return result
 	progress_updated.emit(0.1, "Sampling candidate positions (%d bounds regions)" % search_bounds.size())
 	var candidates := _sample_candidates(search_bounds, context, rng)
 	if candidates.is_empty():
-		result.elapsed_time_ms = Time.get_ticks_msec() - start_time
+		result.elapsed_ms = Time.get_ticks_msec() - start_time
 		result.error_message = "No steep-enough positions found (min_slope_degrees=%.1f)" % config.min_slope_degrees
 		return result
 	progress_updated.emit(0.5, "Building overhangs from %d candidates" % candidates.size())
@@ -71,7 +71,7 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 				"Processing candidate %d/%d" % [i, candidates.size()]
 			)
 	progress_updated.emit(1.0, "Complete")
-	result.elapsed_time_ms = Time.get_ticks_msec() - start_time
+	result.elapsed_ms = Time.get_ticks_msec() - start_time
 	result.error_message = "Created %d overhangs from %d candidates" % [overhangs_created, candidates.size()]
 	return result
 

@@ -95,7 +95,7 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 			result.add_volume(tunnel)
 	progress_updated.emit(1.0, "Complete")
 	var elapsed := Time.get_ticks_msec() - start_time
-	result.elapsed_time_ms = elapsed
+	result.elapsed_ms = elapsed
 	result.error_message = "Created %d tunnel(s)" % result.volumes.size()
 	return result
 

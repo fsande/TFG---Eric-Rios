@@ -40,7 +40,7 @@ func _execute_agent(agent: TerrainModifierAgent, context: TerrainGenerationConte
 		return TerrainModifierResult.create_failure("Validation failed")
 	var start_time := Time.get_ticks_msec()
 	var result := agent.generate(context)
-	result.elapsed_time_ms = Time.get_ticks_msec() - start_time
+	result.elapsed_ms = Time.get_ticks_msec() - start_time
 	_apply_result_to_definition(result, definition, agent.get_display_name())
 	agent_completed.emit(agent.get_display_name(), result)
 	if log_agent_stats:

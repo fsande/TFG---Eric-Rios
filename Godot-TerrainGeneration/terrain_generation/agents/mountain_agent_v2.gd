@@ -64,7 +64,7 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 	result.add_height_delta(delta)
 	progress_updated.emit(1.0, "Complete")
 	var elapsed := Time.get_ticks_msec() - start_time
-	result.elapsed_time_ms = elapsed
+	result.elapsed_ms = elapsed
 	result.error_message = "Created mountain ridge with %d tokens" % tokens
 	if save_deltas_images:
 		result.export_deltas(save_path)

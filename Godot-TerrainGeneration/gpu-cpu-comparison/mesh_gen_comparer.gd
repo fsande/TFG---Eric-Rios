@@ -76,7 +76,7 @@
 #	var processing_context := ProcessingContext.new(mesh_size.x, ProcessingContext.ProcessorType.CPU, ProcessingContext.ProcessorType.CPU)
 #	var result := cpu_modifier.generate_mesh(base_arrays, heightmap, processing_context)
 #	_display_mesh_in_viewport(cpu_viewport, result.modified_mesh)
-#	cpu_time_label.text = "%s ms" % str(result.elapsed_time_ms).pad_decimals(1)
+#	cpu_time_label.text = "%s ms" % str(result.elapsed_ms).pad_decimals(1)
 #
 #func _on_generate_gpu_button_pressed() -> void:
 #	if heightmap == null or base_mesh == null:
@@ -90,7 +90,7 @@
 #	var processing_context := ProcessingContext.new(mesh_size.x, ProcessingContext.ProcessorType.GPU, ProcessingContext.ProcessorType.GPU)
 #	var result := gpu_mesh_generator.generate_mesh(base_arrays, heightmap, processing_context)
 #	_display_mesh_in_viewport(gpu_viewport, result.modified_mesh)
-#	gpu_time_label.text = "%s ms" % str(result.elapsed_time_ms).pad_decimals(1)
+#	gpu_time_label.text = "%s ms" % str(result.elapsed_ms).pad_decimals(1)
 #
 #func _display_mesh_in_viewport(viewport: SubViewport, mesh: ArrayMesh) -> void:
 #	for child in viewport.get_children():
@@ -108,7 +108,7 @@
 #	viewport.add_child(mesh_instance)
 #
 #func _on_cpu_modification_completed(result: MeshGenerationResult) -> void:
-#	cpu_time_label.text = "%s ms" % str(result.elapsed_time_ms).pad_decimals(1)
+#	cpu_time_label.text = "%s ms" % str(result.elapsed_ms).pad_decimals(1)
 #
 #func _on_gpu_modification_completed(result: MeshGenerationResult) -> void:
-#	gpu_time_label.text = "%s ms" % str(result.elapsed_time_ms).pad_decimals(1)
+#	gpu_time_label.text = "%s ms" % str(result.elapsed_ms).pad_decimals(1)
