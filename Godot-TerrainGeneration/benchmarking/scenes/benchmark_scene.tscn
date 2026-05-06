@@ -60,8 +60,10 @@ metadata/_custom_type_script = "uid://bxs2dr6xxfyed"
 [sub_resource type="Resource" id="Resource_1g8c6"]
 script = ExtResource("4_4bmmm")
 configurations = Array[ExtResource("2_oep7r")]([SubResource("Resource_tqjsr")])
-iterations = 2
+iterations = 10
 chunks_to_generate = 30
+benchmark_height_pipeline = false
+benchmark_props = false
 metadata/_custom_type_script = "uid://cfi161tjwfbq5"
 
 [node name="BenchmarkScene" type="Node"]

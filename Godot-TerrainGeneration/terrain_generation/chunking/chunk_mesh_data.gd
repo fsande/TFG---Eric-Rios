@@ -46,14 +46,8 @@ func _init(coord: Vector2i, position: Vector3, size: Vector2, p_mesh: MeshData, 
 	var half_size := Vector3(size.x / 2.0, 0, size.y / 2.0)
 	var aabb_min := position - half_size
 	var aabb_max := position + half_size
-	if p_mesh and p_mesh.vertices.size() > 0:
-		var min_y := INF
-		var max_y := -INF
-		for vertex in p_mesh.vertices:
-			min_y = min(min_y, vertex.y)
-			max_y = max(max_y, vertex.y)
-		aabb_min.y = min_y
-		aabb_max.y = max_y
+	aabb_min.y = -INF
+	aabb_max.y = INF
 	aabb = AABB(aabb_min, aabb_max - aabb_min)
 
 func add_lod_mesh(p_mesh_data: MeshData, lod_level: int) -> void:

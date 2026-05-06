@@ -35,6 +35,8 @@ func update_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: i
 	var mesh_data = _generation_strategy.generate_chunk(
 		_terrain_definition, chunk_bounds, lod_level, resolution, height_grid
 	)
+	#OS.delay_msec(1)
+	#return ChunkMeshData.new(coord, Vector3(0,0, 0), chunk_size, MeshData.create(PackedVector3Array(), PackedInt32Array(), PackedVector2Array()), lod_level)
 	var cached := cache.get_chunk(coord) if cache else null
 	if cached:
 		cached.add_lod_mesh(mesh_data, lod_level)
