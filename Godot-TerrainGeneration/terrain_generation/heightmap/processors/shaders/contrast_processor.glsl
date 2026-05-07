@@ -8,24 +8,24 @@ layout(set = 0, binding = 1, r32f) uniform writeonly image2D output_image;
 layout(set = 1, binding = 0, std430) restrict readonly buffer Params {
     int width;
     int height;
-    float min_value;
-    float max_value;
-    float min_input;
-    float max_input;
+    float target_min;
+    float target_max;
+    float input_min;
+    float input_max;
 } params;
 
 void main() {
     ivec2 px = ivec2(gl_GlobalInvocationID.xy);
     if (px.x >= params.width || px.y >= params.height) return;
     float value = imageLoad(input_image, px).r;
-    float range_input = params.max_input - params.min_input;
-    float range_target = params.max_value - params.min_value;
+    float range_input = params.input_max - params.input_min;
+    float range_target = params.target_max - params.target_min;
     float result;
     if (range_input > 0.0001) {
-        float normalized = (value - params.min_input) / range_input;
-        result = normalized * range_target + params.min_value;
+        float normalized = (value - params.input_min) / range_input;
+        result = clamp(normalized * range_target + params.target_min, params.target_min, params.target_max);
     } else {
-        result = (params.min_value + params.max_value) * 0.5;
+        result = (params.target_min + params.target_max) * 0.5;
     }
     imageStore(output_image, px, vec4(result, 0.0, 0.0, 0.0));
 }

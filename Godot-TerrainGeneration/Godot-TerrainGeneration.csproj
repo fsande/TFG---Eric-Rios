@@ -376,10 +376,10 @@
     <Content Include="terrain_generation\heightmap\processors\blur_processor.gd" />
     <Content Include="terrain_generation\heightmap\processors\heightmap_processor.gd" />
     <Content Include="terrain_generation\heightmap\processors\mask_processor.gd" />
-    <Content Include="terrain_generation\heightmap\processors\normalization_processor.gd" />
+    <Content Include="terrain_generation\heightmap\processors\contrast_processor.gd" />
     <Content Include="terrain_generation\heightmap\processors\rune_erosion.gd" />
     <Content Include="terrain_generation\heightmap\processors\shaders\blur_processor.glsl" />
-    <Content Include="terrain_generation\heightmap\processors\shaders\normalization_processor.glsl" />
+    <Content Include="terrain_generation\heightmap\processors\shaders\contrast_processor.glsl" />
     <Content Include="terrain_generation\heightmap\processors\shaders\rune_erosion.glsl" />
     <Content Include="terrain_generation\heightmap\processors\shaders\thermal_erosion_processor.glsl" />
     <Content Include="terrain_generation\heightmap\processors\shaders\thermal_erosion_two_pass.glsl" />

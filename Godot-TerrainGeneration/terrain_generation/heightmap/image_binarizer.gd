@@ -13,20 +13,30 @@ class_name ImageBinarizer
 ##
 ## Returns: a new Image where pixels are 0 or 1 based on threshold.
 static func binarize_rgb(image: Image, threshold: float = 0.5) -> Image:
-	var binarized_image := image.duplicate()
-	for y in range(image.get_height()):
-		for x in range(image.get_width()):
-			var color := image.get_pixel(x, y)
-			var gray := 0.299 * color.r + 0.587 * color.g + 0.114 * color.b
-			var v := int(gray > threshold)
-			binarized_image.set_pixel(x, y, Color(v, v, v, 1))
-	return binarized_image
+	var data := image.get_data()
+	var src_format := image.get_format()
+	var pixel_count := image.get_width() * image.get_height()
+	var output := PackedFloat32Array()
+	output.resize(pixel_count)
+	var working := image
+	if src_format != Image.FORMAT_RGBA8:
+		working = image.duplicate()
+		working.convert(Image.FORMAT_RGBA8)
+	var rgba := working.get_data()
+	for i in pixel_count:
+		var src := i * 4
+		var r := rgba[src] / 255.0
+		var g := rgba[src + 1] / 255.0
+		var b := rgba[src + 2] / 255.0
+		output[i] = 1.0 if (0.299 * r + 0.587 * g + 0.114 * b) > threshold else 0.0
+	return Image.create_from_data(image.get_width(), image.get_height(), false, Image.FORMAT_RF, output.to_byte_array())
 
 static func white_threshold(image: Image, threshold: float = 0.5) -> Image:
-	var binarized_image := image.duplicate()
-	for y in range(image.get_height()):
-		for x in range(image.get_width()):
-			var color := image.get_pixel(x, y).r
-			var v := int(color > threshold)
-			binarized_image.set_pixel(x, y, Color(v, v, v, 1))
-	return binarized_image
+	var working := image
+	if image.get_format() != Image.FORMAT_RF:
+		working = image.duplicate()
+		working.convert(Image.FORMAT_RF)
+	var data := working.get_data().to_float32_array()
+	for i in data.size():
+		data[i] = 1.0 if data[i] > threshold else 0.0
+	return Image.create_from_data(image.get_width(), image.get_height(), false, Image.FORMAT_RF, data.to_byte_array())

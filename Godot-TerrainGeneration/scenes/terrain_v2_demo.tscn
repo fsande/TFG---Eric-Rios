@@ -1,32 +1,57 @@
 [gd_scene format=3 uid="uid://dxeaepbn0e70i"]
 
 [ext_resource type="Script" uid="uid://bgpjvppda2u8x" path="res://terrain_generation/core/terrain_presenter_v2.gd" id="1_presenter"]
+[ext_resource type="Script" uid="uid://cf721bkkkekch" path="res://terrain_generation/heightmap/processors/thermal_erosion_processor.gd" id="3_4fayk"]
+[ext_resource type="Script" uid="uid://x7gc7eg20w0b" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="3_ap5ce"]
 [ext_resource type="Material" uid="uid://bebs1xgkmteua" path="res://assets/materials/water/water_mat.tres" id="3_guv32"]
-[ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="4_4fayk"]
 [ext_resource type="Script" uid="uid://dy56g8e3x673x" path="res://terrain_generation/debug/terrain_debug_hud.gd" id="4_hud"]
+[ext_resource type="Environment" uid="uid://ci0fdcxk6hux2" path="res://assets/environment/blue_sky.tres" id="4_rm4ox"]
+[ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="5_4fayk"]
 [ext_resource type="Script" uid="uid://c51qydcxes5yv" path="res://terrain_generation/chunking/strategies/grid_load_strategy_v2.gd" id="5_oqt66"]
 [ext_resource type="Script" uid="uid://c5ppavb1os4er" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="6_b4i1g"]
 [ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="7_ibtys"]
 [ext_resource type="Script" uid="uid://cx1d1s65igqbm" path="res://terrain_generation/configuration/terrain_configuration_v2.gd" id="8_7f1po"]
-[ext_resource type="Material" uid="uid://dmlbneowgjfqy" path="res://assets/materials/terrain_mat2.tres" id="9_215up"]
+[ext_resource type="Material" uid="uid://vpdbt1a33c2s" path="res://assets/materials/mixed_moss/mixed_moss.tres" id="10_ap5ce"]
 [ext_resource type="PackedScene" uid="uid://c5010npvryyqd" path="res://scenes/fly_camera.tscn" id="15_b4i1g"]
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_rm4ox"]
+[sub_resource type="Resource" id="Resource_oqt66"]
+script = ExtResource("3_4fayk")
+metadata/_custom_type_script = "uid://cf721bkkkekch"
 
-[sub_resource type="Resource" id="Resource_cvtr7"]
-script = ExtResource("4_4fayk")
-frequency = 1.0
-noise = SubResource("FastNoiseLite_rm4ox")
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_b4i1g"]
+noise_type = 2
+
+[sub_resource type="Resource" id="Resource_7f1po"]
+script = ExtResource("5_4fayk")
+frequency = 12.0
+noise = SubResource("FastNoiseLite_b4i1g")
+save_path = "res://base_te_noise.png"
+metadata/_custom_type_script = "uid://rlx21xot8cjj"
+
+[sub_resource type="Resource" id="Resource_ibtys"]
+script = ExtResource("3_ap5ce")
+source = SubResource("Resource_7f1po")
+processor = SubResource("Resource_oqt66")
+save_path = "res://thermal_erosion.png"
+metadata/_custom_type_script = "uid://x7gc7eg20w0b"
 
 [sub_resource type="Resource" id="Resource_4puc5"]
 script = ExtResource("5_oqt66")
+load_radius = 15
+unload_radius = 16
 
 [sub_resource type="Resource" id="Resource_52bqv"]
 script = ExtResource("8_7f1po")
-heightmap_source = SubResource("Resource_cvtr7")
+heightmap_source = SubResource("Resource_ibtys")
+terrain_size = Vector2(1024, 1024)
+base_chunk_resolution = 256
 load_strategy = SubResource("Resource_4puc5")
+lod_distances = Array[float]([5000.0, 100.0, 200.0, 400.0])
+sea_level = 6.0
 sea_material = ExtResource("3_guv32")
-terrain_material = ExtResource("9_215up")
+terrain_material = ExtResource("10_ap5ce")
+environment = ExtResource("4_rm4ox")
+generate_collision = false
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qigeq"]
 
@@ -37,9 +62,12 @@ script = ExtResource("1_presenter")
 configuration = SubResource("Resource_52bqv")
 metadata/_custom_type_script = "uid://bgpjvppda2u8x"
 
-[node name="ChunksContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=1413921859]
+[node name="ChunksContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=2023092836]
 
-[node name="PropsContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=1781947478]
+[node name="PropsContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=1333019564]
+
+[node name="Environment" type="WorldEnvironment" parent="TerrainPresenterV2" unique_id=1536803998]
+environment = ExtResource("4_rm4ox")
 
 [node name="DebugHUD" type="Control" parent="." unique_id=2004353774]
 layout_mode = 3
