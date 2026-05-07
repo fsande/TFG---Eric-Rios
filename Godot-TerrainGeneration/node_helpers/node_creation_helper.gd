@@ -1,19 +1,19 @@
 @tool
 class_name NodeCreationHelper extends RefCounted
 
-static func get_or_create_node(parent: Node, node_name: String, node_type: Variant = Node) -> Node:
+static func get_or_create_node(parent: Node, node_name: String, node_type: Variant = Node, set_owner := true) -> Node:
 	if parent == null:
 		push_error("NodeCreationHelper.get_or_create_node: parent is null")
 		return null
 	var node := parent.get_node_or_null(node_name)
-	if node != null:
+	if node != null and set_owner:
 		if Engine.is_editor_hint():
 			_ensure_owner(node)
 		return node
 	node = node_type.new()
 	node.name = node_name
 	parent.add_child(node)
-	if Engine.is_editor_hint():
+	if Engine.is_editor_hint() and set_owner:
 		_ensure_owner(node)
 	return node
 

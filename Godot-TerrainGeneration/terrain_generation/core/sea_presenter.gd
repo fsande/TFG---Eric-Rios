@@ -22,14 +22,12 @@ func create_sea_plane(
 	material: Material
 ) -> MeshInstance3D:
 	_parent_node = parent
-	_mesh_instance = NodeCreationHelper.get_or_create_node(_parent_node, "SeaPlane", MeshInstance3D)
+	_mesh_instance = NodeCreationHelper.get_or_create_node(_parent_node, "SeaPlane", MeshInstance3D, false)
 	var plane_mesh := _generate_subdivided_plane(size, subdivisions)
 	_mesh_instance.mesh = plane_mesh
 	if material:
 		_mesh_instance.material_override = material
 	_mesh_instance.position = Vector3(0, sea_level, 0)
-	if Engine.is_editor_hint():
-		_mesh_instance.owner = parent.get_tree().edited_scene_root
 	return _mesh_instance
 
 ## Generates a subdivided plane mesh
