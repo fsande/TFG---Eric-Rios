@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="PropPlacementRule" load_steps=10 format=3 uid="uid://dmjfm4v8myli7"]
+[gd_resource type="Resource" script_class="PropPlacementRule" format=3 uid="uid://dmjfm4v8myli7"]
 
 [ext_resource type="PackedScene" uid="uid://cq832o58evlgr" path="res://assets/models/environment/rock/rock1.tscn" id="1_75m4m"]
 [ext_resource type="Script" uid="uid://dfj6tvyliq72c" path="res://terrain_generation/props/constraints/prop_placement_constraint.gd" id="1_d6vfu"]

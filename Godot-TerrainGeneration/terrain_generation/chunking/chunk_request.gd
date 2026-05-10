@@ -67,4 +67,3 @@ func get_elapsed_ms() -> int:
 
 static func compare_priority(a: ChunkRequest, b: ChunkRequest) -> bool:
 	return a.priority < b.priority
-

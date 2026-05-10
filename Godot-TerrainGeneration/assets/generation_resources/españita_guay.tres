@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="HeightmapProcessorDecorator" load_steps=7 format=3 uid="uid://wr2k3r0ty8xg"]
+[gd_resource type="Resource" script_class="HeightmapProcessorDecorator" format=3 uid="uid://wr2k3r0ty8xg"]
 
 [ext_resource type="Script" uid="uid://kedkjk5kadi4" path="res://terrain_generation/heightmap/processors/rune_erosion.gd" id="1_nesur"]
 [ext_resource type="Script" uid="uid://x7gc7eg20w0b" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="2_mrnbj"]
@@ -24,4 +24,3 @@ metadata/_custom_type_script = "uid://rlx21xot8cjj"
 script = ExtResource("2_mrnbj")
 source = SubResource("Resource_n0i5u")
 processor = SubResource("Resource_yv4rb")
-metadata/_custom_type_script = "uid://wy41761qe0mu"

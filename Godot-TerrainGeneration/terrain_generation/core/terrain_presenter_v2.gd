@@ -237,7 +237,6 @@ func update_chunk_lod(coord: Vector2i, new_lod: int, priority: float) -> void:
 	var state: LoadedChunkState = _loaded_chunks[coord]
 	if state.lod == new_lod:
 		return
-	## TODO: Delegate to _request_chunk_load which will handle pending requests and avoid unnecessary reloads
 	if _pending_chunk_requests.has(coord):
 		return
 	var lod_difference := absi(state.lod - new_lod)

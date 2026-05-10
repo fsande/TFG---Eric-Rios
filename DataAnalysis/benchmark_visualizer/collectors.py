@@ -33,7 +33,6 @@ def collect_chunk(
     data: dict[int, dict[str, dict[str, Result]]] = defaultdict(lambda: defaultdict(dict))
     totals: dict[int, dict[str, Result]] = defaultdict(dict)
     counts: dict[int, dict[str, dict[str, Result]]] = defaultdict(lambda: defaultdict(dict))
-
     for run in runs:
         for r in run.results:
             g, m = classify(r.metric_name)
@@ -47,13 +46,11 @@ def collect_chunk(
                 lod = int(m.group(1))
                 kind = "vertices" if r.metric_name.startswith("vertex") else "triangles"
                 counts[lod][kind][run.label] = r
-
     lods = sorted(set(data) | set(totals) | set(counts))
     all_substeps = {s for lod in lods for s in data.get(lod, {})}
     known_order = ["height_grid", "mesh_build", "volumes", "normals", "tangents", "array_mesh_build"]
     substeps = [s for s in known_order if s in all_substeps]
     substeps += sorted(all_substeps - set(known_order))
-
     return lods, substeps, data, totals, counts
 
 

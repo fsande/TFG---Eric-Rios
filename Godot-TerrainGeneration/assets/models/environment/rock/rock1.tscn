@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=4 uid="uid://cq832o58evlgr"]
+[gd_scene format=4 uid="uid://cq832o58evlgr"]
 
 [ext_resource type="Material" uid="uid://b60ijipg364h4" path="res://assets/materials/badlands_boulders/badlands_boulders.tres" id="1_p3mnw"]
 
@@ -35,6 +35,6 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_4ge1k")
 
-[node name="Rock02" type="MeshInstance3D"]
+[node name="Rock02" type="MeshInstance3D" unique_id=167890578]
 transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
 mesh = SubResource("ArrayMesh_vibml")

@@ -1,7 +1,7 @@
 """
 CLI entry point. Run as::
 
-    python -m benchmark_viz results.json [results2.json ...]
+    python -m benchmark_visualizer results.json [results2.json ...]
 
 Outputs ``benchmark_report.html`` in the current directory.
 """
@@ -17,7 +17,7 @@ from .models import Run
 def main() -> None:
     """Parse CLI arguments, load runs, build and write the HTML report."""
     if len(sys.argv) < 2:
-        print("Usage: python -m benchmark_viz file.json [file2.json ...]")
+        print("Usage: python -m benchmark_visualizer file.json [file2.json ...]")
         sys.exit(1)
     runs: list[Run] = []
     for arg in sys.argv[1:]:

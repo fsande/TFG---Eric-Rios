@@ -1,36 +1,32 @@
 [gd_resource type="ShaderMaterial" script_class="HeightVariationMaterial" format=3 uid="uid://dmlbneowgjfqy"]
 
-[ext_resource type="Script" uid="uid://cnri5xq0qldk" path="res://materials/height_layer.gd" id="1_o4pkv"]
+[ext_resource type="Script" uid="uid://d1v83xgr68vek" path="res://materials/height_layer.gd" id="1_o4pkv"]
 [ext_resource type="Material" uid="uid://bqxv3268g1up8" path="res://assets/materials/tidal_pool/tidal_pool.tres" id="2_4gi05"]
 [ext_resource type="Material" uid="uid://vpdbt1a33c2s" path="res://assets/materials/mixed_moss/mixed_moss.tres" id="3_4gi05"]
 [ext_resource type="Material" uid="uid://b60ijipg364h4" path="res://assets/materials/badlands_boulders/badlands_boulders.tres" id="3_a7faj"]
 [ext_resource type="Material" uid="uid://dn16r5qbgjt82" path="res://assets/materials/rock_snow_ice/rock_snow_ice.tres" id="4_o4pkv"]
-[ext_resource type="Script" uid="uid://bdltf7uwvun0v" path="res://materials/height_variation_material.gd" id="5_3q2jc"]
+[ext_resource type="Script" uid="uid://cjmcsktlo10ri" path="res://materials/height_variation_material.gd" id="5_3q2jc"]
 [ext_resource type="Shader" uid="uid://d01210myb6lx6" path="res://assets/shaders/advanced_terrain_shader.gdshader" id="6_6mb2p"]
 
 [sub_resource type="Resource" id="Resource_4gi05"]
 script = ExtResource("1_o4pkv")
 material = ExtResource("2_4gi05")
-blend_height = 20.0
-metadata/_custom_type_script = "uid://cnri5xq0qldk"
+blend_height = 10.0
 
 [sub_resource type="Resource" id="Resource_a7faj"]
 script = ExtResource("1_o4pkv")
 material = ExtResource("3_4gi05")
-blend_height = 40.0
-metadata/_custom_type_script = "uid://cnri5xq0qldk"
-
-[sub_resource type="Resource" id="Resource_mm8fh"]
-script = ExtResource("1_o4pkv")
-material = ExtResource("3_a7faj")
-blend_height = 130.0
-metadata/_custom_type_script = "uid://cnri5xq0qldk"
+blend_height = 180.0
 
 [sub_resource type="Resource" id="Resource_amtu7"]
 script = ExtResource("1_o4pkv")
 material = ExtResource("4_o4pkv")
 blend_height = 200.0
-metadata/_custom_type_script = "uid://cnri5xq0qldk"
+
+[sub_resource type="Resource" id="Resource_mm8fh"]
+script = ExtResource("1_o4pkv")
+material = ExtResource("3_a7faj")
+blend_height = 246.0
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_q2o47"]
 noise_type = 3
@@ -48,12 +44,11 @@ shader_parameter/blend_width = 5.0
 shader_parameter/texture_count = 4
 shader_parameter/height_noise = SubResource("NoiseTexture2D_3q2jc")
 shader_parameter/height_noise_strength = 15.0
-shader_parameter/blend_heights = [20.0, 40.0, 130.0, 200.0]
+shader_parameter/blend_heights = [10.0, 180.0, 200.0, 246.0]
 shader_parameter/uv_scale = Vector2(15, 15)
 shader_parameter/triplanar_sharpness = 4.0
 shader_parameter/slope_start = 1.0
 shader_parameter/slope_end = 1.0
 shader_parameter/height_noise_scale = 0.01
 script = ExtResource("5_3q2jc")
-height_layers = Array[ExtResource("1_o4pkv")]([SubResource("Resource_4gi05"), SubResource("Resource_a7faj"), SubResource("Resource_mm8fh"), SubResource("Resource_amtu7")])
-metadata/_custom_type_script = "uid://bdltf7uwvun0v"
+height_layers = Array[ExtResource("1_o4pkv")]([SubResource("Resource_4gi05"), SubResource("Resource_a7faj"), SubResource("Resource_amtu7"), SubResource("Resource_mm8fh")])

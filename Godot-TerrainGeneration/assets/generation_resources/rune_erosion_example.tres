@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TerrainConfigurationV2" load_steps=24 format=3 uid="uid://bgqcvdn3n4iy"]
+[gd_resource type="Resource" script_class="TerrainConfigurationV2" format=3 uid="uid://bgqcvdn3n4iy"]
 
 [ext_resource type="Environment" uid="uid://ci0fdcxk6hux2" path="res://assets/environment/blue_sky.tres" id="1_mg48h"]
 [ext_resource type="Script" uid="uid://kedkjk5kadi4" path="res://terrain_generation/heightmap/processors/rune_erosion.gd" id="2_pdrah"]
@@ -20,7 +20,6 @@
 script = ExtResource("2_pdrah")
 erosion_strength = 0.0
 erosion_octaves = 8
-metadata/_custom_type_script = "uid://c8woatbkj6p7e"
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_10fri"]
 fractal_type = 0
@@ -71,4 +70,3 @@ terrain_material = ExtResource("17_okpth")
 environment = ExtResource("1_mg48h")
 generate_collision = false
 auto_generate = false
-metadata/_custom_type_script = "uid://cx1d1s65igqbm"

@@ -198,9 +198,9 @@ func _benchmark_chunks(
 	print("[Chunks] %d chunks × LODs %s ..." % [coords.size(), str(lod_levels)])
 	var use_gpu := config.use_gpu_mesh_generation
 	var heightmap := definition.get_base_heightmap()
-	var strategy := CpuChunkGenerationStrategy.new(heightmap)
+	var lod_strategy := CpuChunkGenerationStrategy.new(heightmap)
 	for lod in lod_levels:
-		var effective_resolution := strategy.calculate_resolution_for_lod(config.base_chunk_resolution, lod)
+		var effective_resolution := lod_strategy.calculate_resolution_for_lod(config.base_chunk_resolution, lod)
 		var meta := {
 			"config_name": config_name, "lod_level": lod,
 			"base_resolution": config.base_chunk_resolution,
@@ -210,12 +210,21 @@ func _benchmark_chunks(
 		}
 		var chunk_generator := ChunkGenerator.new(definition, config.base_chunk_resolution, use_gpu)
 		var substep_timings: Dictionary = {}   # substep_name -> PackedFloat64Array
-		chunk_generator.get_strategy().substep_completed.connect(
-			func(substep_name: String, elapsed_ms: float) -> void:
-				if not substep_timings.has(substep_name):
-					substep_timings[substep_name] = PackedFloat64Array()
-				substep_timings[substep_name].append(elapsed_ms)
-		)
+		if chunk_generator.get_strategy() is CpuChunkGenerationStrategy:
+			var strategy = chunk_generator.get_strategy() as CpuChunkGenerationStrategy
+			strategy._native_generator.substep_completed.connect(
+				func(substep_name: String, elapsed_ms: float) -> void:
+					if not substep_timings.has(substep_name):
+						substep_timings[substep_name] = PackedFloat64Array()
+					substep_timings[substep_name].append(elapsed_ms)
+			)
+		else: 
+			chunk_generator.get_strategy().substep_completed.connect(
+				func(substep_name: String, elapsed_ms: float) -> void:
+					if not substep_timings.has(substep_name):
+						substep_timings[substep_name] = PackedFloat64Array()
+					substep_timings[substep_name].append(elapsed_ms)
+			)
 		for _w in profile.warmup_iterations:
 			chunk_generator.update_or_generate_chunk(coords[0], chunk_size, lod)
 			substep_timings.clear()

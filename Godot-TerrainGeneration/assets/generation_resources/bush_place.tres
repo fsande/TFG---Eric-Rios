@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="PropPlacementRule" load_steps=14 format=3 uid="uid://cslogkn0wqrqg"]
+[gd_resource type="Resource" script_class="PropPlacementRule" format=3 uid="uid://cslogkn0wqrqg"]
 
 [ext_resource type="Script" uid="uid://dfj6tvyliq72c" path="res://terrain_generation/props/constraints/prop_placement_constraint.gd" id="1_xpem2"]
 [ext_resource type="Script" uid="uid://chus0ya38wnpu" path="res://terrain_generation/props/constraints/spacing_constraint.gd" id="3_v2y57"]

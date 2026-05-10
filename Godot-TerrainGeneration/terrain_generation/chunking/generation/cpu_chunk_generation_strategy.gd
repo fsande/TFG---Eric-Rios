@@ -35,15 +35,12 @@ func generate_chunk(
 	var current_time := Time.get_ticks_usec()
 	var volumes := terrain_definition.get_volumes_for_chunk(chunk_bounds, 0)
 	if volumes.is_empty():
-		_emit_substep("height_grid", 0.0)
 		var mesh_data: MeshData = _native_generator.generate_chunk(
 			chunk_bounds, resolution,
 			terrain_definition.terrain_size.x,
 			terrain_definition.height_scale
 		)
-		_emit_substep("mesh_build", (Time.get_ticks_usec() - current_time) / 1000.0)
 		return mesh_data
-	_emit_substep("height_grid", (Time.get_ticks_usec() - current_time) / 1000.0)
 	if height_grid.is_empty():
 		return null
 	current_time = Time.get_ticks_usec()
