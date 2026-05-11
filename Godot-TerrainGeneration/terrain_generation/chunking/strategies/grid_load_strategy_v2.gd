@@ -18,6 +18,7 @@ func should_unload(coord: Vector2i, camera_pos: Vector3, context: ChunkLoadConte
 	var distance := _chunk_distance(coord, camera_chunk)
 	return distance > unload_radius
 
+
 func get_load_priority(coord: Vector2i, camera_pos: Vector3, context: ChunkLoadContextV2) -> float:
 	var camera_chunk := _world_to_chunk_coord(camera_pos, context)
 	return _chunk_distance(coord, camera_chunk)

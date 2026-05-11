@@ -284,6 +284,7 @@
     <Content Include="terrain_generation\chunking\generation\chunk_generation_strategy.gd.uid" />
     <Content Include="terrain_generation\chunking\generation\cpu_chunk_generation_strategy.gd" />
     <Content Include="terrain_generation\chunking\generation\cpu_chunk_generation_strategy.gd.uid" />
+    <Content Include="terrain_generation\chunking\generation\gdscript_cpu_chunk_generation_strategy.gd" />
     <Content Include="terrain_generation\chunking\generation\gpu_chunk_generation_strategy.gd" />
     <Content Include="terrain_generation\chunking\generation\gpu_chunk_generation_strategy.gd.uid" />
     <Content Include="terrain_generation\chunking\generation\shaders\chunk_height_grid.glsl.import" />

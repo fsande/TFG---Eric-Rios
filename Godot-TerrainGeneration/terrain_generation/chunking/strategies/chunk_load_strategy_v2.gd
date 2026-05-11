@@ -14,3 +14,4 @@ const DEFAULT_MAX_LOADED_CHUNKS: int = 25
 ## Override in subclasses for accurate budget calculations.
 func get_max_loaded_chunks() -> int:
 	return DEFAULT_MAX_LOADED_CHUNKS
+
