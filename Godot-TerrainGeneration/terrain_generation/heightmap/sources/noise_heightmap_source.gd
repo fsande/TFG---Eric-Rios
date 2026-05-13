@@ -43,7 +43,10 @@ func generate(context: ProcessingContext) -> Image:
 		for x in resolution:
 			data[row_offset + x] = (new_noise.get_noise_2d(x * inv_resolution * terrain_size, ny) + 1.0) * 0.5
 	var elapsed := Time.get_ticks_msec() - start_time
-	context.complete_substep("Noise Source", elapsed)
+	var noise_label := "Noise Source [type=%d seed=%d freq=%.2f]" % [
+		new_noise.noise_type, new_noise.seed, new_noise.frequency
+	]
+	context.complete_substep(noise_label, elapsed)
 	return Image.create_from_data(resolution, resolution, false, Image.FORMAT_RF, data.to_byte_array())
 
 func _on_noise_changed():

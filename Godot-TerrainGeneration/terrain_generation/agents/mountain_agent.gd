@@ -5,7 +5,7 @@
 ## which should run in a later pipeline stage after this agent's delta has
 ## been committed to TerrainDefinition.
 @tool
-class_name MountainAgentV2 extends TerrainModifierAgent
+class_name MountainAgent extends TerrainModifierAgent
 
 @export var config: MountainAgentConfig = MountainAgentConfig.new()
 @export var save_deltas_images: bool = false

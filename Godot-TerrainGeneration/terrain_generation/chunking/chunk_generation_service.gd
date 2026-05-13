@@ -13,7 +13,7 @@ signal chunk_generated(coord: Vector2i, lod: int, chunk: ChunkMeshData)
 signal generation_failed(coord: Vector2i, lod: int, error: String)
 
 var _terrain_definition: TerrainDefinition
-var _terrain_configuration: TerrainConfigurationV2
+var _terrain_configuration: TerrainConfiguration
 var _generator: ChunkGenerator
 var _cache: ChunkCache
 var _request_queue: ChunkRequestQueue
@@ -22,7 +22,7 @@ var _use_threading: bool = false
 var _max_concurrent_requests: int = 4
 var _use_gpu: bool = false
 
-func _init(terrain_def: TerrainDefinition, terrain_config: TerrainConfigurationV2) -> void:
+func _init(terrain_def: TerrainDefinition, terrain_config: TerrainConfiguration) -> void:
 	_terrain_definition = terrain_def
 	_terrain_configuration = terrain_config
 	_base_resolution = terrain_config.base_chunk_resolution

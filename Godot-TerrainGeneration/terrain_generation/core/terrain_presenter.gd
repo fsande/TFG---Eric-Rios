@@ -2,13 +2,13 @@
 ##
 ## @details Uses TerrainDefinition + ChunkGenerator for on-demand chunk generation.
 @tool
-class_name TerrainPresenterV2 extends Node3D
+class_name TerrainPresenter extends Node3D
 
 signal generation_completed(terrain_definition: TerrainDefinition)
 signal chunk_loaded(coord: Vector2i, lod: int)
 signal chunk_unloaded(coord: Vector2i)
 
-@export var configuration: TerrainConfigurationV2 = TerrainConfigurationV2.new():
+@export var configuration: TerrainConfiguration = TerrainConfiguration.new():
 	set(value):
 		configuration = value
 		if configuration:
@@ -35,7 +35,7 @@ var _sea_presenter: SeaPresenter
 var _update_timer: float = 0.0
 var _is_generating: bool = false
 var _camera: Camera3D
-var _load_context: ChunkLoadContextV2 = null
+var _load_context: ChunkLoadContext = null
 
 func _ready() -> void:
 	if (configuration.heightmap_source and configuration.auto_generate) or not Engine.is_editor_hint(): 
@@ -167,10 +167,11 @@ func _setup_containers() -> void:
 func _update_visible_chunks() -> void:
 	if not _generation_service or not configuration.load_strategy or _is_generating:
 		return
-	var camera_pos := _get_camera_position()
+	var camera_pos := _get_camera_pos()
+	var camera := _get_camera()
 	if not _load_context:
 		var lod_distances := PackedFloat32Array(configuration.lod_distances)
-		_load_context = ChunkLoadContextV2.new(
+		_load_context = ChunkLoadContext.new(
 			configuration.terrain_size,
 			configuration.chunk_size,
 			_loaded_chunks,
@@ -181,22 +182,22 @@ func _update_visible_chunks() -> void:
 	_load_context.loaded_chunks = _loaded_chunks
 	var chunks_to_unload: Array[Vector2i] = []
 	for chunk in _loaded_chunks.keys():
-		if configuration.load_strategy.should_unload(chunk, camera_pos, _load_context):
+		if configuration.load_strategy.should_unload(chunk, camera, _load_context):
 			chunks_to_unload.append(chunk)
 	for chunk in chunks_to_unload:
 		_unload_chunk(chunk)
-	var chunks_to_load := configuration.load_strategy.get_chunks_to_load(camera_pos, _load_context, true)
+	var chunks_to_load := configuration.load_strategy.get_chunks_to_load(camera, _load_context, true)
 	for chunk in chunks_to_load:
-		var base_lod := configuration.load_strategy.calculate_lod(chunk, camera_pos, _load_context) if configuration.enable_lod else 0
+		var base_lod := configuration.load_strategy.calculate_lod(chunk, camera, _load_context) if configuration.enable_lod else 0
 		var lod := _apply_lod_hysteresis(chunk, base_lod, camera_pos)
-		var priority := configuration.load_strategy.get_load_priority(chunk, camera_pos, _load_context)
+		var priority := configuration.load_strategy.get_load_priority(chunk, camera, _load_context)
 		if _loaded_chunks.has(chunk):
 			update_chunk_lod(chunk, lod, priority)
 			continue
 		if _pending_chunk_requests.has(chunk):
 			continue
 		_request_chunk_load(chunk, lod, priority)
-	_cancel_out_of_range_requests(camera_pos)
+	_cancel_out_of_range_requests(camera)
 
 func _apply_lod_hysteresis(coord: Vector2i, target_lod: int, camera_pos: Vector3) -> int:
 	if not _loaded_chunks.has(coord):
@@ -287,7 +288,7 @@ func _on_async_chunk_ready(coord: Vector2i, lod: int, chunk: ChunkMeshData) -> v
 		return
 	if not _should_still_load_chunk(coord):
 		return
-	var camera_pos := _get_camera_position()
+	var camera_pos := _get_camera()
 	var priority := 0.0
 	if configuration.load_strategy and _load_context:
 		priority = configuration.load_strategy.get_load_priority(coord, camera_pos, _load_context)
@@ -310,13 +311,13 @@ func _on_async_chunk_failed(coord: Vector2i, lod: int, error: String) -> void:
 func _should_still_load_chunk(coord: Vector2i) -> bool:
 	if not configuration.load_strategy or not _load_context:
 		return true
-	var camera_pos := _get_camera_position()
+	var camera_pos := _get_camera()
 	return configuration.load_strategy.should_load(coord, camera_pos, _load_context)
 
-func _cancel_out_of_range_requests(camera_pos: Vector3) -> void:
+func _cancel_out_of_range_requests(camera: Camera3D) -> void:
 	var coords_to_cancel: Array[Vector2i] = []
 	for coord in _pending_chunk_requests.keys():
-		if configuration.load_strategy.should_unload(coord, camera_pos, _load_context):
+		if configuration.load_strategy.should_unload(coord, camera, _load_context):
 			coords_to_cancel.append(coord)
 	for coord in coords_to_cancel:
 		var lod: int = _pending_chunk_requests[coord]
@@ -377,7 +378,17 @@ func _add_collision_to_tree(coord: Vector2i, shape: CollisionShape3D, body: Stat
 		shape.owner = get_tree().edited_scene_root
 	_collision_bodies[coord] = body
 
-func _get_camera_position() -> Vector3:
+func _get_camera() -> Camera3D:
+	if configuration.track_camera:
+		if not _camera or not is_instance_valid(_camera):
+			var viewport = get_viewport()
+			if viewport:
+				_camera = viewport.get_camera_3d()
+		if _camera:
+			return _camera
+	return null
+
+func _get_camera_pos() -> Vector3:
 	if configuration.track_camera:
 		if not _camera or not is_instance_valid(_camera):
 			var viewport = get_viewport()

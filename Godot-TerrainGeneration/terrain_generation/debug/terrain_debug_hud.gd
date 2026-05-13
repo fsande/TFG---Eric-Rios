@@ -5,7 +5,7 @@ extends Control
 
 @export var terrain_presenter_path: NodePath
 
-var _terrain_presenter: TerrainPresenterV2
+var _terrain_presenter: TerrainPresenter
 var _label: Label
 
 func _ready() -> void:
@@ -18,12 +18,12 @@ func _ready() -> void:
 	_label.add_theme_constant_override("shadow_offset_y", 1)
 	add_child(_label)
 	if terrain_presenter_path:
-		_terrain_presenter = get_node_or_null(terrain_presenter_path) as TerrainPresenterV2
+		_terrain_presenter = get_node_or_null(terrain_presenter_path) as TerrainPresenter
 
 func _process(_delta: float) -> void:
 	if not _terrain_presenter:
 		if terrain_presenter_path:
-			_terrain_presenter = get_node_or_null(terrain_presenter_path) as TerrainPresenterV2
+			_terrain_presenter = get_node_or_null(terrain_presenter_path) as TerrainPresenter
 		else:
 			_terrain_presenter = _find_terrain_presenter()
 		if not _terrain_presenter:
@@ -46,15 +46,15 @@ func _process(_delta: float) -> void:
 	text += "[E/Q] Up/Down"
 	_label.text = text
 
-func _find_terrain_presenter() -> TerrainPresenterV2:
+func _find_terrain_presenter() -> TerrainPresenter:
 	var root := get_tree().current_scene
 	if not root:
 		return null
 	return _find_node_of_type(root, "TerrainPresenterV2")
 
-func _find_node_of_type(node: Node, type_name: String) -> TerrainPresenterV2:
+func _find_node_of_type(node: Node, type_name: String) -> TerrainPresenter:
 	if node.get_class() == type_name or (node.get_script() and node.get_script().get_global_name() == type_name):
-		return node as TerrainPresenterV2
+		return node as TerrainPresenter
 	for child in node.get_children():
 		var found := _find_node_of_type(child, type_name)
 		if found:

@@ -20,7 +20,7 @@ func _init(terrain_def: TerrainDefinition, base_resolution: int, use_gpu: bool) 
 		_generation_strategy = GpuChunkGenerationStrategy.new(heightmap)
 	else:
 		_generation_strategy = CpuChunkGenerationStrategy.new(heightmap)
-#		_generation_strategy = GdscriptCpuChunkGenerationStrategy.new() # Uncomment to use the pure GDScript implementation (for benchmarking)
+		#_generation_strategy = GdscriptCpuChunkGenerationStrategy.new() # Uncomment to use the pure GDScript implementation (for benchmarking)
 
 func update_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int, cache: ChunkCache = null) -> ChunkMeshData:
 	if not _terrain_definition or not _terrain_definition.is_valid():

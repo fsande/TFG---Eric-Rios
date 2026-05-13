@@ -8,7 +8,7 @@ class_name BenchmarkProfile extends Resource
 
 @export_group("Configurations")
 ## The terrain configurations to benchmark. Each is run independently.
-@export var configurations: Array[TerrainConfigurationV2] = []
+@export var configurations: Array[TerrainConfiguration] = []
 
 @export_group("Benchmark Parameters")
 @export_range(0, 10) var warmup_iterations: int = 1
@@ -37,7 +37,7 @@ func get_config_name(index: int) -> String:
 	var config := configurations[index]
 	return "config_%d_t%d_r%d" % [index, int(config.terrain_size.x), config.base_chunk_resolution]
 
-func get_lod_levels_for_config(config: TerrainConfigurationV2) -> Array[int]:
+func get_lod_levels_for_config(config: TerrainConfiguration) -> Array[int]:
 	if not lod_level_overrides.is_empty():
 		return lod_level_overrides
 	var levels: Array[int] = [0]

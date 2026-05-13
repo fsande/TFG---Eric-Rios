@@ -1,0 +1,108 @@
+[gd_resource type="Resource" script_class="TerrainConfiguration" format=3 uid="uid://de60lgql2tfbe"]
+
+[ext_resource type="Script" uid="uid://bex5sqputtgkm" path="res://terrain_generation/heightmap/sources/composite_heightmap_source.gd" id="1_08av8"]
+[ext_resource type="Script" uid="uid://0igih326n7n3" path="res://terrain_generation/heightmap/sources/heightmap_source.gd" id="2_md280"]
+[ext_resource type="Script" uid="uid://3hgc2pv3fq1m" path="res://terrain_generation/heightmap/combiners/average_combiner.gd" id="3_y43c4"]
+[ext_resource type="Script" uid="uid://d30u6ur3uvl8d" path="res://terrain_generation/heightmap/processors/blur_processor.gd" id="4_2y5df"]
+[ext_resource type="Script" uid="uid://o0lhahullfck" path="res://terrain_generation/heightmap/combiners/multiplication_combiner.gd" id="4_na0po"]
+[ext_resource type="Script" uid="uid://x7gc7eg20w0b" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="5_asqji"]
+[ext_resource type="Script" uid="uid://doxiokddifd55" path="res://terrain_generation/heightmap/processors/contrast_processor.gd" id="6_xh786"]
+[ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="7_b2yfw"]
+[ext_resource type="Script" uid="uid://c51qydcxes5yv" path="res://terrain_generation/chunking/strategies/grid_load_strategy.gd" id="8_ps6tk"]
+[ext_resource type="Image" uid="uid://cejunckf8fl80" path="res://assets/heightmaps/tenerife_mask.png" id="9_1msab"]
+[ext_resource type="Script" uid="uid://c5ppavb1os4er" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="9_kgypu"]
+[ext_resource type="Script" uid="uid://c3uc7nxm4hlqx" path="res://terrain_generation/heightmap/sources/image_heightmap_source.gd" id="10_gp0h2"]
+[ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="17_612wh"]
+[ext_resource type="Resource" uid="uid://cslogkn0wqrqg" path="res://assets/generation_resources/bush_place.tres" id="18_xs5lc"]
+[ext_resource type="Resource" uid="uid://v5ie01qj4ft2" path="res://assets/generation_resources/tree_place1.tres" id="19_8rq2d"]
+[ext_resource type="Resource" uid="uid://dmjfm4v8myli7" path="res://assets/generation_resources/rock_place1.tres" id="20_ohtq0"]
+[ext_resource type="Script" uid="uid://cx1d1s65igqbm" path="res://terrain_generation/configuration/terrain_configuration.gd" id="21_hp666"]
+
+[sub_resource type="Resource" id="Resource_jbro0"]
+script = ExtResource("3_y43c4")
+metadata/_custom_type_script = "uid://3hgc2pv3fq1m"
+
+[sub_resource type="Resource" id="Resource_08av8"]
+script = ExtResource("4_na0po")
+metadata/_custom_type_script = "uid://o0lhahullfck"
+
+[sub_resource type="Resource" id="Resource_dulm3"]
+script = ExtResource("4_2y5df")
+metadata/_custom_type_script = "uid://d30u6ur3uvl8d"
+
+[sub_resource type="Resource" id="Resource_pkoxg"]
+script = ExtResource("6_xh786")
+metadata/_custom_type_script = "uid://doxiokddifd55"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_0imjm"]
+noise_type = 5
+fractal_type = 0
+
+[sub_resource type="Resource" id="Resource_r0umn"]
+script = ExtResource("7_b2yfw")
+resolution = 5000
+frequency = 2.0
+noise = SubResource("FastNoiseLite_0imjm")
+
+[sub_resource type="Resource" id="Resource_iqgnf"]
+script = ExtResource("5_asqji")
+source = SubResource("Resource_r0umn")
+processor = SubResource("Resource_pkoxg")
+
+[sub_resource type="Resource" id="Resource_qm34k"]
+script = ExtResource("5_asqji")
+source = SubResource("Resource_iqgnf")
+processor = SubResource("Resource_dulm3")
+metadata/_custom_type_script = "uid://x7gc7eg20w0b"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ajwfl"]
+noise_type = 2
+
+[sub_resource type="Resource" id="Resource_58sna"]
+script = ExtResource("7_b2yfw")
+noise = SubResource("FastNoiseLite_ajwfl")
+metadata/_custom_type_script = "uid://rlx21xot8cjj"
+
+[sub_resource type="Resource" id="Resource_edscc"]
+script = ExtResource("1_08av8")
+sources = Array[ExtResource("2_md280")]([SubResource("Resource_qm34k"), SubResource("Resource_58sna")])
+combiner = SubResource("Resource_08av8")
+metadata/_custom_type_script = "uid://bex5sqputtgkm"
+
+[sub_resource type="Resource" id="Resource_md280"]
+script = ExtResource("10_gp0h2")
+heightmap_image = ExtResource("9_1msab")
+metadata/_custom_type_script = "uid://c3uc7nxm4hlqx"
+
+[sub_resource type="Resource" id="Resource_3p44a"]
+script = ExtResource("1_08av8")
+sources = Array[ExtResource("2_md280")]([SubResource("Resource_edscc"), SubResource("Resource_md280")])
+combiner = SubResource("Resource_jbro0")
+metadata/_custom_type_script = "uid://bex5sqputtgkm"
+
+[sub_resource type="Resource" id="Resource_w1qep"]
+script = ExtResource("8_ps6tk")
+
+[resource]
+script = ExtResource("21_hp666")
+heightmap_source = SubResource("Resource_3p44a")
+terrain_size = Vector2(5000, 5000)
+height_scale = 128.0
+prop_placement_rules = Array[ExtResource("17_612wh")]([ExtResource("18_xs5lc"), ExtResource("19_8rq2d"), ExtResource("20_ohtq0")])
+base_chunk_resolution = 256
+load_strategy = SubResource("Resource_w1qep")
+use_async_loading = false
+max_concurrent_chunk_requests = 0
+chunk_instantiation_budget_ms = 0.0
+use_gpu_mesh_generation = true
+enable_lod = false
+lod_distances = Array[float]([])
+lod_hysteresis = 0.0
+enable_sea = false
+size_relative_to_terrain = 0.0
+sea_subdivisions = 0
+generate_collision = false
+collision_layers = 0
+auto_generate = false
+track_camera = false
+update_interval = 0.0

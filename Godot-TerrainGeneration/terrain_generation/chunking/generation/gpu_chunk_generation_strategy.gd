@@ -17,6 +17,7 @@ var _heightmap: Image
 func _init(heightmap: Image) -> void:
 	_heightmap = heightmap
 	_fallback_strategy = CpuChunkGenerationStrategy.new(heightmap)
+	_gpu_manager = GpuResourceManager.get_singleton()
 
 func get_processor_type() -> ProcessorType:
 	return ProcessorType.GPU
@@ -31,7 +32,6 @@ func generate_chunk(
 	resolution: int,
 	height_grid: PackedFloat32Array
 	) -> MeshData:
-	_gpu_manager = GpuResourceManager.get_singleton()
 	if not _gpu_manager or not _gpu_manager.is_gpu_available():
 		return _fallback_strategy.generate_chunk(
 			terrain_definition, chunk_bounds, lod_level, resolution, height_grid
@@ -54,19 +54,21 @@ func _generate_chunk_gpu(
 	resolution: int,
 	height_grid: PackedFloat32Array
 ) -> MeshData:
+	print("FUUUUU")
 	if not terrain_definition or not terrain_definition.is_valid():
 		push_error("GpuChunkGenerationStrategy: Invalid terrain definition")
 		return null
 	var rd := _gpu_manager.get_rendering_device()
 	if not rd:
+		push_error("GpuChunkGenerationStrategy: No RenderingDevice found")
 		return null
 	var t := Time.get_ticks_usec()
-	_emit_substep("height_grid", (Time.get_ticks_usec() - t) / 1000.0)
+	#_emit_substep("height_grid", (Time.get_ticks_usec() - t) / 1000.0)
 	if height_grid.is_empty():
 		return null
 	t = Time.get_ticks_usec()
 	var mesh_data := _build_mesh_gpu(rd, height_grid, chunk_bounds, resolution)
-	_emit_substep("mesh_build", (Time.get_ticks_usec() - t) / 1000.0)
+	#_emit_substep("mesh_build", (Time.get_ticks_usec() - t) / 1000.0)
 	if not mesh_data:
 		return null
 	var volumes := terrain_definition.get_volumes_for_chunk(chunk_bounds, lod_level)
@@ -76,12 +78,12 @@ func _generate_chunk_gpu(
 		_emit_substep("volumes", (Time.get_ticks_usec() - t) / 1000.0)
 	if mesh_data.cached_normals.is_empty():
 		t = Time.get_ticks_usec()
-#		mesh_data.cached_normals = MeshNormalCalculator.calculate_normals(mesh_data)
-		_emit_substep("normals", (Time.get_ticks_usec() - t) / 1000.0)
+		mesh_data.cached_normals = MeshNormalCalculator.calculate_normals(mesh_data)
+		#_emit_substep("normals", (Time.get_ticks_usec() - t) / 1000.0)
 	if mesh_data.cached_tangents.is_empty():
 		t = Time.get_ticks_usec()
-#		mesh_data.cached_tangents = MeshTangentCalculator.calculate_tangents(mesh_data, mesh_data.cached_normals)
-		_emit_substep("tangents", (Time.get_ticks_usec() - t) / 1000.0)
+		mesh_data.cached_tangents = MeshTangentCalculator.calculate_tangents(mesh_data, mesh_data.cached_normals)
+		#_emit_substep("tangents", (Time.get_ticks_usec() - t) / 1000.0)
 	return mesh_data
 
 func generate_height_grid(
@@ -102,43 +104,47 @@ func generate_height_grid(
 		return PackedFloat32Array()
 	var heightmap_texture := GpuTextureHelper.create_heightmap_texture(rd, _heightmap)
 	var sampler := GpuResourceHelper.create_linear_clamp_sampler(rd)
-	var output_size := resolution * resolution * 4
-	var output_buffer := rd.storage_buffer_create(output_size)
+	var output_buffer := rd.storage_buffer_create(resolution * resolution * 4)
 	var deltas := terrain_definition.get_deltas_for_chunk(chunk_bounds)
-	var delta_data := PackedFloat32Array()
-	var delta_resolution := 0
-	var delta_bounds := AABB()
-	var delta_intensity := 1.0
-	var blend_mode := 0
-	if not deltas.is_empty():
-		var first_delta := deltas[0]
-		if first_delta.delta_texture:
-			delta_resolution = first_delta.delta_texture.get_width()
-			delta_bounds = first_delta.world_bounds
-			delta_intensity = first_delta.intensity
-			blend_mode = _get_blend_mode_int(first_delta.blend_strategy)
-			for y in range(delta_resolution):
-				for x in range(delta_resolution):
-					delta_data.append(first_delta.delta_texture.get_pixel(x, y).r)
-	if delta_data.is_empty():
-		delta_data.resize(1)
-		delta_data[0] = 0.0
-		delta_resolution = 1
-	var delta_buffer := rd.storage_buffer_create(delta_data.size() * 4, delta_data.to_byte_array())
-	var delta_params := PackedByteArray()
-	delta_params.append_array(PackedInt32Array([deltas.size()]).to_byte_array())
-	delta_params.append_array(PackedInt32Array([delta_resolution]).to_byte_array())
-	delta_params.append_array(PackedFloat32Array([delta_bounds.position.x]).to_byte_array())
-	delta_params.append_array(PackedFloat32Array([delta_bounds.position.z]).to_byte_array())
-	delta_params.append_array(PackedFloat32Array([delta_bounds.size.x]).to_byte_array())
-	delta_params.append_array(PackedFloat32Array([delta_bounds.size.z]).to_byte_array())
-	delta_params.append_array(PackedFloat32Array([delta_intensity]).to_byte_array())
-	delta_params.append_array(PackedInt32Array([blend_mode]).to_byte_array())
-	var delta_params_buffer := rd.storage_buffer_create(delta_params.size(), delta_params)
+	var delta_pixel_data := PackedFloat32Array()
+	for delta in deltas:
+		if delta.delta_texture:
+			if delta.delta_texture.get_format() != Image.FORMAT_RF:
+				push_warning("GpuChunkGenerationStrategy: delta texture is not FORMAT_RF, skipping")
+				continue
+			delta_pixel_data.append_array(delta.delta_texture.get_data().to_float32_array())
+		else:
+			delta_pixel_data.append(0.0)
+	if delta_pixel_data.is_empty():
+		delta_pixel_data.append(0.0)
+	var delta_data_buffer := rd.storage_buffer_create(
+		delta_pixel_data.size() * 4, delta_pixel_data.to_byte_array()
+	)
+	var params_bytes := PackedByteArray()
+	params_bytes.append_array(PackedInt32Array([deltas.size(), 0, 0, 0]).to_byte_array())
+	var data_offset := 0
+	for delta in deltas:
+		var delta_res := 1
+		if delta.delta_texture:
+			delta_res = delta.delta_texture.get_width()
+		var world_bounds: AABB = delta.world_bounds
+		var blend_mode := _get_blend_mode_int(delta.blend_strategy)
+		params_bytes.append_array(PackedInt32Array([delta_res]).to_byte_array())
+		params_bytes.append_array(PackedInt32Array([data_offset]).to_byte_array())
+		params_bytes.append_array(PackedInt32Array([blend_mode]).to_byte_array())
+		params_bytes.append_array(PackedFloat32Array([delta.intensity]).to_byte_array())
+		params_bytes.append_array(PackedFloat32Array([world_bounds.position.x]).to_byte_array())
+		params_bytes.append_array(PackedFloat32Array([world_bounds.position.z]).to_byte_array())
+		params_bytes.append_array(PackedFloat32Array([world_bounds.size.x]).to_byte_array())
+		params_bytes.append_array(PackedFloat32Array([world_bounds.size.z]).to_byte_array())
+		data_offset += delta_res * delta_res
+	if params_bytes.size() == 16:
+		params_bytes.resize(16 + 32)
+	var delta_params_buffer := rd.storage_buffer_create(params_bytes.size(), params_bytes)
 	var uniforms: Array[RDUniform] = []
 	uniforms.append(GpuResourceHelper.create_sampler_texture_uniform(0, sampler, heightmap_texture))
 	uniforms.append(GpuResourceHelper.create_storage_buffer_uniform(1, output_buffer))
-	uniforms.append(GpuResourceHelper.create_storage_buffer_uniform(2, delta_buffer))
+	uniforms.append(GpuResourceHelper.create_storage_buffer_uniform(2, delta_data_buffer))
 	uniforms.append(GpuResourceHelper.create_storage_buffer_uniform(3, delta_params_buffer))
 	var uniform_set := rd.uniform_set_create(uniforms, shader_rid, 0)
 	var push_constants := GpuResourceHelper.pack_push_constants([
@@ -149,16 +155,15 @@ func generate_height_grid(
 		terrain_definition.terrain_size.x,
 		terrain_definition.height_scale,
 		resolution,
-		0  # padding
+		0
 	])
 	GpuResourceHelper.dispatch_compute_2d(
 		rd, pipeline_rid, uniform_set,
 		push_constants, resolution, resolution, 8
 	)
-	var result_bytes := rd.buffer_get_data(output_buffer)
-	var result := result_bytes.to_float32_array()
+	var result := rd.buffer_get_data(output_buffer).to_float32_array()
 	GpuResourceHelper.free_rids(rd, [
-		uniform_set, output_buffer, delta_buffer, delta_params_buffer,
+		uniform_set, output_buffer, delta_data_buffer, delta_params_buffer,
 		heightmap_texture, sampler
 	])
 	return result
@@ -205,6 +210,7 @@ func _build_mesh_gpu(
 	mesh_data.width = resolution
 	mesh_data.height = resolution
 	mesh_data.mesh_size = Vector2(chunk_bounds.size.x, chunk_bounds.size.z)
+	print("FUUUkkkU")
 	return mesh_data
 
 func _get_blend_mode_int(strategy: HeightBlendStrategy) -> int:

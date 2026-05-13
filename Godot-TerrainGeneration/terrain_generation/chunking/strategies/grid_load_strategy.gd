@@ -1,5 +1,5 @@
 @tool
-class_name GridLoadStrategyV2 extends ChunkLoadStrategyV2
+class_name GridLoadStrategy extends ChunkLoadStrategy
 
 @export var load_radius: int = 4
 @export var unload_radius: int = 6
@@ -8,36 +8,44 @@ func get_max_loaded_chunks() -> int:
 	var diameter := 2 * load_radius + 1
 	return diameter * diameter
 
-func should_load(coord: Vector2i, camera_pos: Vector3, context: ChunkLoadContextV2) -> bool:
-	var camera_chunk := _world_to_chunk_coord(camera_pos, context)
+func should_load(coord: Vector2i, camera: Camera3D, context: ChunkLoadContext) -> bool:
+	if not camera:
+		return false
+	var camera_chunk := _world_to_chunk_coord(camera.global_position, context)
 	var distance := _chunk_distance(coord, camera_chunk)
 	return distance <= load_radius
 	
-func should_unload(coord: Vector2i, camera_pos: Vector3, context: ChunkLoadContextV2) -> bool:
-	var camera_chunk := _world_to_chunk_coord(camera_pos, context)
+func should_unload(coord: Vector2i, camera: Camera3D, context: ChunkLoadContext) -> bool:
+	if not camera:
+		return false
+	var camera_chunk := _world_to_chunk_coord(camera.global_position, context)
 	var distance := _chunk_distance(coord, camera_chunk)
 	return distance > unload_radius
 
-
-func get_load_priority(coord: Vector2i, camera_pos: Vector3, context: ChunkLoadContextV2) -> float:
-	var camera_chunk := _world_to_chunk_coord(camera_pos, context)
+func get_load_priority(coord: Vector2i, camera: Camera3D, context: ChunkLoadContext) -> float:
+	if not camera:
+		return 0
+	var camera_chunk := _world_to_chunk_coord(camera.global_position, context)
 	return _chunk_distance(coord, camera_chunk)
 
-func calculate_lod(coord: Vector2i, camera_pos: Vector3, context: ChunkLoadContextV2) -> int:
+func calculate_lod(coord: Vector2i, camera: Camera3D, context: ChunkLoadContext) -> int:
+	if not camera:
+		return 0
 	var local_chunk_center: Vector3 = Vector3(
 		(coord.x + 0.5) * context.chunk_size.x - context.terrain_size.x / 2.0,
 		0,
 		(coord.y + 0.5) * context.chunk_size.y - context.terrain_size.y / 2.0
 	)
 	var world_chunk_center: Vector3 = local_chunk_center + context.terrain_position
+	var camera_pos := camera.global_position
 	var distance := Vector2(world_chunk_center.x - camera_pos.x, world_chunk_center.z - camera_pos.z).length()
 	for i in range(context.lod_distances.size()):
 		if distance < context.lod_distances[i]: 
 			return i
 	return context.lod_distances.size()
 
-func get_chunks_to_load(camera_pos: Vector3, context: ChunkLoadContextV2, sorted: bool = false) -> Array[Vector2i]:
-	var camera_chunk := _world_to_chunk_coord(camera_pos, context)
+func get_chunks_to_load(camera: Camera3D, context: ChunkLoadContext, sorted: bool = false) -> Array[Vector2i]:
+	var camera_chunk := _world_to_chunk_coord(camera.global_position, context)
 	var chunks_to_load: Array[Vector2i] = []
 	for z in range(-load_radius, load_radius + 1):
 		for x in range(-load_radius, load_radius + 1):
@@ -48,11 +56,11 @@ func get_chunks_to_load(camera_pos: Vector3, context: ChunkLoadContextV2, sorted
 	if sorted:
 		chunks_to_load.sort_custom(
 			func(a: Vector2i, b: Vector2i):
-			return get_load_priority(a, camera_pos, context) < get_load_priority(b, camera_pos, context)
+			return get_load_priority(a, camera, context) < get_load_priority(b, camera, context)
 		)
 	return chunks_to_load
 
-func _world_to_chunk_coord(world_pos: Vector3, context: ChunkLoadContextV2) -> Vector2i:
+func _world_to_chunk_coord(world_pos: Vector3, context: ChunkLoadContext) -> Vector2i:
 	var local_pos: Vector3 = world_pos - context.terrain_position
 	var half_terrain: Vector2 = context.terrain_size / 2.0
 	var local_x: float = local_pos.x + half_terrain.x
@@ -62,7 +70,7 @@ func _world_to_chunk_coord(world_pos: Vector3, context: ChunkLoadContextV2) -> V
 		int(floor(local_z / context.chunk_size.y))
 	)
 
-func _is_valid_chunk_coord(coord: Vector2i, context: ChunkLoadContextV2) -> bool:
+func _is_valid_chunk_coord(coord: Vector2i, context: ChunkLoadContext) -> bool:
 	var chunks_x := int(ceil(context.terrain_size.x / context.chunk_size.x))
 	var chunks_z := int(ceil(context.terrain_size.y / context.chunk_size.y))
 	return coord.x >= 0 and coord.x < chunks_x and coord.y >= 0 and coord.y < chunks_z

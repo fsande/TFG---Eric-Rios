@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="PropPlacementRule" format=3 uid="uid://dmjfm4v8myli7"]
 
 [ext_resource type="PackedScene" uid="uid://cq832o58evlgr" path="res://assets/models/environment/rock/rock1.tscn" id="1_75m4m"]
-[ext_resource type="Script" uid="uid://dfj6tvyliq72c" path="res://terrain_generation/props/constraints/prop_placement_constraint.gd" id="1_d6vfu"]
-[ext_resource type="Script" uid="uid://by55fqudu8iv0" path="res://terrain_generation/props/constraints/volume_exclusion_constraint.gd" id="1_ic555"]
-[ext_resource type="Script" uid="uid://chus0ya38wnpu" path="res://terrain_generation/props/constraints/spacing_constraint.gd" id="2_d6vfu"]
-[ext_resource type="Script" uid="uid://c102x3r645g6y" path="res://terrain_generation/props/prop_placement_rule.gd" id="2_f37b3"]
+[ext_resource type="Script" uid="uid://cu0sy48pu3x7x" path="res://terrain_generation/props/constraints/prop_placement_constraint.gd" id="1_d6vfu"]
+[ext_resource type="Script" uid="uid://2kq5pkuiluj8" path="res://terrain_generation/props/constraints/volume_exclusion_constraint.gd" id="1_ic555"]
+[ext_resource type="Script" uid="uid://coaoelv6m43ad" path="res://terrain_generation/props/constraints/spacing_constraint.gd" id="2_d6vfu"]
+[ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="2_f37b3"]
 
 [sub_resource type="Resource" id="Resource_fk7lr"]
 script = ExtResource("1_ic555")

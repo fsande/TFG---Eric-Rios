@@ -3,7 +3,7 @@
 ## @details Generates a HeightDeltaMap instead of modifying mesh vertices directly.
 ## This allows the modification to be applied at any resolution during chunk generation.
 @tool
-class_name TerrainRaiseAgentV2 extends TerrainModifierAgent
+class_name TerrainRaiseAgent extends TerrainModifierAgent
 
 @export_group("Raise Parameters")
 

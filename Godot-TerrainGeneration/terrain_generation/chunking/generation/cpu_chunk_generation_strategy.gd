@@ -71,7 +71,6 @@ func generate_height_grid(
 		terrain_definition.terrain_size.x,
 		terrain_definition.height_scale
 	)
-	# Apply GDScript delta maps on top of the native height grid
 	var deltas := terrain_definition.get_deltas_for_chunk(chunk_bounds)
 	if deltas.is_empty():
 		return grid

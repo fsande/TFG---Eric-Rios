@@ -60,7 +60,7 @@ func _run_single_config(profile: BenchmarkProfile, index: int) -> Array[Benchmar
 	return config_results
 
 func _benchmark_single_config(
-	config: TerrainConfigurationV2,
+	config: TerrainConfiguration,
 	config_name: String,
 	profile: BenchmarkProfile
 ) -> Array[BenchmarkResult]:
@@ -81,7 +81,7 @@ func _benchmark_single_config(
 	return results
 
 func _benchmark_height_pipeline(
-	config: TerrainConfigurationV2,
+	config: TerrainConfiguration,
 	config_name: String,
 	profile: BenchmarkProfile
 ) -> Array[BenchmarkResult]:
@@ -97,7 +97,7 @@ func _benchmark_height_pipeline(
 	return results
 
 func _benchmark_full_pipeline(
-	config: TerrainConfigurationV2,
+	config: TerrainConfiguration,
 	profile: BenchmarkProfile,
 	meta: Dictionary
 ) -> Array[BenchmarkResult]:
@@ -152,7 +152,7 @@ func _benchmark_full_pipeline(
 
 # TODO: Unify entire pipeline benchmarking into single function, single loop. Record everything there
 func _benchmark_heightmap(
-	config: TerrainConfigurationV2,
+	config: TerrainConfiguration,
 	profile: BenchmarkProfile,
 	meta: Dictionary
 ) -> Array[BenchmarkResult]:
@@ -186,7 +186,7 @@ func _benchmark_heightmap(
 	return results
 
 func _benchmark_chunks(
-	config: TerrainConfigurationV2,
+	config: TerrainConfiguration,
 	config_name: String,
 	definition: TerrainDefinition,
 	profile: BenchmarkProfile
@@ -211,13 +211,14 @@ func _benchmark_chunks(
 		var chunk_generator := ChunkGenerator.new(definition, config.base_chunk_resolution, use_gpu)
 		var substep_timings: Dictionary = {}   # substep_name -> PackedFloat64Array
 		if chunk_generator.get_strategy() is CpuChunkGenerationStrategy:
-			var strategy = chunk_generator.get_strategy() as CpuChunkGenerationStrategy
-			strategy._native_generator.substep_completed.connect(
-				func(substep_name: String, elapsed_ms: float) -> void:
-					if not substep_timings.has(substep_name):
-						substep_timings[substep_name] = PackedFloat64Array()
-					substep_timings[substep_name].append(elapsed_ms)
-			)
+			pass
+			#var strategy = chunk_generator.get_strategy() as CpuChunkGenerationStrategy
+			#strategy._native_generator.substep_completed.connect(
+				#func(substep_name: String, elapsed_ms: float) -> void:
+					#if not substep_timings.has(substep_name):
+						#substep_timings[substep_name] = PackedFloat64Array()
+					#substep_timings[substep_name].append(elapsed_ms)
+			#)
 		else: 
 			chunk_generator.get_strategy().substep_completed.connect(
 				func(substep_name: String, elapsed_ms: float) -> void:
@@ -269,7 +270,7 @@ func _benchmark_chunks(
 	#return results
 
 func _benchmark_cache(
-	config: TerrainConfigurationV2,
+	config: TerrainConfiguration,
 	config_name: String,
 	definition: TerrainDefinition,
 	_profile: BenchmarkProfile,
@@ -305,7 +306,7 @@ func _benchmark_cache(
 ## Exercises PropPlacementRule.build_for_chunk() — the same code path
 ## used by ChunkFeatureManager when a chunk loads at runtime.
 func _benchmark_prop_placement(
-	config: TerrainConfigurationV2,
+	config: TerrainConfiguration,
 	config_name: String,
 	definition: TerrainDefinition,
 	_profile: BenchmarkProfile,
@@ -353,7 +354,7 @@ func _benchmark_prop_placement(
 	return results
 
 func _benchmark_async_loading(
-	config: TerrainConfigurationV2,
+	config: TerrainConfiguration,
 	config_name: String,
 	definition: TerrainDefinition,
 	profile: BenchmarkProfile
@@ -459,7 +460,7 @@ func _benchmark_async_loading(
 		))
 	return results
 
-func _generate_definition_quiet(config: TerrainConfigurationV2) -> TerrainDefinition:
+func _generate_definition_quiet(config: TerrainConfiguration) -> TerrainDefinition:
 	var gen := TerrainDefinitionGenerator.new()
 	gen.verbose = false
 	var context := _make_context(config)
@@ -472,7 +473,7 @@ func _generate_definition_quiet(config: TerrainConfigurationV2) -> TerrainDefini
 	context.dispose()
 	return definition
 
-func _make_context(config: TerrainConfigurationV2) -> ProcessingContext:
+func _make_context(config: TerrainConfiguration) -> ProcessingContext:
 	var heightmap_type := ProcessingContext.ProcessorType.GPU if config.use_gpu_heightmap \
 		else ProcessingContext.ProcessorType.CPU
 	var mesh_type := ProcessingContext.ProcessorType.GPU if config.use_gpu_mesh_generation \
@@ -482,7 +483,7 @@ func _make_context(config: TerrainConfigurationV2) -> ProcessingContext:
 	)
 
 ## Spiral outward from terrain center to collect chunk coordinates.
-func _spiral_chunk_coords(config: TerrainConfigurationV2, count: int) -> Array[Vector2i]:
+func _spiral_chunk_coords(config: TerrainConfiguration, count: int) -> Array[Vector2i]:
 	var chunk_size := config.chunk_size
 	var terrain_size := config.terrain_size
 	var nx := int(terrain_size.x / chunk_size.x)

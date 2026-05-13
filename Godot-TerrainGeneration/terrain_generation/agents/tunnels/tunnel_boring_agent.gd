@@ -3,7 +3,7 @@
 ## @details Generates TunnelVolumeDefinition instances that are applied
 ## during chunk generation via CSG subtraction.
 @tool
-class_name TunnelBoringAgentV2 extends TerrainModifierAgent
+class_name TunnelBoringAgent extends TerrainModifierAgent
 
 @export_group("Tunnel Shape")
 

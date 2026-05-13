@@ -1,4 +1,4 @@
-class_name ChunkLoadContextV2 extends RefCounted
+class_name ChunkLoadContext extends RefCounted
 
 var terrain_size: Vector2
 var chunk_size: Vector2

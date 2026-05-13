@@ -3,7 +3,7 @@
 ## Holds references to heightmap sources, mesh generation parameters, visual
 ## settings and performance-related options. Signals when configuration changes.
 @tool
-class_name TerrainConfigurationV2 extends Resource
+class_name TerrainConfiguration extends Resource
 
 signal configuration_changed()
 signal load_strategy_changed()
@@ -40,7 +40,7 @@ signal load_strategy_changed()
 @export var chunk_size: Vector2 = Vector2(64, 64)
 @export var base_chunk_resolution: int = 64
 @export var cache_size_mb: float = 200.0
-@export var load_strategy: ChunkLoadStrategyV2 = GridLoadStrategyV2.new():
+@export var load_strategy: ChunkLoadStrategy = GridLoadStrategy.new():
 	set(value):
 		load_strategy = value
 		load_strategy_changed.emit()
