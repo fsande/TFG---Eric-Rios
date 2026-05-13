@@ -46,7 +46,6 @@ func generate_chunk(
 		)
 	return result
 
-
 func _generate_chunk_gpu(
 	terrain_definition: TerrainDefinition,
 	chunk_bounds: AABB,
@@ -54,7 +53,6 @@ func _generate_chunk_gpu(
 	resolution: int,
 	height_grid: PackedFloat32Array
 ) -> MeshData:
-	print("FUUUUU")
 	if not terrain_definition or not terrain_definition.is_valid():
 		push_error("GpuChunkGenerationStrategy: Invalid terrain definition")
 		return null
@@ -128,7 +126,7 @@ func generate_height_grid(
 		if delta.delta_texture:
 			delta_res = delta.delta_texture.get_width()
 		var world_bounds: AABB = delta.world_bounds
-		var blend_mode := _get_blend_mode_int(delta.blend_strategy)
+		var blend_mode := delta.blend_mode_int()
 		params_bytes.append_array(PackedInt32Array([delta_res]).to_byte_array())
 		params_bytes.append_array(PackedInt32Array([data_offset]).to_byte_array())
 		params_bytes.append_array(PackedInt32Array([blend_mode]).to_byte_array())
@@ -210,23 +208,7 @@ func _build_mesh_gpu(
 	mesh_data.width = resolution
 	mesh_data.height = resolution
 	mesh_data.mesh_size = Vector2(chunk_bounds.size.x, chunk_bounds.size.z)
-	print("FUUUkkkU")
 	return mesh_data
-
-func _get_blend_mode_int(strategy: HeightBlendStrategy) -> int:
-	match strategy:
-		AdditiveBlendStrategy:
-			return 0
-		MultiplicativeBlendStrategy:
-			return 1
-		MaxBlendStrategy:
-			return 2
-		MinBlendStrategy:
-			return 3
-		ReplaceBlendStrategy:
-			return 4
-		_:
-			return 0
 
 func dispose() -> void:
 	_gpu_manager = null

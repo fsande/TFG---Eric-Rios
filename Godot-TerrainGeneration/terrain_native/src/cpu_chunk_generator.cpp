@@ -20,6 +20,9 @@ void CpuChunkGeneratorNative::_bind_methods() {
                        &CpuChunkGeneratorNative::generate_height_grid);
   ClassDB::bind_method(D_METHOD("generate_chunk_from_grid", "height_grid", "chunk_bounds", "resolution"),
                        &CpuChunkGeneratorNative::generate_chunk_from_grid);
+  ClassDB::bind_method(
+      D_METHOD("generate_height_grid_with_deltas", "chunk_bounds", "resolution", "terrain_size", "height_scale", "deltas"),
+      &CpuChunkGeneratorNative::generate_height_grid_with_deltas);
 }
 
 void CpuChunkGeneratorNative::bake_heightmap(const Ref<Image> &heightmap) {
@@ -275,6 +278,121 @@ Ref<MeshData> CpuChunkGeneratorNative::generate_chunk_from_grid(const PackedFloa
   _calculate_tangents(mesh->cached_tangents, mesh->vertices, mesh->indices, mesh->uvs, mesh->cached_normals);
   mesh->processor_type = "cpu_native";
   return mesh;
+}
+
+static float _sample_delta(const DeltaInfo &delta, float world_x, float world_z) {
+  float u = (world_x - delta.bounds_x) / delta.bounds_size_x;
+  float v = (world_z - delta.bounds_z) / delta.bounds_size_z;
+  u = u < 0.0f ? 0.0f : (u > 1.0f ? 1.0f : u);
+  v = v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v);
+ 
+  float px = u * float(delta.resolution - 1);
+  float pz = v * float(delta.resolution - 1);
+  int x0 = int(px);
+  int z0 = int(pz);
+  int x1 = x0 + 1 < delta.resolution ? x0 + 1 : x0;
+  int z1 = z0 + 1 < delta.resolution ? z0 + 1 : z0;
+  float fx = px - float(x0);
+  float fz = pz - float(z0);
+ 
+  int res = delta.resolution;
+  float h00 = delta.pixels[z0 * res + x0];
+  float h10 = delta.pixels[z0 * res + x1];
+  float h01 = delta.pixels[z1 * res + x0];
+  float h11 = delta.pixels[z1 * res + x1];
+ 
+  float hx0 = h00 + fx * (h10 - h00);
+  float hx1 = h01 + fx * (h11 - h01);
+  return hx0 + fz * (hx1 - hx0);
+}
+ 
+static float _apply_blend(float base_height, float delta_value, BlendMode blend_mode, float intensity) {
+  float scaled = delta_value * intensity;
+  switch (blend_mode) {
+    case BlendMode::kAdditive: return base_height + scaled;
+    case BlendMode::kMultiplicative: return base_height * scaled;
+    case BlendMode::kMax: return base_height > scaled ? base_height : scaled;
+    case BlendMode::kMin: return base_height < scaled ? base_height : scaled;
+    case BlendMode::kReplace: return scaled;
+    default: return base_height + scaled;
+  }
+}
+ 
+void CpuChunkGeneratorNative::_apply_deltas(float *grid,
+                                            int resolution,
+                                            float bx,
+                                            float bz,
+                                            float sx,
+                                            float sz,
+                                            const std::vector<DeltaInfo> &deltas) {
+  const float inv_res = resolution > 1 ? 1.0f / float(resolution - 1) : 0.0f;
+  for (int z = 0; z < resolution; ++z) {
+    const float v_local = resolution > 1 ? float(z) * inv_res : 0.5f;
+    const float world_z = bz + v_local * sz;
+    for (int x = 0; x < resolution; ++x) {
+      const float u_local = resolution > 1 ? float(x) * inv_res : 0.5f;
+      const float world_x = bx + u_local * sx;
+      float height = grid[z * resolution + x];
+      for (const DeltaInfo &delta : deltas) {
+        float delta_value = _sample_delta(delta, world_x, world_z);
+        if (delta_value < -0.0001f || delta_value > 0.0001f)
+          height = _apply_blend(height, delta_value, delta.blend_mode, delta.intensity);
+      }
+      grid[z * resolution + x] = height;
+    }
+  }
+}
+ 
+static std::vector<DeltaInfo> _unpack_delta_dicts(const TypedArray<Dictionary> &delta_dicts,
+                                                  std::vector<std::vector<float>> &pixel_storage) {
+  std::vector<DeltaInfo> deltas;
+  deltas.reserve(delta_dicts.size());
+  pixel_storage.reserve(delta_dicts.size());
+ 
+  for (int i = 0; i < delta_dicts.size(); ++i) {
+    Dictionary d = delta_dicts[i];
+    Ref<Image> img = d.get("image", Variant());
+    if (img.is_null()) continue;
+ 
+    AABB bounds = d.get("bounds", AABB());
+    float intensity = float(d.get("intensity", 1.0f));
+    BlendMode blend_mode = static_cast<BlendMode>(int(d.get("blend_mode", 0)));
+ 
+    int res = img->get_width();
+    PackedByteArray raw = img->get_data();
+    const float *src = reinterpret_cast<const float *>(raw.ptr());
+    pixel_storage.emplace_back(src, src + res * res);
+ 
+    DeltaInfo info;
+    info.pixels = pixel_storage.back().data();
+    info.resolution = res;
+    info.bounds_x = bounds.position.x;
+    info.bounds_z = bounds.position.z;
+    info.bounds_size_x = bounds.size.x;
+    info.bounds_size_z = bounds.size.z;
+    info.intensity = intensity;
+    info.blend_mode = blend_mode;
+    deltas.push_back(info);
+  }
+  return deltas;
+}
+ 
+PackedFloat32Array CpuChunkGeneratorNative::generate_height_grid_with_deltas(
+    AABB chunk_bounds,
+    int resolution,
+    float terrain_size,
+    float height_scale,
+    const TypedArray<Dictionary> &delta_dicts) const {
+  PackedFloat32Array result = generate_height_grid(chunk_bounds, resolution, terrain_size, height_scale);
+  if (result.is_empty() || delta_dicts.is_empty())
+    return result;
+  std::vector<std::vector<float>> pixel_storage;
+  std::vector<DeltaInfo> deltas = _unpack_delta_dicts(delta_dicts, pixel_storage);
+  _apply_deltas(result.ptrw(), resolution,
+                chunk_bounds.position.x, chunk_bounds.position.z,
+                chunk_bounds.size.x, chunk_bounds.size.z,
+                deltas);
+  return result;
 }
 
 } // namespace godot

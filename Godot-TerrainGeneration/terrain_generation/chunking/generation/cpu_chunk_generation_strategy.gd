@@ -7,9 +7,9 @@
 @tool
 class_name CpuChunkGenerationStrategy extends ChunkGenerationStrategy
 
-var _native_generator := CpuChunkGeneratorNative.new() 
+var _native_generator := CpuChunkGeneratorNative.new()
 
-func _init(heightmap: Image) ->void:
+func _init(heightmap: Image) -> void:
 	if heightmap:
 		_native_generator.bake_heightmap(heightmap)
 
@@ -19,9 +19,9 @@ func get_processor_type() -> ProcessorType:
 func supports_async() -> bool:
 	return true
 
-## Generate a complete chunk. The native generator handles the full pipeline.
-## If volumes are present, we generate the height grid first (GDScript applies
-## deltas), then pass it back into the native mesh builder.
+## ChunkGenerator calls generate_height_grid first, then passes the result here.
+## Deltas are already baked into height_grid by the time we receive it, so we
+## only need to handle volumes on top of the pre-built grid.
 func generate_chunk(
 	terrain_definition: TerrainDefinition,
 	chunk_bounds: AABB,
@@ -32,65 +32,55 @@ func generate_chunk(
 	if not terrain_definition or not terrain_definition.is_valid():
 		push_error("CpuChunkGenerationStrategy: Invalid terrain definition")
 		return null
-	var current_time := Time.get_ticks_usec()
-	var volumes := terrain_definition.get_volumes_for_chunk(chunk_bounds, 0)
+	var volumes := terrain_definition.get_volumes_for_chunk(chunk_bounds, lod_level)
 	if volumes.is_empty():
-		var mesh_data: MeshData = _native_generator.generate_chunk(
-			chunk_bounds, resolution,
-			terrain_definition.terrain_size.x,
-			terrain_definition.height_scale
-		)
-		return mesh_data
+		return _native_generator.generate_chunk_from_grid(height_grid, chunk_bounds, resolution)
 	if height_grid.is_empty():
 		return null
-	current_time = Time.get_ticks_usec()
-	var modified_grid := height_grid.duplicate()
-	current_time = Time.get_ticks_usec()
+	var current_time := Time.get_ticks_usec()
 	var mesh_data: MeshData = _native_generator.generate_chunk_from_grid(
-		modified_grid, chunk_bounds, resolution
+		height_grid, chunk_bounds, resolution
 	)
 	_emit_substep("mesh_build", (Time.get_ticks_usec() - current_time) / 1000.0)
 	if not mesh_data:
 		return null
-	if not volumes.is_empty():
-		current_time = Time.get_ticks_usec()
-		mesh_data = apply_volumes(mesh_data, volumes, chunk_bounds, resolution)
-		_emit_substep("volumes", (Time.get_ticks_usec() - current_time) / 1000.0)
+	current_time = Time.get_ticks_usec()
+	mesh_data = apply_volumes(mesh_data, volumes, chunk_bounds, resolution)
+	_emit_substep("volumes", (Time.get_ticks_usec() - current_time) / 1000.0)
 	return mesh_data
 
-## Generate height grid via native, then apply GDScript delta maps.
-## Returns the modified grid ready for generate_chunk_from_grid.
+## Generates the height grid with delta maps applied entirely in native C++.
 func generate_height_grid(
 	terrain_definition: TerrainDefinition,
 	chunk_bounds: AABB,
 	resolution: int
 ) -> PackedFloat32Array:
-	var grid: PackedFloat32Array = _native_generator.generate_height_grid(
-		chunk_bounds,
-		resolution,
-		terrain_definition.terrain_size.x,
-		terrain_definition.height_scale
-	)
 	var deltas := terrain_definition.get_deltas_for_chunk(chunk_bounds)
 	if deltas.is_empty():
-		return grid
-	var terrain_size := terrain_definition.terrain_size.x
-	var inv_res := 1.0 / float(resolution - 1) if resolution > 1 else 0.0
-	for z in range(resolution):
-		var v_local := float(z) * inv_res if resolution > 1 else 0.5
-		var world_z := chunk_bounds.position.z + v_local * chunk_bounds.size.z
-		for x in range(resolution):
-			var u_local := float(x) * inv_res if resolution > 1 else 0.5
-			var world_x := chunk_bounds.position.x + u_local * chunk_bounds.size.x
-			var world_pos := Vector2(world_x, world_z)
-			var idx := z * resolution + x
-			var height := grid[idx]
-			for delta in deltas:
-				var delta_value := delta.sample_at(world_pos)
-				if absf(delta_value) >= 0.0001:
-					height = delta.apply_blend(height, delta_value)
-			grid[idx] = height
-	return grid
+		return _native_generator.generate_height_grid(
+			chunk_bounds, resolution,
+			terrain_definition.terrain_size.x,
+			terrain_definition.height_scale
+		)
+	var packed: Array[Dictionary] = []
+	for delta in deltas:
+		if not delta.delta_texture:
+			continue
+		if delta.delta_texture.get_format() != Image.FORMAT_RF:
+			push_warning("CpuChunkGenerationStrategy: delta texture is not FORMAT_RF, skipping")
+			continue
+		packed.append({
+			"image": delta.delta_texture,
+			"bounds": delta.world_bounds,
+			"intensity": delta.intensity,
+			"blend_mode": delta.blend_mode_int(),
+		})
+	return _native_generator.generate_height_grid_with_deltas(
+		chunk_bounds, resolution,
+		terrain_definition.terrain_size.x,
+		terrain_definition.height_scale,
+		packed
+	)
 
 func apply_volumes(
 	mesh_data: MeshData,

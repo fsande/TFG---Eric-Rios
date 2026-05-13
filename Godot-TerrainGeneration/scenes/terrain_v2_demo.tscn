@@ -28,8 +28,8 @@ metadata/_custom_type_script = "uid://byh53w6k375jl"
 
 [sub_resource type="Resource" id="Resource_spfy5"]
 script = ExtResource("4_b4i1g")
-load_radius = 5
-unload_radius = 5
+load_radius = 12
+unload_radius = 15
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_mm8fh"]
 frequency = 0.1
@@ -52,10 +52,9 @@ metadata/_custom_type_script = "uid://d1uj11l5nqaog"
 [sub_resource type="Resource" id="Resource_cvtr7"]
 script = ExtResource("8_7f1po")
 heightmap_source = SubResource("Resource_bqotf")
+terrain_size = Vector2(5000, 5000)
 modifier_stages = Array[ExtResource("6_b4i1g")]([SubResource("Resource_qx382")])
 load_strategy = SubResource("Resource_spfy5")
-use_async_loading = false
-use_gpu_mesh_generation = true
 lod_distances = Array[float]([500.0, 500.0, 500.0, 400.0])
 enable_sea = false
 terrain_material = ExtResource("12_obh5s")
@@ -71,11 +70,11 @@ auto_generate = false
 script = ExtResource("1_presenter")
 configuration = SubResource("Resource_cvtr7")
 
-[node name="ChunksContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=2116822748]
+[node name="ChunksContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=634167487]
 
-[node name="PropsContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=1428320655]
+[node name="PropsContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=1708657690]
 
-[node name="Environment" type="WorldEnvironment" parent="TerrainPresenterV2" unique_id=1514316333]
+[node name="Environment" type="WorldEnvironment" parent="TerrainPresenterV2" unique_id=1784788212]
 environment = ExtResource("4_rm4ox")
 
 [node name="DebugHUD" type="Control" parent="." unique_id=2004353774]
@@ -104,4 +103,4 @@ light_color = Color(0.862678, 0.5543531, 0.6468668, 1)
 shadow_enabled = true
 
 [node name="FlyCamera" parent="." unique_id=2105645240 instance=ExtResource("15_b4i1g")]
-transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, -5.412529, 0, 8.071518)
+transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, 0, 65, 0)

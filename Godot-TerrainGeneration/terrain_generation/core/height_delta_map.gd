@@ -13,7 +13,7 @@ class_name HeightDeltaMap extends Resource
 ## World-space bounds where this delta applies
 @export var world_bounds: AABB = AABB()
 
-## Optional custom blend strategy (overrides blend_mode if set)
+## Optional custom blend strategy
 @export var blend_strategy: HeightBlendStrategy = AdditiveBlendStrategy.new()
 
 ## Priority for ordering multiple deltas (higher = applied later)
@@ -46,6 +46,22 @@ static func create(width: int, height: int, bounds: AABB) -> HeightDeltaMap:
 	delta.world_bounds = bounds
 	delta.creation_timestamp = int(Time.get_unix_time_from_system())
 	return delta
+
+func blend_mode_int() -> int:
+	match blend_strategy:
+		AdditiveBlendStrategy:
+			return 0
+		MultiplicativeBlendStrategy:
+			return 1
+		MaxBlendStrategy:
+			return 2
+		MinBlendStrategy:
+			return 3
+		ReplaceBlendStrategy:
+			return 4
+		_:
+			return 0
+
 
 ## Sample the delta value at a world position.
 ## @param world_pos World position (XZ plane)
