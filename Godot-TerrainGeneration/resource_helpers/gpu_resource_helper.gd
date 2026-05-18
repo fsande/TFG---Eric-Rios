@@ -143,3 +143,37 @@ static func read_vector2_buffer(rd: RenderingDevice, buffer: RID, count: int) ->
 		var base := i * 2
 		result[i] = Vector2(float_data[base], float_data[base + 1])
 	return result
+
+## Begins a compute list without submitting.
+## Call dispatch_compute_2d_batched() for each shader pass,
+## then end_and_sync() once when all dispatches are queued.
+static func begin_compute_list(rd: RenderingDevice) -> int:
+	return rd.compute_list_begin()
+
+## Adds a 2D dispatch to an existing compute list.
+## A barrier is inserted after each dispatch to ensure correct ordering
+## when the output of one pass feeds the input of the next.
+static func dispatch_compute_2d_batched(
+	rd: RenderingDevice,
+	compute_list: int,
+	pipeline: RID,
+	uniform_set: RID,
+	push_constants: PackedByteArray,
+	width: int,
+	height: int,
+	workgroup_size: int = 8
+) -> void:
+	rd.compute_list_bind_compute_pipeline(compute_list, pipeline)
+	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
+	if push_constants.size() > 0:
+		rd.compute_list_set_push_constant(compute_list, push_constants, push_constants.size())
+	var groups_x := ceili(float(width) / float(workgroup_size))
+	var groups_y := ceili(float(height) / float(workgroup_size))
+	rd.compute_list_dispatch(compute_list, groups_x, groups_y, 1)
+	rd.compute_list_add_barrier(compute_list)
+ 
+## Ends the compute list and blocks until the GPU finishes all batched dispatches.
+static func end_and_sync(rd: RenderingDevice, compute_list: int) -> void:
+	rd.compute_list_end()
+	rd.submit()
+	rd.sync()

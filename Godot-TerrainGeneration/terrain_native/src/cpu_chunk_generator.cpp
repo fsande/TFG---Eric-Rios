@@ -285,7 +285,6 @@ static float _sample_delta(const DeltaInfo &delta, float world_x, float world_z)
   float v = (world_z - delta.bounds_z) / delta.bounds_size_z;
   u = u < 0.0f ? 0.0f : (u > 1.0f ? 1.0f : u);
   v = v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v);
- 
   float px = u * float(delta.resolution - 1);
   float pz = v * float(delta.resolution - 1);
   int x0 = int(px);
@@ -294,13 +293,11 @@ static float _sample_delta(const DeltaInfo &delta, float world_x, float world_z)
   int z1 = z0 + 1 < delta.resolution ? z0 + 1 : z0;
   float fx = px - float(x0);
   float fz = pz - float(z0);
- 
   int res = delta.resolution;
   float h00 = delta.pixels[z0 * res + x0];
   float h10 = delta.pixels[z0 * res + x1];
   float h01 = delta.pixels[z1 * res + x0];
   float h11 = delta.pixels[z1 * res + x1];
- 
   float hx0 = h00 + fx * (h10 - h00);
   float hx1 = h01 + fx * (h11 - h01);
   return hx0 + fz * (hx1 - hx0);
@@ -348,21 +345,17 @@ static std::vector<DeltaInfo> _unpack_delta_dicts(const TypedArray<Dictionary> &
   std::vector<DeltaInfo> deltas;
   deltas.reserve(delta_dicts.size());
   pixel_storage.reserve(delta_dicts.size());
- 
   for (int i = 0; i < delta_dicts.size(); ++i) {
     Dictionary d = delta_dicts[i];
     Ref<Image> img = d.get("image", Variant());
     if (img.is_null()) continue;
- 
     AABB bounds = d.get("bounds", AABB());
     float intensity = float(d.get("intensity", 1.0f));
     BlendMode blend_mode = static_cast<BlendMode>(int(d.get("blend_mode", 0)));
- 
     int res = img->get_width();
     PackedByteArray raw = img->get_data();
     const float *src = reinterpret_cast<const float *>(raw.ptr());
     pixel_storage.emplace_back(src, src + res * res);
- 
     DeltaInfo info;
     info.pixels = pixel_storage.back().data();
     info.resolution = res;

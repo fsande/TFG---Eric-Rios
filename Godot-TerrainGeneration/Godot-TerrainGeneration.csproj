@@ -291,7 +291,7 @@
     <Content Include="terrain_generation\chunking\generation\shaders\chunk_height_grid.glsl.import" />
     <Content Include="terrain_generation\chunking\generation\shaders\chunk_mesh_builder.glsl" />
     <Content Include="terrain_generation\chunking\generation\shaders\chunk_mesh_builder.glsl.import" />
-    <Content Include="terrain_generation\chunking\generation\shaders\chunk_normal_calculator.glsl" />
+    <Content Include="terrain_generation\chunking\generation\shaders\chunk_normals_tangents.glsl" />
     <Content Include="terrain_generation\chunking\generation\shaders\chunk_normal_calculator.glsl.import" />
     <Content Include="terrain_generation\chunking\loaded_chunk_state.gd" />
     <Content Include="terrain_generation\chunking\strategies\chunk_load_context.gd" />

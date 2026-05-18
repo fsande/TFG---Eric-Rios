@@ -47,6 +47,9 @@ void MeshData::_bind_methods() {
   ClassDB::bind_method(D_METHOD("is_valid_index", "i"), &MeshData::is_valid_index);
   ClassDB::bind_method(D_METHOD("get_vertex", "index"), &MeshData::get_vertex);
   ClassDB::bind_method(D_METHOD("get_height", "index"), &MeshData::get_height);
+  ClassDB::bind_static_method("MeshData",
+      D_METHOD("create_from_raw", "raw_vertices", "indices", "raw_uvs", "raw_normals", "raw_tangents"),
+      &MeshData::create_from_raw);
 }
 
 void MeshData::initialize(const PackedVector3Array &p_vertices,
@@ -85,5 +88,50 @@ Ref<MeshData> MeshData::create(const PackedVector3Array &p_vertices,
   mesh->initialize(p_vertices, p_indices, p_uvs);
   return mesh;
 }
+
+Ref<MeshData> MeshData::create_from_raw(const PackedFloat32Array &p_raw_vertices,
+                                        const PackedInt32Array &p_indices,
+                                        const PackedFloat32Array &p_raw_uvs,
+                                        const PackedFloat32Array &p_raw_normals,
+                                        const PackedFloat32Array &p_raw_tangents) {
+  const int vertex_count = p_raw_vertices.size() / 3;
+  PackedVector3Array vertices;
+  PackedVector2Array uvs;
+  vertices.resize(vertex_count);
+  uvs.resize(vertex_count);
+  const float *vptr = p_raw_vertices.ptr();
+  Vector3 *vdst = vertices.ptrw();
+  for (int i = 0; i < vertex_count; ++i) {
+    vdst[i] = Vector3(vptr[i * 3], vptr[i * 3 + 1], vptr[i * 3 + 2]);
+  }
+  const float *uptr = p_raw_uvs.ptr();
+  Vector2 *udst = uvs.ptrw();
+  for (int i = 0; i < vertex_count; ++i) {
+    udst[i] = Vector2(uptr[i * 2], uptr[i * 2 + 1]);
+  }
+  Ref<MeshData> mesh = create(vertices, p_indices, uvs);
+  if (p_raw_normals.size() == vertex_count * 3) {
+    PackedVector3Array normals;
+    normals.resize(vertex_count);
+    const float *nptr = p_raw_normals.ptr();
+    Vector3 *ndst = normals.ptrw();
+    for (int i = 0; i < vertex_count; ++i) {
+      ndst[i] = Vector3(nptr[i * 3], nptr[i * 3 + 1], nptr[i * 3 + 2]);
+    }
+    mesh->cached_normals = normals;
+  }
+  if (p_raw_tangents.size() == vertex_count * 4) {
+    PackedVector4Array tangents;
+    tangents.resize(vertex_count);
+    const float *tptr = p_raw_tangents.ptr();
+    Vector4 *tdst = tangents.ptrw();
+    for (int i = 0; i < vertex_count; ++i) {
+      tdst[i] = Vector4(tptr[i * 4], tptr[i * 4 + 1], tptr[i * 4 + 2], tptr[i * 4 + 3]);
+    }
+    mesh->cached_tangents = tangents;
+  }
+  return mesh;
+}
+
 
 } // namespace godot

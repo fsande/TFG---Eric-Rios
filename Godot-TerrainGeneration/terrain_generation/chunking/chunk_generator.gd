@@ -6,7 +6,8 @@
 class_name ChunkGenerator extends RefCounted
 
 const MIN_RESOLUTION := 4
-const MAX_RESOLUTION := 256
+# Limited due to memory constraints. Should never even get close to this
+const MAX_RESOLUTION := 2500 
 
 var _terrain_definition: TerrainDefinition
 var _base_resolution: int = 64

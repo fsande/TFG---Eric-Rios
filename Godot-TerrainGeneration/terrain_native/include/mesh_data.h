@@ -94,6 +94,19 @@ public:
                               const PackedInt32Array &p_indices,
                               const PackedVector2Array &p_uvs);
 
+ 
+  /** @brief Factory that creates MeshData from raw float buffers as returned by GPU readback.
+   *
+   *  All arrays are flat: raw_vertices is xyz * vertex_count, raw_uvs is uv * vertex_count,
+   *  raw_normals is xyz * vertex_count, raw_tangents is xyzw * vertex_count.
+   *  raw_normals and raw_tangents may be empty, in which case cached_normals/tangents are left unset.
+   */
+  static Ref<MeshData> create_from_raw(const PackedFloat32Array &p_raw_vertices,
+                                       const PackedInt32Array &p_indices,
+                                       const PackedFloat32Array &p_raw_uvs,
+                                       const PackedFloat32Array &p_raw_normals = PackedFloat32Array(),
+                                       const PackedFloat32Array &p_raw_tangents = PackedFloat32Array());
+
 protected:
   static void _bind_methods();
 };
