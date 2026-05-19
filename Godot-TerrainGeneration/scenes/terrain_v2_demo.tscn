@@ -1,16 +1,16 @@
 [gd_scene format=3 uid="uid://dxeaepbn0e70i"]
 
-[ext_resource type="Script" uid="uid://bgpjvppda2u8x" path="res://terrain_generation/core/terrain_presenter.gd" id="1_presenter"]
+[ext_resource type="Script" path="res://terrain_generation/core/terrain_presenter.gd" id="1_presenter"]
 [ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="3_oqt66"]
-[ext_resource type="Script" uid="uid://c51qydcxes5yv" path="res://terrain_generation/chunking/strategies/grid_load_strategy.gd" id="4_b4i1g"]
-[ext_resource type="Script" uid="uid://dy56g8e3x673x" path="res://terrain_generation/debug/terrain_debug_hud.gd" id="4_hud"]
+[ext_resource type="Script" uid="uid://deo7c5axedvvw" path="res://terrain_generation/debug/terrain_debug_hud.gd" id="4_hud"]
+[ext_resource type="Script" uid="uid://bw7f1mxfk3xn2" path="res://terrain_generation/chunking/strategies/grid_and_view_load_strategy.gd" id="4_oqt66"]
 [ext_resource type="Environment" uid="uid://ci0fdcxk6hux2" path="res://assets/environment/blue_sky.tres" id="4_rm4ox"]
-[ext_resource type="Script" uid="uid://c5ppavb1os4er" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="6_b4i1g"]
-[ext_resource type="Script" uid="uid://2wt0wp5vkq0f" path="res://terrain_generation/agents/terrain_modifier_agent.gd" id="6_ibtys"]
-[ext_resource type="Script" uid="uid://cfkwjo8knjl17" path="res://terrain_generation/agents/config/mountain_agent_config.gd" id="7_7f1po"]
-[ext_resource type="Script" uid="uid://wlx5bsak37rn" path="res://terrain_generation/props/prop_placement_rule.gd" id="7_ibtys"]
-[ext_resource type="Script" uid="uid://cx1d1s65igqbm" path="res://terrain_generation/configuration/terrain_configuration.gd" id="8_7f1po"]
-[ext_resource type="Script" uid="uid://ceglbhv6gfplo" path="res://terrain_generation/agents/mountain_agent.gd" id="8_215up"]
+[ext_resource type="Script" uid="uid://bnxkyhqx7vwqh" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="6_b4i1g"]
+[ext_resource type="Script" uid="uid://dy5gejvj7ladi" path="res://terrain_generation/agents/terrain_modifier_agent.gd" id="6_ibtys"]
+[ext_resource type="Script" uid="uid://cbl5ijc0jic6o" path="res://terrain_generation/agents/config/mountain_agent_config.gd" id="7_7f1po"]
+[ext_resource type="Script" uid="uid://c102x3r645g6y" path="res://terrain_generation/props/prop_placement_rule.gd" id="7_ibtys"]
+[ext_resource type="Script" uid="uid://c6oemke3y0i62" path="res://terrain_generation/configuration/terrain_configuration.gd" id="8_7f1po"]
+[ext_resource type="Script" uid="uid://ck30sx4h4qr0r" path="res://terrain_generation/agents/mountain_agent.gd" id="8_215up"]
 [ext_resource type="Script" uid="uid://d1uj11l5nqaog" path="res://terrain_generation/core/stages/sequential_modifier_stage.gd" id="9_a8qn4"]
 [ext_resource type="Material" uid="uid://dmlbneowgjfqy" path="res://assets/materials/terrain_mat2.tres" id="12_obh5s"]
 [ext_resource type="PackedScene" uid="uid://c5010npvryyqd" path="res://scenes/fly_camera.tscn" id="15_b4i1g"]
@@ -22,10 +22,12 @@ script = ExtResource("3_oqt66")
 noise = SubResource("FastNoiseLite_b4i1g")
 metadata/_custom_type_script = "uid://rlx21xot8cjj"
 
-[sub_resource type="Resource" id="Resource_spfy5"]
-script = ExtResource("4_b4i1g")
-load_radius = 8
-unload_radius = 8
+[sub_resource type="Resource" id="Resource_b4i1g"]
+script = ExtResource("4_oqt66")
+load_radius = 3
+unload_radius = 5
+view_angle = 165.0
+max_view_distance = 1500.0
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_mm8fh"]
 frequency = 0.1
@@ -37,7 +39,6 @@ height_variation_noise = SubResource("FastNoiseLite_mm8fh")
 [sub_resource type="Resource" id="Resource_amtu7"]
 script = ExtResource("8_215up")
 config = SubResource("Resource_qigeq")
-save_deltas_images = true
 agent_name = "Mountain V2"
 
 [sub_resource type="Resource" id="Resource_qx382"]
@@ -48,13 +49,13 @@ metadata/_custom_type_script = "uid://d1uj11l5nqaog"
 [sub_resource type="Resource" id="Resource_cvtr7"]
 script = ExtResource("8_7f1po")
 heightmap_source = SubResource("Resource_ibtys")
-terrain_size = Vector2(5000, 5000)
+terrain_size = Vector2(1000, 1000)
 modifier_stages = Array[ExtResource("6_b4i1g")]([SubResource("Resource_qx382")])
 base_chunk_resolution = 128
-load_strategy = SubResource("Resource_spfy5")
-use_async_loading = false
-use_gpu_mesh_generation = true
-lod_distances = Array[float]([500.0, 500.0, 500.0, 400.0])
+load_strategy = SubResource("Resource_b4i1g")
+max_concurrent_chunk_requests = 12
+use_gpu_heightmap = true
+lod_distances = Array[float]([300.0, 480.0, 550.0, 650.0])
 enable_sea = false
 terrain_material = ExtResource("12_obh5s")
 environment = ExtResource("4_rm4ox")
@@ -69,11 +70,11 @@ auto_generate = false
 script = ExtResource("1_presenter")
 configuration = SubResource("Resource_cvtr7")
 
-[node name="ChunksContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=1136727420]
+[node name="ChunksContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=1919182290]
 
-[node name="PropsContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=32560694]
+[node name="PropsContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=68919930]
 
-[node name="Environment" type="WorldEnvironment" parent="TerrainPresenterV2" unique_id=330882222]
+[node name="Environment" type="WorldEnvironment" parent="TerrainPresenterV2" unique_id=2123948660]
 environment = ExtResource("4_rm4ox")
 
 [node name="DebugHUD" type="Control" parent="." unique_id=2004353774]
@@ -85,6 +86,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("4_hud")
+terrain_presenter_path = NodePath("../TerrainPresenterV2")
 
 [node name="CSGSphere3D" type="CSGSphere3D" parent="." unique_id=783366690]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.8, 60, 353)
@@ -102,4 +104,4 @@ light_color = Color(0.862678, 0.5543531, 0.6468668, 1)
 shadow_enabled = true
 
 [node name="FlyCamera" parent="." unique_id=2105645240 instance=ExtResource("15_b4i1g")]
-transform = Transform3D(1, 0, 0, 0, 0.8660253, 0.50000024, 0, -0.50000024, 0.8660253, -137.18724, 74.41793, 33.911957)
+transform = Transform3D(0.8259704, 0.28185686, -0.48819005, 0, 0.8660253, 0.50000024, 0.56371343, -0.4129854, 0.7153113, -80.739105, 46.536003, 51.951992)

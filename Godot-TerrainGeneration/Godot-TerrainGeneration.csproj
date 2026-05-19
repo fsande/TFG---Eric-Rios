@@ -297,6 +297,7 @@
     <Content Include="terrain_generation\chunking\strategies\chunk_load_context.gd" />
     <Content Include="terrain_generation\chunking\strategies\chunk_load_strategy.gd" />
     <Content Include="terrain_generation\chunking\strategies\grid_load_strategy.gd" />
+    <Content Include="terrain_generation\chunking\strategies\grid_and_view_load_strategy.gd" />
     <Content Include="terrain_generation\chunking\strategies\view_load_strategy.gd" />
     <Content Include="terrain_generation\configuration\importer_mesh_lod_strategy_configuration.gd" />
     <Content Include="terrain_generation\configuration\mesh_generator_parameters.gd" />

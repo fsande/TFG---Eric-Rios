@@ -1,11 +1,11 @@
 [gd_resource type="ShaderMaterial" script_class="HeightVariationMaterial" format=3 uid="uid://dmlbneowgjfqy"]
 
-[ext_resource type="Script" uid="uid://cnri5xq0qldk" path="res://materials/height_layer.gd" id="1_o4pkv"]
+[ext_resource type="Script" uid="uid://d1v83xgr68vek" path="res://materials/height_layer.gd" id="1_o4pkv"]
 [ext_resource type="Material" uid="uid://bqxv3268g1up8" path="res://assets/materials/tidal_pool/tidal_pool.tres" id="2_4gi05"]
 [ext_resource type="Material" uid="uid://vpdbt1a33c2s" path="res://assets/materials/mixed_moss/mixed_moss.tres" id="3_4gi05"]
 [ext_resource type="Material" uid="uid://b60ijipg364h4" path="res://assets/materials/badlands_boulders/badlands_boulders.tres" id="3_a7faj"]
 [ext_resource type="Material" uid="uid://dn16r5qbgjt82" path="res://assets/materials/rock_snow_ice/rock_snow_ice.tres" id="4_o4pkv"]
-[ext_resource type="Script" uid="uid://bdltf7uwvun0v" path="res://materials/height_variation_material.gd" id="5_3q2jc"]
+[ext_resource type="Script" uid="uid://cjmcsktlo10ri" path="res://materials/height_variation_material.gd" id="5_3q2jc"]
 [ext_resource type="Shader" uid="uid://d01210myb6lx6" path="res://assets/shaders/advanced_terrain_shader.gdshader" id="6_6mb2p"]
 
 [sub_resource type="Resource" id="Resource_4gi05"]
