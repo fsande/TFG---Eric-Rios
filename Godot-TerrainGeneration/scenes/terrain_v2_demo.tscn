@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://terrain_generation/core/terrain_presenter.gd" id="1_presenter"]
 [ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="3_oqt66"]
 [ext_resource type="Script" uid="uid://deo7c5axedvvw" path="res://terrain_generation/debug/terrain_debug_hud.gd" id="4_hud"]
-[ext_resource type="Script" uid="uid://bw7f1mxfk3xn2" path="res://terrain_generation/chunking/strategies/grid_and_view_load_strategy.gd" id="4_oqt66"]
+[ext_resource type="Script" uid="uid://fh1mnmxhtq2e" path="res://terrain_generation/chunking/strategies/view_load_strategy.gd" id="4_oqt66"]
 [ext_resource type="Environment" uid="uid://ci0fdcxk6hux2" path="res://assets/environment/blue_sky.tres" id="4_rm4ox"]
 [ext_resource type="Script" uid="uid://bnxkyhqx7vwqh" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="6_b4i1g"]
 [ext_resource type="Script" uid="uid://dy5gejvj7ladi" path="res://terrain_generation/agents/terrain_modifier_agent.gd" id="6_ibtys"]
@@ -12,7 +12,7 @@
 [ext_resource type="Script" uid="uid://c6oemke3y0i62" path="res://terrain_generation/configuration/terrain_configuration.gd" id="8_7f1po"]
 [ext_resource type="Script" uid="uid://ck30sx4h4qr0r" path="res://terrain_generation/agents/mountain_agent.gd" id="8_215up"]
 [ext_resource type="Script" uid="uid://d1uj11l5nqaog" path="res://terrain_generation/core/stages/sequential_modifier_stage.gd" id="9_a8qn4"]
-[ext_resource type="Material" uid="uid://dmlbneowgjfqy" path="res://assets/materials/terrain_mat2.tres" id="12_obh5s"]
+[ext_resource type="Material" uid="uid://dmlbneowgjfqy" path="res://assets/materials/terrain_mat2.tres" id="12_b4i1g"]
 [ext_resource type="PackedScene" uid="uid://c5010npvryyqd" path="res://scenes/fly_camera.tscn" id="15_b4i1g"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_b4i1g"]
@@ -22,12 +22,11 @@ script = ExtResource("3_oqt66")
 noise = SubResource("FastNoiseLite_b4i1g")
 metadata/_custom_type_script = "uid://rlx21xot8cjj"
 
-[sub_resource type="Resource" id="Resource_b4i1g"]
+[sub_resource type="Resource" id="Resource_oqt66"]
 script = ExtResource("4_oqt66")
-load_radius = 3
-unload_radius = 5
-view_angle = 165.0
-max_view_distance = 1500.0
+view_angle = 120.0
+max_view_distance = 1000.0
+metadata/_custom_type_script = "uid://fh1mnmxhtq2e"
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_mm8fh"]
 frequency = 0.1
@@ -51,13 +50,12 @@ script = ExtResource("8_7f1po")
 heightmap_source = SubResource("Resource_ibtys")
 terrain_size = Vector2(1000, 1000)
 modifier_stages = Array[ExtResource("6_b4i1g")]([SubResource("Resource_qx382")])
-base_chunk_resolution = 128
-load_strategy = SubResource("Resource_b4i1g")
+load_strategy = SubResource("Resource_oqt66")
 max_concurrent_chunk_requests = 12
 use_gpu_heightmap = true
-lod_distances = Array[float]([300.0, 480.0, 550.0, 650.0])
+lod_distances = Array[float]([400.0, 700.0, 1000.0, 1500.0])
 enable_sea = false
-terrain_material = ExtResource("12_obh5s")
+terrain_material = ExtResource("12_b4i1g")
 environment = ExtResource("4_rm4ox")
 generate_collision = false
 auto_generate = false
@@ -70,11 +68,11 @@ auto_generate = false
 script = ExtResource("1_presenter")
 configuration = SubResource("Resource_cvtr7")
 
-[node name="ChunksContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=1919182290]
+[node name="ChunksContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=1433797510]
 
-[node name="PropsContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=68919930]
+[node name="PropsContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=1862886124]
 
-[node name="Environment" type="WorldEnvironment" parent="TerrainPresenterV2" unique_id=2123948660]
+[node name="Environment" type="WorldEnvironment" parent="TerrainPresenterV2" unique_id=899919300]
 environment = ExtResource("4_rm4ox")
 
 [node name="DebugHUD" type="Control" parent="." unique_id=2004353774]
@@ -104,4 +102,4 @@ light_color = Color(0.862678, 0.5543531, 0.6468668, 1)
 shadow_enabled = true
 
 [node name="FlyCamera" parent="." unique_id=2105645240 instance=ExtResource("15_b4i1g")]
-transform = Transform3D(0.8259704, 0.28185686, -0.48819005, 0, 0.8660253, 0.50000024, 0.56371343, -0.4129854, 0.7153113, -80.739105, 46.536003, 51.951992)
+transform = Transform3D(-0.9726789, 0, -0.23215485, 0, 1, 0, 0.2321549, 0, -0.97267884, 32, 32, 32)

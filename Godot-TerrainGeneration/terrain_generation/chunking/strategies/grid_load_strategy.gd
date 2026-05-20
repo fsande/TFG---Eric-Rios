@@ -59,4 +59,3 @@ func get_chunks_to_load(camera: Camera3D, context: ChunkLoadContext, sorted: boo
 			return get_load_priority(a, camera, context) < get_load_priority(b, camera, context)
 		)
 	return chunks_to_load
-

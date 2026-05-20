@@ -38,7 +38,6 @@ func calculate_lod(coord: Vector2i, camera: Camera3D, context: ChunkLoadContext)
 		if distance < context.lod_distances[i]: 
 			return i
 	return context.lod_distances.size()
-	
 
 func get_chunks_to_load(camera: Camera3D, context: ChunkLoadContext, sorted: bool = false) -> Array[Vector2i]:
 	var chunks_to_load: Array[Vector2i] = []

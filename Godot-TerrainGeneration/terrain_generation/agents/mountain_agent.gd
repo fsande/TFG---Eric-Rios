@@ -99,7 +99,7 @@ func _calculate_bounds(path_points: Array[MountainPoint]) -> AABB:
 	var max_pos := Vector2(-INF, -INF)
 	var max_height := 0.0
 	for point in path_points:
-		var extent := maxf(config.wedge_width * point.width_mult, config.wedge_length * point.length_mult) * 0.5
+		var extent := maxf(config.wedge_width * point.width_mult, config.wedge_length * point.length_mult)
 		min_pos.x = minf(min_pos.x, point.position.x - extent)
 		min_pos.y = minf(min_pos.y, point.position.y - extent)
 		max_pos.x = maxf(max_pos.x, point.position.x + extent)
