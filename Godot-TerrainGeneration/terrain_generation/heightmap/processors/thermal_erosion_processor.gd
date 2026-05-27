@@ -58,6 +58,7 @@ func process_cpu(input: Image, _context: ProcessingContext) -> Image:
 
 ## GPU implementation of thermal erosion.
 func process_gpu(input: Image, context: ProcessingContext) -> Image:
+	#return process_cpu(input, context)
 	var rd := context.get_rendering_device()
 	if not rd:
 		return process_cpu(input, context)
@@ -132,68 +133,207 @@ func _apply_thermal_erosion_cpu(image: Image) -> Image:
 	result.set_data(width, height, false, Image.FORMAT_RF, result_data)
 	return result
 
-func _apply_thermal_erosion_gpu(input_image: Image, rd: RenderingDevice, shader: RID) -> Image:
-	var pipeline := rd.compute_pipeline_create(shader)
+func _apply_thermal_erosion_gpu(
+	input_image: Image,
+	rd: RenderingDevice,
+	shader: RID
+) -> Image:
 	var width := input_image.get_width()
 	var height := input_image.get_height()
-	var current_heightmap := GpuTextureHelper.create_texture_from_image(rd, input_image)
-	var next_heightmap := GpuTextureHelper.create_texture_from_image(rd, input_image)
-	for iteration_index in iterations:
-		var input_texture := current_heightmap if iteration_index % 2 == 0 else next_heightmap
-		var output_texture := next_heightmap if iteration_index % 2 == 0 else current_heightmap
-		var erosion_buffer := GpuTextureHelper.create_empty_texture(rd, width, height)
-		# Pass 0: Calculate erosion amounts
-		_execute_thermal_erosion_pass(rd, pipeline, shader, input_texture, erosion_buffer, input_texture, width, height, 0)
-		# Pass 1: Apply erosion and deposition
-		_execute_thermal_erosion_pass(rd, pipeline, shader, input_texture, erosion_buffer, output_texture, width, height, 1)
-		rd.free_rid(erosion_buffer)
-	var final_texture := next_heightmap if iterations % 2 == 1 else current_heightmap
-	var result := GpuTextureHelper.read_texture_to_image(rd, final_texture, width, height)
-	var max_in_output: float = 0;
-	for y in height:
-		for x in width:
-			var pixel_value: float = result.get_pixel(x, y).r
-			if pixel_value > max_in_output:
-				max_in_output = pixel_value
-	print("ThermalErosionProcessor: Max height after erosion: %f" % max_in_output)
-	GpuResourceHelper.free_rids(rd, [current_heightmap, next_heightmap, pipeline])	
-	return result
-
-## Executes a single pass of the thermal erosion compute shader.
-func _execute_thermal_erosion_pass(rd: RenderingDevice, pipeline: RID, shader: RID, input_tex: RID, erosion_buffer: RID, output_tex: RID, width: int, height: int, pass_number: int) -> void:
-	var uniforms := [
-		GpuResourceHelper.create_image_uniform(0, input_tex),
-		GpuResourceHelper.create_image_uniform(1, erosion_buffer),
-		GpuResourceHelper.create_image_uniform(2, output_tex),
-	]
-	var uniform_set := rd.uniform_set_create(uniforms, shader, 0)
-	
-	var params_buffer := _create_params_buffer(rd, width, height, pass_number)
-	var params_uniform_set := GpuTextureHelper.create_params_uniform_set(rd, params_buffer, shader, 3)
-	
 	var groups_x := ceili(float(width) / float(WORKGROUP_SIZE))
 	var groups_y := ceili(float(height) / float(WORKGROUP_SIZE))
-	
+	var pipeline := rd.compute_pipeline_create(shader)
+	var current_heightmap := GpuTextureHelper.create_texture_from_image(
+		rd,
+		input_image
+	)
+	var next_heightmap := GpuTextureHelper.create_texture_from_image(
+		rd,
+		input_image
+	)
+	var erosion_texture := GpuTextureHelper.create_empty_texture(
+		rd,
+		width,
+		height
+	)
+	var pass0_params := _create_params_buffer(
+		rd,
+		width,
+		height,
+		0
+	)
+	var pass1_params := _create_params_buffer(
+		rd,
+		width,
+		height,
+		1
+	)
+	var even_pass0_image_set := _create_image_uniform_set(
+		rd,
+		shader,
+		current_heightmap,
+		erosion_texture,
+		next_heightmap
+	)
+	var even_pass1_image_set := _create_image_uniform_set(
+		rd,
+		shader,
+		current_heightmap,
+		erosion_texture,
+		next_heightmap
+	)
+	var odd_pass0_image_set := _create_image_uniform_set(
+		rd,
+		shader,
+		next_heightmap,
+		erosion_texture,
+		current_heightmap
+	)
+	var odd_pass1_image_set := _create_image_uniform_set(
+		rd,
+		shader,
+		next_heightmap,
+		erosion_texture,
+		current_heightmap
+	)
+	var pass0_params_set := GpuTextureHelper.create_params_uniform_set(
+		rd,
+		pass0_params,
+		shader,
+		0,
+		1
+	)
+	var pass1_params_set := GpuTextureHelper.create_params_uniform_set(
+		rd,
+		pass1_params,
+		shader,
+		0,
+		1
+	)
 	var compute_list := rd.compute_list_begin()
-	rd.compute_list_bind_compute_pipeline(compute_list, pipeline)
-	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
-	rd.compute_list_bind_uniform_set(compute_list, params_uniform_set, 1)
-	rd.compute_list_dispatch(compute_list, groups_x, groups_y, 1)
+	for iteration_index in range(iterations):
+		var is_even := (iteration_index % 2) == 0
+		var pass0_image_set := (
+			even_pass0_image_set
+			if is_even
+			else odd_pass0_image_set
+		)
+		var pass1_image_set := (
+			even_pass1_image_set
+			if is_even
+			else odd_pass1_image_set
+		)
+		rd.compute_list_bind_compute_pipeline(
+			compute_list,
+			pipeline
+		)
+		rd.compute_list_bind_uniform_set(
+			compute_list,
+			pass0_image_set,
+			0
+		)
+		rd.compute_list_bind_uniform_set(
+			compute_list,
+			pass0_params_set,
+			1
+		)
+		rd.compute_list_dispatch(
+			compute_list,
+			groups_x,
+			groups_y,
+			1
+		)
+		rd.compute_list_add_barrier(compute_list)
+		rd.compute_list_bind_compute_pipeline(
+			compute_list,
+			pipeline
+		)
+		rd.compute_list_bind_uniform_set(
+			compute_list,
+			pass1_image_set,
+			0
+		)
+		rd.compute_list_bind_uniform_set(
+			compute_list,
+			pass1_params_set,
+			1
+		)
+		rd.compute_list_dispatch(
+			compute_list,
+			groups_x,
+			groups_y,
+			1
+		)
+		if iteration_index < iterations - 1:
+			rd.compute_list_add_barrier(compute_list)
 	rd.compute_list_end()
 	rd.submit()
 	rd.sync()
-	GpuResourceHelper.free_rids(rd, [uniform_set, params_uniform_set, params_buffer])
+	var final_texture := (
+		next_heightmap
+		if (iterations % 2) == 1
+		else current_heightmap
+	)
+	var result := GpuTextureHelper.read_texture_to_image(
+		rd,
+		final_texture,
+		width,
+		height
+	)
+	GpuResourceHelper.free_rids(rd, [
+		current_heightmap,
+		next_heightmap,
+		erosion_texture,
+		pass0_params,
+		pass1_params,
+		pipeline
+	])
+	return result
 
-## Creates the parameters buffer for the thermal erosion shader.
-func _create_params_buffer(rd: RenderingDevice, width: int, height: int, pass_number: int) -> RID:
-	var params_bytes := PackedByteArray()
-	params_bytes.resize(32)
-	params_bytes.encode_s32(0, width)
-	params_bytes.encode_s32(4, height)
-	params_bytes.encode_float(8, talus_threshold)
-	params_bytes.encode_float(12, erosion_factor)
-	params_bytes.encode_float(16, min_height_difference)
-	params_bytes.encode_float(20, max_height_difference)
-	params_bytes.encode_s32(24, pass_number)
-	params_bytes.encode_s32(28, neighbourhood_type)
-	return rd.storage_buffer_create(params_bytes.size(), params_bytes)
+func _create_image_uniform_set(
+	rd: RenderingDevice,
+	shader: RID,
+	input_texture: RID,
+	erosion_texture: RID,
+	output_texture: RID
+) -> RID:
+	var uniforms := [
+		GpuResourceHelper.create_image_uniform(
+			0,
+			input_texture
+		),
+		GpuResourceHelper.create_image_uniform(
+			1,
+			erosion_texture
+		),
+		GpuResourceHelper.create_image_uniform(
+			2,
+			output_texture
+		)
+	]
+	return rd.uniform_set_create(
+		uniforms,
+		shader,
+		0
+	)
+
+func _create_params_buffer(
+	rd: RenderingDevice,
+	width: int,
+	height: int,
+	pass_number: int
+) -> RID:
+	var bytes := PackedByteArray()
+	bytes.resize(32)
+	bytes.encode_s32(0, width)
+	bytes.encode_s32(4, height)
+	bytes.encode_float(8, talus_threshold)
+	bytes.encode_float(12, erosion_factor)
+	bytes.encode_float(16, min_height_difference)
+	bytes.encode_float(20, max_height_difference)
+	bytes.encode_s32(24, pass_number)
+	bytes.encode_s32(28, neighbourhood_type)
+	return rd.storage_buffer_create(
+		bytes.size(),
+		bytes
+	)

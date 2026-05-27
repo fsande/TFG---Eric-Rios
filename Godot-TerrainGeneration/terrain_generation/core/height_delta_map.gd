@@ -172,10 +172,6 @@ func get_memory_usage() -> int:
 ## Check if a world XZ position is within bounds.
 func _is_in_bounds_xz(world_pos: Vector2) -> bool:
 	return world_bounds.has_point(Vector3(world_pos.x, 0.0, world_pos.y))
-	return (world_pos.x >= world_bounds.position.x and 
-			world_pos.x <= world_bounds.position.x + world_bounds.size.x and
-			world_pos.y >= world_bounds.position.z and 
-			world_pos.y <= world_bounds.position.z + world_bounds.size.z)
 
 ## Convert world XZ position to UV coordinates.
 func _world_to_uv(world_pos: Vector2) -> Vector2:

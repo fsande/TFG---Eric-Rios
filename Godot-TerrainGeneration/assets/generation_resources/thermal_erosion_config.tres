@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="TerrainConfiguration" format=3 uid="uid://ba40othycxikj"]
+
+[ext_resource type="Environment" uid="uid://bdghsgdrt10a7" path="res://assets/environment/cinder_environmenttres.tres" id="1_5ecal"]
+[ext_resource type="Resource" uid="uid://gqevguht87mn" path="res://assets/generation_resources/thermal_erosion_exmaple.tres" id="2_1w0ns"]
+[ext_resource type="Script" uid="uid://c7cheydu0guw4" path="res://terrain_generation/chunking/strategies/grid_load_strategy.gd" id="3_l3j8g"]
+[ext_resource type="Script" uid="uid://ordmuca3rogv" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="4_yfxee"]
+[ext_resource type="Script" uid="uid://ck8uw8dx6at8u" path="res://terrain_generation/props/prop_placement_rule.gd" id="5_rag5y"]
+[ext_resource type="Script" uid="uid://c6oemke3y0i62" path="res://terrain_generation/configuration/terrain_configuration.gd" id="6_ebs4g"]
+[ext_resource type="Material" uid="uid://dxg1ih43lot2q" path="res://assets/materials/liquid_lava/liquid_lava.tres" id="7_o80au"]
+[ext_resource type="Material" uid="uid://5unpm4sqsd63" path="res://assets/generation_resources/evil_land_material.tres" id="8_7gv55"]
+
+[sub_resource type="Resource" id="Resource_215up"]
+script = ExtResource("3_l3j8g")
+load_radius = 20
+unload_radius = 25
+
+[resource]
+script = ExtResource("6_ebs4g")
+heightmap_source = ExtResource("2_1w0ns")
+terrain_size = Vector2(1000, 1000)
+height_scale = 256.0
+load_strategy = SubResource("Resource_215up")
+max_concurrent_chunk_requests = 12
+use_gpu_heightmap = true
+lod_distances = Array[float]([400.0, 700.0, 1000.0, 1500.0])
+sea_level = 85.0
+sea_material = ExtResource("7_o80au")
+terrain_material = ExtResource("8_7gv55")
+environment = ExtResource("1_5ecal")
+generate_collision = false
+auto_generate = false

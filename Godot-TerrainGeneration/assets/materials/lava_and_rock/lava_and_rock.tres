@@ -1,4 +1,4 @@
-[gd_resource type="StandardMaterial3D" load_steps=6 format=3 uid="uid://fy72thqmccte"]
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://fy72thqmccte"]
 
 [ext_resource type="Texture2D" uid="uid://dvol33m2s2y4a" path="res://assets/materials/lava_and_rock/lava-and-rock_albedo.png" id="1_jeokh"]
 [ext_resource type="Texture2D" uid="uid://dy3be8bttgepm" path="res://assets/materials/lava_and_rock/lava-and-rock_metallic.png" id="2_bgf1p"]
@@ -8,10 +8,10 @@
 
 [resource]
 albedo_texture = ExtResource("1_jeokh")
-metallic = 1.0
 metallic_texture = ExtResource("2_bgf1p")
 roughness_texture = ExtResource("3_f6gyd")
 normal_enabled = true
 normal_texture = ExtResource("4_0vq2j")
 ao_enabled = true
 ao_texture = ExtResource("2_f6gyd")
+uv1_scale = Vector3(5, 5, 5)

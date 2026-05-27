@@ -1,0 +1,56 @@
+[gd_resource type="ShaderMaterial" script_class="HeightVariationMaterial" format=3 uid="uid://5unpm4sqsd63"]
+
+[ext_resource type="Script" uid="uid://d16ie0mavuj7c" path="res://materials/height_layer.gd" id="1_iv6ey"]
+[ext_resource type="Material" uid="uid://bqxv3268g1up8" path="res://assets/materials/tidal_pool/tidal_pool.tres" id="2_enq8m"]
+[ext_resource type="Material" uid="uid://fy72thqmccte" path="res://assets/materials/lava_and_rock/lava_and_rock.tres" id="4_iv6ey"]
+[ext_resource type="Material" uid="uid://b60ijipg364h4" path="res://assets/materials/badlands_boulders/badlands_boulders.tres" id="4_viwp6"]
+[ext_resource type="Material" uid="uid://dxg1ih43lot2q" path="res://assets/materials/liquid_lava/liquid_lava.tres" id="5_enq8m"]
+[ext_resource type="Script" uid="uid://dg3evgn4yg8vt" path="res://materials/height_variation_material.gd" id="6_fq4ex"]
+[ext_resource type="Shader" uid="uid://d01210myb6lx6" path="res://assets/shaders/advanced_terrain_shader.gdshader" id="7_1kevy"]
+
+[sub_resource type="Resource" id="Resource_npr3x"]
+script = ExtResource("1_iv6ey")
+material = ExtResource("2_enq8m")
+blend_height = 95.0
+metadata/_custom_type_script = "uid://d16ie0mavuj7c"
+
+[sub_resource type="Resource" id="Resource_4gi05"]
+script = ExtResource("1_iv6ey")
+material = ExtResource("4_viwp6")
+blend_height = 115.0
+
+[sub_resource type="Resource" id="Resource_viwp6"]
+script = ExtResource("1_iv6ey")
+material = ExtResource("4_iv6ey")
+blend_height = 160.0
+metadata/_custom_type_script = "uid://d16ie0mavuj7c"
+
+[sub_resource type="Resource" id="Resource_a7faj"]
+script = ExtResource("1_iv6ey")
+material = ExtResource("5_enq8m")
+blend_height = 200.0
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_q2o47"]
+noise_type = 3
+seed = 51513
+frequency = 0.0068
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_3q2jc"]
+noise = SubResource("FastNoiseLite_q2o47")
+seamless = true
+
+[resource]
+render_priority = 0
+shader = ExtResource("7_1kevy")
+shader_parameter/blend_width = 5.0
+shader_parameter/texture_count = 4
+shader_parameter/height_noise = SubResource("NoiseTexture2D_3q2jc")
+shader_parameter/height_noise_strength = 15.0
+shader_parameter/blend_heights = [95.0, 115.0, 160.0, 200.0]
+shader_parameter/uv_scale = Vector2(25, 25)
+shader_parameter/triplanar_sharpness = 4.0
+shader_parameter/slope_start = 1.0
+shader_parameter/slope_end = 1.0
+shader_parameter/height_noise_scale = 0.01
+script = ExtResource("6_fq4ex")
+height_layers = Array[ExtResource("1_iv6ey")]([SubResource("Resource_npr3x"), SubResource("Resource_4gi05"), SubResource("Resource_viwp6"), SubResource("Resource_a7faj")])

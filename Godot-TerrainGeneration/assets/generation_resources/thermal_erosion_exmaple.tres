@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="HeightmapProcessorDecorator" format=3 uid="uid://gqevguht87mn"]
+
+[ext_resource type="Script" uid="uid://cf721bkkkekch" path="res://terrain_generation/heightmap/processors/thermal_erosion_processor.gd" id="1_mdbjv"]
+[ext_resource type="Script" uid="uid://x7gc7eg20w0b" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="2_squfa"]
+[ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="7_x64vq"]
+
+[sub_resource type="Resource" id="Resource_oqt66"]
+script = ExtResource("1_mdbjv")
+talus_threshold = 0.005
+erosion_factor = 0.8
+min_height_difference = 0.001
+max_height_difference = 2.0
+metadata/_custom_type_script = "uid://cf721bkkkekch"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ygja3"]
+noise_type = 3
+seed = 8456
+fractal_octaves = 8
+
+[sub_resource type="Resource" id="Resource_jx7dl"]
+script = ExtResource("7_x64vq")
+noise = SubResource("FastNoiseLite_ygja3")
+save_path = "res://before_thermal_erosion.png"
+metadata/_custom_type_script = "uid://rlx21xot8cjj"
+
+[resource]
+script = ExtResource("2_squfa")
+source = SubResource("Resource_jx7dl")
+processor = SubResource("Resource_oqt66")
+save_path = "res://thermal_eroded.png"
+metadata/_custom_type_script = "uid://x7gc7eg20w0b"

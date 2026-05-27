@@ -1,4 +1,4 @@
-[gd_resource type="Environment" load_steps=6 format=3 uid="uid://bdghsgdrt10a7"]
+[gd_resource type="Environment" format=3 uid="uid://bdghsgdrt10a7"]
 
 [sub_resource type="Gradient" id="Gradient_obh5s"]
 colors = PackedColorArray(2.4065375e-08, 0.11559432, 0.13413513, 1, 0.9129318, 0.34118113, 0.36839256, 1)
