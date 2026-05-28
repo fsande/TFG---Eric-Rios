@@ -60,6 +60,24 @@ func point_is_inside(_point: Vector3) -> bool:
 	push_error("VolumeDefinition.point_is_inside() must be overridden")
 	return false
 
+## Returns t in [0,1] where the segment from `from` to `to` exits this volume.
+##
+## @details Assumes `from` is inside and `to` is outside — callers must
+## guarantee this. Subclasses may override with an analytic solution.
+## The default uses binary search, which is reliable under the inside→outside
+## call contract because there is exactly one monotone crossing to find.
+func exit_t(from: Vector3, to: Vector3) -> float:
+	var lo := 0.0
+	var hi := 1.0
+	for _i in range(16):
+		var mid := (lo + hi) * 0.5
+		if point_is_inside(from.lerp(to, mid)):
+			lo = mid
+		else:
+			hi = mid
+	return (lo + hi) * 0.5
+
+
 ## Generate mesh for this volume at specified resolution.
 ## @param chunk_bounds Bounds of the chunk being generated
 ## @param resolution LOD-appropriate resolution

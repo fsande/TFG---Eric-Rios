@@ -113,6 +113,7 @@
     <Content Include="terrain_generation\agents\terrain_raise_agent.gd.uid" />
     <Content Include="terrain_generation\agents\tunnels\tunnel_boring_agent_v2.gd" />
     <Content Include="terrain_generation\agents\tunnels\tunnel_boring_agent_v2.gd.uid" />
+    <Content Include="terrain_generation\agents\tunnels\tunnel_tube_volume.gd" />
     <Content Include="terrain_generation\agents\tunnels\tunnel_volume_definition.gd" />
     <Content Include="terrain_generation\agents\volume_definition.gd" />
     <Content Include="terrain_generation\chunking\ChunkRequestQueue.gd" />

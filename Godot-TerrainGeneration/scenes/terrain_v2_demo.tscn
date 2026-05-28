@@ -1,9 +1,49 @@
 [gd_scene format=3 uid="uid://dxeaepbn0e70i"]
 
 [ext_resource type="Script" uid="uid://dkfq8dhaovjdo" path="res://terrain_generation/core/terrain_presenter.gd" id="1_presenter"]
-[ext_resource type="Resource" uid="uid://bgqcvdn3n4iy" path="res://assets/generation_resources/rune_erosion_example.tres" id="2_fa5fa"]
+[ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="2_ap5ce"]
+[ext_resource type="Script" uid="uid://c7cheydu0guw4" path="res://terrain_generation/chunking/strategies/grid_load_strategy.gd" id="3_4fayk"]
 [ext_resource type="Script" uid="uid://bvas6ux7t8igb" path="res://terrain_generation/debug/terrain_debug_hud.gd" id="4_hud"]
+[ext_resource type="Script" uid="uid://ordmuca3rogv" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="4_oqt66"]
+[ext_resource type="Script" uid="uid://dcrwxgkwmq53s" path="res://terrain_generation/agents/terrain_modifier_agent.gd" id="5_b4i1g"]
+[ext_resource type="Script" uid="uid://knkdtchrwyp" path="res://terrain_generation/agents/tunnels/tunnel_boring_agent.gd" id="6_ibtys"]
+[ext_resource type="Script" uid="uid://cpuqa0tet630a" path="res://terrain_generation/core/stages/sequential_modifier_stage.gd" id="7_7f1po"]
+[ext_resource type="Script" uid="uid://ck8uw8dx6at8u" path="res://terrain_generation/props/prop_placement_rule.gd" id="8_215up"]
+[ext_resource type="Script" uid="uid://c6oemke3y0i62" path="res://terrain_generation/configuration/terrain_configuration.gd" id="9_a8qn4"]
+[ext_resource type="Material" uid="uid://dmlbneowgjfqy" path="res://assets/materials/terrain_mat2.tres" id="10_obh5s"]
 [ext_resource type="PackedScene" uid="uid://c5010npvryyqd" path="res://scenes/fly_camera.tscn" id="15_b4i1g"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_dk27i"]
+
+[sub_resource type="Resource" id="Resource_00p1n"]
+script = ExtResource("2_ap5ce")
+frequency = 1.0
+noise = SubResource("FastNoiseLite_dk27i")
+
+[sub_resource type="Resource" id="Resource_bqotf"]
+script = ExtResource("3_4fayk")
+
+[sub_resource type="Resource" id="Resource_spfy5"]
+script = ExtResource("6_ibtys")
+tunnel_length = 25.0
+min_cliff_height = 0.0
+min_cliff_angle = 5.0
+agent_name = "Tunnel Boring"
+metadata/_custom_type_script = "uid://knkdtchrwyp"
+
+[sub_resource type="Resource" id="Resource_mm8fh"]
+script = ExtResource("7_7f1po")
+agents = Array[ExtResource("5_b4i1g")]([SubResource("Resource_spfy5")])
+metadata/_custom_type_script = "uid://cpuqa0tet630a"
+
+[sub_resource type="Resource" id="Resource_qigeq"]
+script = ExtResource("9_a8qn4")
+heightmap_source = SubResource("Resource_00p1n")
+height_scale = 256.0
+modifier_stages = Array[ExtResource("4_oqt66")]([SubResource("Resource_mm8fh")])
+load_strategy = SubResource("Resource_bqotf")
+terrain_material = ExtResource("10_obh5s")
+metadata/_custom_type_script = "uid://c6oemke3y0i62"
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qigeq"]
 
@@ -11,7 +51,11 @@
 
 [node name="TerrainPresenterV2" type="Node3D" parent="." unique_id=666572938]
 script = ExtResource("1_presenter")
-configuration = ExtResource("2_fa5fa")
+configuration = SubResource("Resource_qigeq")
+
+[node name="ChunksContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=1507069163]
+
+[node name="PropsContainer" type="Node3D" parent="TerrainPresenterV2" unique_id=2103348721]
 
 [node name="DebugHUD" type="Control" parent="." unique_id=2004353774]
 visible = false
@@ -26,7 +70,8 @@ script = ExtResource("4_hud")
 terrain_presenter_path = NodePath("../TerrainPresenterV2")
 
 [node name="CSGSphere3D" type="CSGSphere3D" parent="." unique_id=783366690]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.42, 37.6, 444)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -63, 151, 42)
+visible = false
 
 [node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=462849500]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 62.7, 27.37, 48.629)
@@ -41,4 +86,5 @@ light_color = Color(0.862678, 0.5543531, 0.6468668, 1)
 shadow_enabled = true
 
 [node name="FlyCamera" parent="." unique_id=2105645240 instance=ExtResource("15_b4i1g")]
-transform = Transform3D(-0.9726789, 0, -0.23215485, 0, 1, 0, 0.2321549, 0, -0.97267884, 32, 32, 32)
+transform = Transform3D(-0.9726789, 0, -0.23215489, 0, 1, 0, 0.2321549, 0, -0.97267884, -64.04838, 173.88942, 57.07374)
+fov = 151.875

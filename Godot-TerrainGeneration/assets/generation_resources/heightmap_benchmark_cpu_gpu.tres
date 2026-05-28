@@ -10,6 +10,7 @@
 [ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="7_b2yfw"]
 [ext_resource type="Script" uid="uid://c7cheydu0guw4" path="res://terrain_generation/chunking/strategies/grid_load_strategy.gd" id="8_ps6tk"]
 [ext_resource type="Script" uid="uid://ordmuca3rogv" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="9_kgypu"]
+[ext_resource type="Image" uid="uid://bnxd1bfxkl1lw" path="res://assets/heightmaps/LaPalma.png" id="9_na0po"]
 [ext_resource type="Script" uid="uid://c3uc7nxm4hlqx" path="res://terrain_generation/heightmap/sources/image_heightmap_source.gd" id="10_gp0h2"]
 [ext_resource type="Script" uid="uid://ck8uw8dx6at8u" path="res://terrain_generation/props/prop_placement_rule.gd" id="17_612wh"]
 [ext_resource type="Resource" uid="uid://cuwapxrvi4e2k" path="res://assets/generation_resources/bush_place.tres" id="18_xs5lc"]
@@ -70,6 +71,7 @@ metadata/_custom_type_script = "uid://bex5sqputtgkm"
 
 [sub_resource type="Resource" id="Resource_md280"]
 script = ExtResource("10_gp0h2")
+heightmap_image = ExtResource("9_na0po")
 metadata/_custom_type_script = "uid://c3uc7nxm4hlqx"
 
 [sub_resource type="Resource" id="Resource_3p44a"]

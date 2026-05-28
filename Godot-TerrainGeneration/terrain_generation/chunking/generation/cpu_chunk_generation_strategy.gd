@@ -95,41 +95,129 @@ func apply_volumes(
 		elif volume.volume_type == VolumeDefinition.VolumeType.ADDITIVE:
 			result = _apply_additive_volume(result, volume, chunk_bounds, resolution)
 	return result
-
+ 
+## Clips the mesh against a subtractive volume.
+##
+## @details Triangles fully outside are kept intact. Triangles fully inside are
+## discarded. Straddling triangles are clipped: new vertices are inserted at the
+## exact volume boundary using volume.exit_t(), with UVs, normals and tangents
+## interpolated at the crossing point.
+##
+## Canonical winding for clipping:
+##   1 inside / 2 outside → outside quad = 2 triangles
+##   2 inside / 1 outside → outside triangle = 1 triangle
 func _apply_subtractive_volume(
 	mesh_data: MeshData,
 	volume: VolumeDefinition,
 	chunk_bounds: AABB
 ) -> MeshData:
 	var chunk_center := Vector3(
-		chunk_bounds.position.x + chunk_bounds.size.x / 2.0,
-		0,
-		chunk_bounds.position.z + chunk_bounds.size.z / 2.0
+		chunk_bounds.position.x + chunk_bounds.size.x * 0.5,
+		0.0,
+		chunk_bounds.position.z + chunk_bounds.size.z * 0.5
 	)
-	var new_indices := PackedInt32Array()
-	for i in range(0, mesh_data.indices.size(), 3):
-		var idx0 := mesh_data.indices[i]
-		var idx1 := mesh_data.indices[i + 1]
-		var idx2 := mesh_data.indices[i + 2]
-		var v0 := mesh_data.vertices[idx0] + chunk_center
-		var v1 := mesh_data.vertices[idx1] + chunk_center
-		var v2 := mesh_data.vertices[idx2] + chunk_center
-		if volume.point_is_inside(v0) and volume.point_is_inside(v1) and volume.point_is_inside(v2):
+	var out_verts := mesh_data.vertices.duplicate()
+	var out_uvs := mesh_data.uvs.duplicate()
+	var out_indices := PackedInt32Array()
+	var has_normals := mesh_data.cached_normals.size() == mesh_data.vertices.size()
+	var has_tangents := mesh_data.cached_tangents.size() == mesh_data.vertices.size()
+	var out_normals: PackedVector3Array = mesh_data.cached_normals.duplicate() if has_normals else PackedVector3Array()
+	var out_tangents: PackedVector4Array = mesh_data.cached_tangents.duplicate() if has_tangents else PackedVector4Array()
+	var modified := false
+ 
+	for tri_base in range(0, mesh_data.indices.size(), 3):
+		var i := [
+			mesh_data.indices[tri_base],
+			mesh_data.indices[tri_base + 1],
+			mesh_data.indices[tri_base + 2]
+		]
+		var w := [
+			mesh_data.vertices[i[0]] + chunk_center,
+			mesh_data.vertices[i[1]] + chunk_center,
+			mesh_data.vertices[i[2]] + chunk_center
+		]
+		var inside := [
+			volume.point_is_inside(w[0]),
+			volume.point_is_inside(w[1]),
+			volume.point_is_inside(w[2])
+		]
+		var n_inside: int = int(inside[0]) + int(inside[1]) + int(inside[2])
+ 
+		if n_inside == 0:
+			out_indices.append(i[0]); out_indices.append(i[1]); out_indices.append(i[2])
 			continue
-		new_indices.append(idx0)
-		new_indices.append(idx1)
-		new_indices.append(idx2)
-	if new_indices.size() < mesh_data.indices.size():
-		var result := MeshData.new()
-		result.initialize(mesh_data.vertices, new_indices, mesh_data.uvs)
-		result.width = mesh_data.width
-		result.height = mesh_data.height
-		result.mesh_size = mesh_data.mesh_size
-		result.cached_normals = mesh_data.cached_normals
-		result.cached_tangents = mesh_data.cached_tangents
-		return result
-	return mesh_data
-
+ 
+		modified = true
+ 
+		if n_inside == 3:
+			continue
+ 
+		# Rotate so: n_inside==1 → inside vertex at [0]; n_inside==2 → outside vertex at [2]
+		if n_inside == 1:
+			while not inside[0]:
+				w = [w[1], w[2], w[0]]; i = [i[1], i[2], i[0]]; inside = [inside[1], inside[2], inside[0]]
+		else:
+			while inside[2]:
+				w = [w[1], w[2], w[0]]; i = [i[1], i[2], i[0]]; inside = [inside[1], inside[2], inside[0]]
+ 
+		if n_inside == 1:
+			# v[0]=inside, v[1] and v[2]=outside
+			# Crossing points on edges 0→1 and 0→2
+			var t01 := volume.exit_t(w[0], w[1])
+			var t02 := volume.exit_t(w[0], w[2])
+			var ni01 := _emit_crossing(out_verts, out_uvs, out_normals, out_tangents,
+				i[0], i[1], w[0], w[1], t01, chunk_center, has_normals, has_tangents)
+			var ni02 := _emit_crossing(out_verts, out_uvs, out_normals, out_tangents,
+				i[0], i[2], w[0], w[2], t02, chunk_center, has_normals, has_tangents)
+			out_indices.append(ni01); out_indices.append(i[1]);  out_indices.append(i[2])
+			out_indices.append(ni01); out_indices.append(i[2]);  out_indices.append(ni02)
+		else:
+			# v[0] and v[1]=inside, v[2]=outside
+			# Crossing points on edges 0→2 and 1→2
+			var t02 := volume.exit_t(w[0], w[2])
+			var t12 := volume.exit_t(w[1], w[2])
+			var ni02 := _emit_crossing(out_verts, out_uvs, out_normals, out_tangents,
+				i[0], i[2], w[0], w[2], t02, chunk_center, has_normals, has_tangents)
+			var ni12 := _emit_crossing(out_verts, out_uvs, out_normals, out_tangents,
+				i[1], i[2], w[1], w[2], t12, chunk_center, has_normals, has_tangents)
+			out_indices.append(ni02); out_indices.append(ni12); out_indices.append(i[2])
+ 
+	if not modified:
+		return mesh_data
+ 
+	var result := MeshData.new()
+	result.initialize(out_verts, out_indices, out_uvs)
+	result.width = mesh_data.width
+	result.height = mesh_data.height
+	result.mesh_size = mesh_data.mesh_size
+	result.cached_normals = out_normals
+	result.cached_tangents = out_tangents
+	return result
+ 
+## Appends one interpolated crossing vertex and returns its index.
+func _emit_crossing(
+	verts: PackedVector3Array,
+	uvs: PackedVector2Array,
+	normals: PackedVector3Array,
+	tangents: PackedVector4Array,
+	ia: int, ib: int,
+	wa: Vector3, wb: Vector3,
+	t: float,
+	chunk_center: Vector3,
+	has_normals: bool,
+	has_tangents: bool
+) -> int:
+	var idx := verts.size()
+	verts.append(wa.lerp(wb, t) - chunk_center)
+	uvs.append(uvs[ia].lerp(uvs[ib], t))
+	if has_normals:
+		normals.append(normals[ia].lerp(normals[ib], t).normalized())
+	if has_tangents:
+		var ta := tangents[ia]; var tb := tangents[ib]
+		var tw := Vector3(ta.x, ta.y, ta.z).lerp(Vector3(tb.x, tb.y, tb.z), t).normalized()
+		tangents.append(Vector4(tw.x, tw.y, tw.z, ta.w))
+	return idx
+ 
 func _apply_additive_volume(
 	mesh_data: MeshData,
 	volume: VolumeDefinition,
@@ -140,22 +228,22 @@ func _apply_additive_volume(
 	if not volume_mesh or volume_mesh.vertices.is_empty():
 		return mesh_data
 	var chunk_center := Vector3(
-		chunk_bounds.position.x + chunk_bounds.size.x / 2.0,
-		0,
-		chunk_bounds.position.z + chunk_bounds.size.z / 2.0
+		chunk_bounds.position.x + chunk_bounds.size.x * 0.5,
+		0.0,
+		chunk_bounds.position.z + chunk_bounds.size.z * 0.5
 	)
-	var base_vertex_count := mesh_data.vertices.size()
-	var new_vertices := mesh_data.vertices.duplicate()
+	var base_count := mesh_data.vertices.size()
+	var new_verts := mesh_data.vertices.duplicate()
 	var new_uvs := mesh_data.uvs.duplicate()
 	var new_indices := mesh_data.indices.duplicate()
 	for vertex in volume_mesh.vertices:
-		new_vertices.append(vertex - chunk_center)
+		new_verts.append(vertex - chunk_center)
 	for uv in volume_mesh.uvs:
 		new_uvs.append(uv)
 	for idx in volume_mesh.indices:
-		new_indices.append(idx + base_vertex_count)
+		new_indices.append(idx + base_count)
 	var result := MeshData.new()
-	result.initialize(new_vertices, new_indices, new_uvs)
+	result.initialize(new_verts, new_indices, new_uvs)
 	result.width = mesh_data.width
 	result.height = mesh_data.height
 	result.mesh_size = mesh_data.mesh_size
