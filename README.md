@@ -1,6 +1,6 @@
 # Modular Procedural Terrain Generation for Games
 
-Final Degree Project on Procedural Terrain Generation for Games. This guide is currently a Work In Progress
+Final Degree Project on Procedural Terrain Generation for Games.
 
 ## Description
 
@@ -46,11 +46,11 @@ This might happen if you use CPU heightmap generation, I recommend using GPU, as
 However, don't worry too much, the base generation time is not as important for gameplay. 
 If it is bothering you while editing, just disable the Auto Generate checkbox under Settings in the TerrainConfiguration.
 
-* The editor may sometimes crash if your configuration is too expensive or you perform many generation requests
+* The editor may sometimes crash if your configuration is too expensive. 
+Just relaunch and try to reduce the requirements. 
+If the problem persists, open an issue or directly contact the author.
 
 ## Authors
-
-Contributors names and contact info
 
 [Eric Ríos Hamilton](https://github.com/EricRios-commits)
 
