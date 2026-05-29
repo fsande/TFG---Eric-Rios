@@ -325,7 +325,7 @@ func _cancel_out_of_range_requests(camera: Camera3D) -> void:
 		_pending_chunk_requests.erase(coord)
 
 func _instantiate_chunk(coord: Vector2i, lod_level: int, chunk: ChunkMeshData) -> void:
-	if _loaded_chunks.has(coord):
+	if _loaded_chunks.has(coord) or not chunk:
 		return
 	var mesh_instance := MeshInstance3D.new()
 	mesh_instance.mesh = chunk.lod_meshes[lod_level]

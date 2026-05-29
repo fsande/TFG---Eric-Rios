@@ -56,7 +56,7 @@ signal load_strategy_changed()
 
 @export_group("LOD")
 @export var enable_lod: bool = true
-@export var lod_distances: Array[float] = [50.0, 100.0, 200.0, 400.0]
+@export var lod_distances: Array[float] = [500.0, 700.0, 1000.0, 1200.0]
 @export_range(0.0, 0.5) var lod_hysteresis: float = 0.1
 
 @export_group("Sea")

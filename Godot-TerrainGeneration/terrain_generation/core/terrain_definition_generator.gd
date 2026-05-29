@@ -50,7 +50,7 @@ func generate(
 		push_error("TerrainDefinitionGenerator: Failed to generate reference heightmap")
 		if owns_context:
 			processing_context.dispose()
-		return definition
+		return null
 	var context := TerrainGenerationContext.new(terrain_size, height_scale, generation_seed, reference_heightmap)
 	context.reference_resolution = Vector2i(reference_resolution, reference_resolution)
 	context.terrain_definition = definition

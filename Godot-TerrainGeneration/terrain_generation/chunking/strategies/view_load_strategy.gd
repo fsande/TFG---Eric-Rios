@@ -1,79 +1,68 @@
-## Uses the camera's frustrum to determine which chunks to load, unload, and their LOD levels. 
-## Provides a more accurate view-based loading strategy
-## Calculates distance from the camera to the chunk and the angle between the camera's forward direction and the direction to the chunk to determine 
-## if it should be loaded or unloaded, and to calculate its LOD level.
 @tool
 class_name ViewLoadStrategy extends ChunkLoadStrategy
 
-@export var view_angle: float = 90.0
-@export var max_view_distance: float = 200.0
+@export var view_angle: float = 90.0:
+	set(value):
+		view_angle = value
+		_cos_half_fov = cos(deg_to_rad(value * 0.5))
+
+@export var max_view_distance: float = 200.0:
+	set(value):
+		max_view_distance = value
+		_max_dist_sq = value * value
+
+var _cos_half_fov: float = cos(deg_to_rad(45.0))
+var _max_dist_sq: float = 200.0 * 200.0
+
+func _ready() -> void:
+	_cos_half_fov = cos(deg_to_rad(view_angle * 0.5))
+	_max_dist_sq = max_view_distance * max_view_distance
 
 func should_load(coord: Vector2i, camera: Camera3D, context: ChunkLoadContext) -> bool:
 	if not camera:
 		return false
-	return _is_in_radius(coord, camera, context)
+	return _is_in_frustum(coord, camera, context)
 
 func should_unload(coord: Vector2i, camera: Camera3D, context: ChunkLoadContext) -> bool:
 	if not camera:
 		return false
-	return not _is_in_radius(coord, camera, context)
+	return not _is_in_frustum(coord, camera, context)
 
 func get_load_priority(coord: Vector2i, camera: Camera3D, context: ChunkLoadContext) -> float:
 	if not camera:
-		return 0
-	return calculate_lod(coord, camera, context)
+		return 0.0
+	return _dist_sq_to_chunk(coord, camera.global_position, context)
 
 func calculate_lod(coord: Vector2i, camera: Camera3D, context: ChunkLoadContext) -> int:
 	if not camera:
 		return 0
-	var local_chunk_center: Vector3 = Vector3(
-		(coord.x + 0.5) * context.chunk_size.x - context.terrain_size.x / 2.0,
-		0,
-		(coord.y + 0.5) * context.chunk_size.y - context.terrain_size.y / 2.0
-	)
-	var world_chunk_center: Vector3 = local_chunk_center + context.terrain_position
-	var camera_pos := camera.global_position
-	var distance := Vector2(world_chunk_center.x - camera_pos.x, world_chunk_center.z - camera_pos.z).length()
-	for i in range(context.lod_distances.size()):
-		if distance < context.lod_distances[i]: 
-			return i
-	return context.lod_distances.size()
+	return _lod_for_dist_sq(_dist_sq_to_chunk(coord, camera.global_position, context), context)
 
 func get_chunks_to_load(camera: Camera3D, context: ChunkLoadContext, sorted: bool = false) -> Array[Vector2i]:
+	var chunk_min_dim: int = min(context.chunk_size.x, context.chunk_size.y)
+	var view_radius_chunks := int(ceil(max_view_distance / chunk_min_dim)) + 1
+	var cam_chunk := _get_camera_chunk(camera, context)
 	var chunks_to_load: Array[Vector2i] = []
-	var half_terrain: Vector2 = context.terrain_size / 2.0
-	var min_coord := _world_to_chunk_coord(camera.global_position - Vector3(half_terrain.x, 0, half_terrain.y), context)
-	var max_coord := _world_to_chunk_coord(camera.global_position + Vector3(half_terrain.x, 0, half_terrain.y), context)
-	for z in range(min_coord.y, max_coord.y + 1):
-		for x in range(min_coord.x, max_coord.x + 1):
-			var coord := Vector2i(x, z)
+	for dz in range(-view_radius_chunks, view_radius_chunks + 1):
+		for dx in range(-view_radius_chunks, view_radius_chunks + 1):
+			var coord := cam_chunk + Vector2i(dx, dz)
 			if not _is_valid_chunk_coord(coord, context):
 				continue
-			if should_load(coord, camera, context):
+			if _is_in_frustum(coord, camera, context):
 				chunks_to_load.append(coord)
 	if sorted:
-		chunks_to_load.sort_custom(
-			func(a: Vector2i, b: Vector2i):
-			return get_load_priority(a, camera, context) < get_load_priority(b, camera, context)
+		var cam_pos := camera.global_position
+		chunks_to_load.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+			return _dist_sq_to_chunk(a, cam_pos, context) < _dist_sq_to_chunk(b, cam_pos, context)
 		)
-#	print("chunks_to_load: ", chunks_to_load)
 	return chunks_to_load
 
-## Computes whether a given chunk is in radius of the camera's view based on distance and angle. 
-## Used for both loading and unloading decisions.
-func _is_in_radius(coord: Vector2i, camera: Camera3D, context: ChunkLoadContext) -> bool:
-	var camera_pos := camera.global_position
-	var camera_forward := -camera.global_transform.basis.z.normalized()
-	var local_chunk_center: Vector3 = Vector3(
-		(coord.x + 0.5) * context.chunk_size.x - context.terrain_size.x / 2.0,
-		0,
-		(coord.y + 0.5) * context.chunk_size.y - context.terrain_size.y / 2.0
-	)
-	var world_chunk_center: Vector3 = local_chunk_center + context.terrain_position
-	var to_chunk := (world_chunk_center - camera_pos).normalized()
-	var distance := Vector2(world_chunk_center.x - camera_pos.x, world_chunk_center.z - camera_pos.z).length()
-	if distance >= max_view_distance:
-#		print("Returning because distance ", distance, " is greater than max_view_distance ", max_view_distance)
+func _is_in_frustum(coord: Vector2i, camera: Camera3D, context: ChunkLoadContext) -> bool:
+	var world_center := _chunk_world_center(coord, context)
+	var cam_pos := camera.global_position
+	var to_chunk_xz := Vector2(world_center.x - cam_pos.x, world_center.z - cam_pos.z)
+	if to_chunk_xz.length_squared() >= _max_dist_sq:
 		return false
-	var angle := rad_to_deg(acos(camera_forward.dot(to_chunk)))
-	return angle <= view_angle / 2.0
+	var cam_fwd := -camera.global_transform.basis.z
+	var to_chunk_norm := Vector3(to_chunk_xz.x, 0.0, to_chunk_xz.y).normalized()
+	return cam_fwd.dot(to_chunk_norm) >= _cos_half_fov

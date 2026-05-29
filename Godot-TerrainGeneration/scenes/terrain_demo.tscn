@@ -1,0 +1,121 @@
+[gd_scene format=3 uid="uid://dxeaepbn0e70i"]
+
+[ext_resource type="Script" uid="uid://dkfq8dhaovjdo" path="res://terrain_generation/core/terrain_presenter.gd" id="1_ipgxq"]
+[ext_resource type="Environment" uid="uid://ci0fdcxk6hux2" path="res://assets/environment/blue_sky.tres" id="2_0omvn"]
+[ext_resource type="Script" uid="uid://x7gc7eg20w0b" path="res://terrain_generation/heightmap/sources/heightmap_processor_decorator.gd" id="2_yxcpq"]
+[ext_resource type="Script" uid="uid://cf721bkkkekch" path="res://terrain_generation/heightmap/processors/thermal_erosion_processor.gd" id="3_f8u6v"]
+[ext_resource type="Script" uid="uid://ordmuca3rogv" path="res://terrain_generation/core/stages/terrain_modifier_stage.gd" id="3_yxcpq"]
+[ext_resource type="Script" uid="uid://dcrwxgkwmq53s" path="res://terrain_generation/agents/terrain_modifier_agent.gd" id="4_eettu"]
+[ext_resource type="Script" uid="uid://knkdtchrwyp" path="res://terrain_generation/agents/tunnels/tunnel_boring_agent.gd" id="5_05p4c"]
+[ext_resource type="Script" uid="uid://rlx21xot8cjj" path="res://terrain_generation/heightmap/sources/noise_heightmap_source.gd" id="5_e0al4"]
+[ext_resource type="Script" uid="uid://cpuqa0tet630a" path="res://terrain_generation/core/stages/sequential_modifier_stage.gd" id="6_0omvn"]
+[ext_resource type="Script" uid="uid://bx23sx47qvqta" path="res://terrain_generation/chunking/strategies/grid_and_view_load_strategy.gd" id="6_f8u6v"]
+[ext_resource type="Script" uid="uid://ck8uw8dx6at8u" path="res://terrain_generation/props/prop_placement_rule.gd" id="7_f8u6v"]
+[ext_resource type="Script" uid="uid://c6oemke3y0i62" path="res://terrain_generation/configuration/terrain_configuration.gd" id="8_e0al4"]
+[ext_resource type="Material" uid="uid://dmlbneowgjfqy" path="res://assets/materials/terrain_mat2.tres" id="9_k7x4a"]
+[ext_resource type="Script" uid="uid://bvas6ux7t8igb" path="res://terrain_generation/debug/terrain_debug_hud.gd" id="10_tf476"]
+[ext_resource type="PackedScene" uid="uid://c5010npvryyqd" path="res://scenes/fly_camera.tscn" id="11_dcklx"]
+[ext_resource type="Material" uid="uid://bebs1xgkmteua" path="res://assets/materials/water/water_mat.tres" id="13_k7x4a"]
+
+[sub_resource type="Resource" id="Resource_tf476"]
+script = ExtResource("3_f8u6v")
+metadata/_custom_type_script = "uid://cf721bkkkekch"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_dcklx"]
+
+[sub_resource type="Resource" id="Resource_r18m0"]
+script = ExtResource("5_e0al4")
+frequency = 15.0
+noise = SubResource("FastNoiseLite_dcklx")
+metadata/_custom_type_script = "uid://rlx21xot8cjj"
+
+[sub_resource type="Resource" id="Resource_eettu"]
+script = ExtResource("2_yxcpq")
+source = SubResource("Resource_r18m0")
+processor = SubResource("Resource_tf476")
+metadata/_custom_type_script = "uid://x7gc7eg20w0b"
+
+[sub_resource type="Resource" id="Resource_e0al4"]
+script = ExtResource("6_f8u6v")
+load_radius = 5
+unload_radius = 7
+view_angle = 135.0
+max_view_distance = 2000.0
+metadata/_custom_type_script = "uid://bx23sx47qvqta"
+
+[sub_resource type="Resource" id="Resource_spfy5"]
+script = ExtResource("5_05p4c")
+tunnel_length = 25.0
+min_cliff_height = 0.0
+min_cliff_angle = 5.0
+agent_name = "Tunnel Boring"
+metadata/_custom_type_script = "uid://knkdtchrwyp"
+
+[sub_resource type="Resource" id="Resource_mm8fh"]
+script = ExtResource("6_0omvn")
+agents = Array[ExtResource("4_eettu")]([SubResource("Resource_spfy5")])
+metadata/_custom_type_script = "uid://cpuqa0tet630a"
+
+[sub_resource type="Resource" id="Resource_qigeq"]
+script = ExtResource("8_e0al4")
+heightmap_source = SubResource("Resource_eettu")
+terrain_size = Vector2(12000, 12000)
+height_scale = 300.0
+modifier_stages = Array[ExtResource("3_yxcpq")]([SubResource("Resource_mm8fh")])
+load_strategy = SubResource("Resource_e0al4")
+max_concurrent_chunk_requests = 8
+use_gpu_heightmap = true
+sea_material = ExtResource("13_k7x4a")
+terrain_material = ExtResource("9_k7x4a")
+environment = ExtResource("2_0omvn")
+generate_collision = false
+collision_lod = 2
+auto_generate = false
+metadata/_custom_type_script = "uid://c6oemke3y0i62"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_qigeq"]
+
+[node name="TerrainDemo" type="Node3D" unique_id=323757995]
+
+[node name="TerrainPresenter" type="Node3D" parent="." unique_id=666572938]
+script = ExtResource("1_ipgxq")
+configuration = SubResource("Resource_qigeq")
+metadata/_edit_lock_ = true
+
+[node name="ChunksContainer" type="Node3D" parent="TerrainPresenter" unique_id=1767667531]
+
+[node name="PropsContainer" type="Node3D" parent="TerrainPresenter" unique_id=154665845]
+
+[node name="Environment" type="WorldEnvironment" parent="TerrainPresenter" unique_id=1249327193]
+environment = ExtResource("2_0omvn")
+
+[node name="DebugHUD" type="Control" parent="." unique_id=2004353774]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("10_tf476")
+terrain_presenter_path = NodePath("../TerrainPresenter")
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="." unique_id=783366690]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -63, 151, 42)
+visible = false
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=462849500]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 62.7, 27.37, 48.629)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1802871165]
+shape = SubResource("BoxShape3D_qigeq")
+debug_color = Color(4.47616e-06, 0.48034775, 0.563683, 0.41960785)
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1492253359]
+transform = Transform3D(0.1395361, 0.93049955, 0.33867413, 0, -0.34202015, 0.93969274, 0.9902171, -0.13112105, -0.047724158, 0, 285.32556, 0)
+light_color = Color(0.862678, 0.5543531, 0.6468668, 1)
+shadow_enabled = true
+
+[node name="FlyCamera" parent="." unique_id=2105645240 instance=ExtResource("11_dcklx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.755394, 173.88943, 85.41673)

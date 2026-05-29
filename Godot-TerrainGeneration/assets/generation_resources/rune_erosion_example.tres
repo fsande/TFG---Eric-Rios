@@ -31,6 +31,7 @@ fractal_type = 0
 script = ExtResource("4_mg48h")
 frequency = 2.0
 noise = SubResource("FastNoiseLite_10fri")
+save_path = "res://base_noise.png"
 metadata/_custom_type_script = "uid://rlx21xot8cjj"
 
 [sub_resource type="Resource" id="Resource_nu8o5"]

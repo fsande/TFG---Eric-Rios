@@ -29,7 +29,7 @@ func generate(context: ProcessingContext) -> Image:
 		return null
 	var base_image := source.generate(context)
 	if not base_image:
-		return null
+		return Image.new()
 	return processor.process(base_image, context)
 
 func _on_source_changed():

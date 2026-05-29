@@ -10,7 +10,7 @@ git submodule update --init --recursive
 
 ## Building
 
-Needs c++ build tools and SCons installed. Install SCons with pip:
+Needs c++ build tools and [SCons](https://scons.org/) installed. Install SCons with pip:
 
 ```
 pip install scons
