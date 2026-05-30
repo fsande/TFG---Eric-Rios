@@ -19,4 +19,3 @@ func validate(context: PropPlacementContext) -> bool:
 		return true
 	var inside := context.terrain_definition.is_in_zone(context.position_2d, zone_tag)
 	return inside if allow_inside else not inside
-

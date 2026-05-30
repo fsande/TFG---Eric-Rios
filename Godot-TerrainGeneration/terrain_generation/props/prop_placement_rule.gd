@@ -61,6 +61,15 @@ class_name PropPlacementRule extends ChunkFeature
 
 ## Current LOD level (set by ChunkFeatureManager before build_for_chunk)
 var _current_lod: int = 0
+var _density_data: DensityMapData
+
+class DensityMapData:
+	var bytes: PackedByteArray
+	var width: int
+	var height: int
+
+	func is_empty() -> bool:
+		return bytes.is_empty()
 
 func get_bounds() -> AABB:
 	return AABB(Vector3.INF, Vector3.INF)
@@ -68,31 +77,32 @@ func get_bounds() -> AABB:
 func intersects_chunk(_chunk_bounds: AABB) -> bool:
 	return true
 
-## Generate prop placements for a chunk.
-## @param chunk_bounds World-space bounds of the chunk
-## @param terrain_sampler Function that takes Vector2 and returns TerrainSample
-## @param volumes Array of VolumeDefinitions to check for exclusion
-## @param terrain_definition Terrain definition for seed and sea level
-## @return Array of ChunkFeatureInstance (PropPlacement) instances
 func build_for_chunk(
 	chunk_bounds: AABB,
-	terrain_sampler: Callable,  # Callable[[Vector2], TerrainSample]
+	terrain_sampler: Callable,
 	volumes: Array[VolumeDefinition],
-	terrain_definition: TerrainDefinition
+	terrain_definition: TerrainDefinition,
+	neighbour_placements: Array[ChunkFeatureInstance] = []
 ) -> Array[ChunkFeatureInstance]:
-	var placements: Array[ChunkFeatureInstance] = []
-	if not prop_scene:
-		return placements
-	if density <= 0:
-		return placements
+	if not prop_scene or density <= 0:
+		return []
 	var rng := RandomNumberGenerator.new()
-	var generation_seed = terrain_definition.generation_seed
-	rng.seed = generation_seed + seed_offset + hash(rule_id)
-	var chunk_area := chunk_bounds.size.x * chunk_bounds.size.z
+	rng.seed = terrain_definition.generation_seed + seed_offset + hash(rule_id)
+	_load_density_data()
 	var effective_density := density * pow(lod_density_factor, _current_lod)
-	var base_count := int(chunk_area * effective_density)
-	var attempts := base_count * 3
-	for i in range(attempts):
+	var base_count := int(chunk_bounds.size.x * chunk_bounds.size.z * effective_density)
+	for constraint in constraints:
+		constraint.reset()
+		constraint.seed_from_neighbours(neighbour_placements)
+	var placement_context := PropPlacementContext.new(
+		terrain_definition.sea_level,
+		[],
+		volumes,
+		rng,
+		terrain_definition
+	)
+	var placements: Array[ChunkFeatureInstance] = []
+	for _attempt in range(base_count * 3):
 		if placements.size() >= base_count * 2:
 			break
 		var x := rng.randf_range(chunk_bounds.position.x, chunk_bounds.position.x + chunk_bounds.size.x)
@@ -101,31 +111,26 @@ func build_for_chunk(
 		var terrain_sample: TerrainSample = terrain_sampler.call(pos_2d)
 		if not terrain_sample or not terrain_sample.is_valid:
 			continue
-		if density_map: 
+		if density_map:
 			var uv := _world_to_density_uv(pos_2d, chunk_bounds, terrain_definition.terrain_size)
-			var density_sample := _sample_density_map(uv)
-			if rng.randf() > density_sample:
+			if rng.randf() > _sample_density_map(uv):
 				continue
-		var valid: bool = true
+		placement_context.position_2d = pos_2d
+		placement_context.terrain_sample = terrain_sample
+		var valid := true
 		for constraint in constraints:
-			if not constraint.validate(PropPlacementContext.new(
-				Vector2(x, z),
-				terrain_sample,
-				terrain_definition.sea_level,
-				placements,
-				volumes,
-				rng,
-				terrain_definition
-			)):
+			if not constraint.validate(placement_context):
 				valid = false
 				break
 		if not valid:
 			continue
+		for constraint in constraints:
+			constraint.on_placement_accepted(pos_2d)
 		var placement := PropPlacement.new()
 		placement.position = Vector3(x, terrain_sample.height + ground_offset, z)
 		placement.prop_scene = prop_scene
 		placement.rule_id = rule_id
-		var slope = rad_to_deg(acos(terrain_sample.normal.dot(Vector3.UP)))
+		var slope := rad_to_deg(acos(terrain_sample.normal.dot(Vector3.UP)))
 		if align_to_normal and max_tilt > 0:
 			var tilt_angle := minf(slope, max_tilt)
 			var tilt_axis := Vector3.UP.cross(terrain_sample.normal).normalized()
@@ -139,24 +144,30 @@ func build_for_chunk(
 				placement.rotation = Vector3(0, rng.randf() * TAU if random_rotation else 0.0, 0)
 		else:
 			placement.rotation = Vector3(0, rng.randf() * TAU if random_rotation else 0.0, 0)
-		var scale_value := rng.randf_range(scale_range.x, scale_range.y)
-		placement.scale = Vector3.ONE * scale_value
+		placement.scale = Vector3.ONE * rng.randf_range(scale_range.x, scale_range.y)
 		placements.append(placement)
 	return placements
 
-## Convert world position to density map UV.
 func _world_to_density_uv(world_pos: Vector2, chunk_bounds: AABB, terrain_size: Vector2) -> Vector2:
 	var u := (world_pos.x + terrain_size.x / 2) / terrain_size.x
 	var v := (world_pos.y + terrain_size.y / 2) / terrain_size.y
 	return Vector2(clampf(u, 0, 1), clampf(v, 0, 1))
 
-## Sample density map at UV coordinates.
 func _sample_density_map(uv: Vector2) -> float:
+	if not _density_data or _density_data.is_empty():
+		return 1.0
+	var px := int(uv.x * (_density_data.width - 1))
+	var py := int(uv.y * (_density_data.height - 1))
+	return _density_data.bytes[py * _density_data.width + px] / 255.0
+
+func _load_density_data() -> void:
+	_density_data = DensityMapData.new()
 	if not density_map:
-		return 1.0
-	var image := density_map.get_image()
-	if not image:
-		return 1.0
-	var px := int(uv.x * (image.get_width() - 1))
-	var py := int(uv.y * (image.get_height() - 1))
-	return image.get_pixel(px, py).r
+		return
+	var img := density_map.get_image()
+	if not img:
+		return
+	img.convert(Image.FORMAT_L8)
+	_density_data.bytes = img.get_data()
+	_density_data.width = img.get_width()
+	_density_data.height = img.get_height()

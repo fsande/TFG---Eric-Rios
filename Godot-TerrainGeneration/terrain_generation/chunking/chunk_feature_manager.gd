@@ -62,19 +62,15 @@ func despawn_features_for_chunk(chunk_coord: Vector2i) -> void:
 
 ## Despawn all features across all chunks.
 func despawn_all_features() -> void:
-	# Despawn PER_CHUNK
 	for key in _spawned_instances.keys():
 		var parts: PackedStringArray = key.split(",")
 		if parts.size() >= 2:
 			_despawn_per_chunk(Vector2i(int(parts[0]), int(parts[1])))
-
-	# Despawn SHARED
 	for feature in _shared_spawned_instances.keys():
 		_despawn_shared_feature(feature)
 	_shared_feature_refs.clear()
 	_shared_spawned_instances.clear()
 	_shared_multimesh_groups.clear()
-
 	if _shared_container and is_instance_valid(_shared_container):
 		_shared_container.queue_free()
 		_shared_container = null

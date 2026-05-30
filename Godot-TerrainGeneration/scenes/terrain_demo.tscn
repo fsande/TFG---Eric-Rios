@@ -15,6 +15,7 @@
 [ext_resource type="Material" uid="uid://dmlbneowgjfqy" path="res://assets/materials/terrain_mat2.tres" id="9_k7x4a"]
 [ext_resource type="Script" uid="uid://bvas6ux7t8igb" path="res://terrain_generation/debug/terrain_debug_hud.gd" id="10_tf476"]
 [ext_resource type="PackedScene" uid="uid://c5010npvryyqd" path="res://scenes/fly_camera.tscn" id="11_dcklx"]
+[ext_resource type="Resource" uid="uid://dj6rpxdo343h" path="res://assets/generation_resources/tree_place1.tres" id="12_f8u6v"]
 [ext_resource type="Material" uid="uid://bebs1xgkmteua" path="res://assets/materials/water/water_mat.tres" id="13_k7x4a"]
 
 [sub_resource type="Resource" id="Resource_tf476"]
@@ -62,6 +63,7 @@ heightmap_source = SubResource("Resource_eettu")
 terrain_size = Vector2(12000, 12000)
 height_scale = 300.0
 modifier_stages = Array[ExtResource("3_yxcpq")]([SubResource("Resource_mm8fh")])
+prop_placement_rules = Array[ExtResource("7_f8u6v")]([ExtResource("12_f8u6v")])
 load_strategy = SubResource("Resource_e0al4")
 max_concurrent_chunk_requests = 8
 use_gpu_heightmap = true
@@ -81,11 +83,11 @@ script = ExtResource("1_ipgxq")
 configuration = SubResource("Resource_qigeq")
 metadata/_edit_lock_ = true
 
-[node name="ChunksContainer" type="Node3D" parent="TerrainPresenter" unique_id=2038164397]
+[node name="ChunksContainer" type="Node3D" parent="TerrainPresenter" unique_id=695269396]
 
-[node name="PropsContainer" type="Node3D" parent="TerrainPresenter" unique_id=957867410]
+[node name="PropsContainer" type="Node3D" parent="TerrainPresenter" unique_id=1855419045]
 
-[node name="Environment" type="WorldEnvironment" parent="TerrainPresenter" unique_id=1406354339]
+[node name="Environment" type="WorldEnvironment" parent="TerrainPresenter" unique_id=1538572609]
 environment = ExtResource("2_0omvn")
 
 [node name="DebugHUD" type="Control" parent="." unique_id=2004353774]

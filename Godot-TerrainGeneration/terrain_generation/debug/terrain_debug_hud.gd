@@ -31,7 +31,7 @@ func _process(_delta: float) -> void:
 			return
 	var stats := _terrain_presenter.get_cache_stats()
 	var text := "=== Terrain V2 Debug ===\n"
-	text += "Cached chunks: %d\n" % stats.get("cached_chunks", 0)
+	#text += "Cached chunks: %d\n" % stats.get("cached_chunks", 0)
 	text += "Memory: %.1f / %.1f MB (%.0f%%)\n" % [
 		stats.get("memory_usage_mb", 0.0),
 		stats.get("max_size_mb", 200.0),
@@ -60,4 +60,3 @@ func _find_node_of_type(node: Node, type_name: String) -> TerrainPresenter:
 		if found:
 			return found
 	return null
-
