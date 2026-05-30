@@ -12,8 +12,6 @@ enum RequestState {
 var coord: Vector2i
 var chunk_size: Vector2
 var lod_level: int
-var required_lod_for_collision: int
-var generated_collision_lod: int
 var priority: float
 var state: RequestState
 var task_id: int
@@ -23,15 +21,11 @@ func _init(
 	p_coord: Vector2i,
 	p_chunk_size: Vector2,
 	p_lod_level: int,
-	p_required_lod_for_collision: int,
-	p_generated_collision_lod: int,
 	p_priority: float = 0.0
 ) -> void:
 	coord = p_coord
 	chunk_size = p_chunk_size
 	lod_level = p_lod_level
-	required_lod_for_collision = p_required_lod_for_collision
-	generated_collision_lod = p_generated_collision_lod
 	priority = p_priority
 	state = RequestState.PENDING
 	task_id = -1

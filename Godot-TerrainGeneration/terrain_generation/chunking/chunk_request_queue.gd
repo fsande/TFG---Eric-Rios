@@ -8,7 +8,6 @@ var _request_mutex: Mutex = Mutex.new()
 var _max_concurrent_requests: int = 16
 var _cache: ChunkCache = null
 var _generator_pool: Array[ChunkGenerator] = []
-
 var _threads: Array[Thread] = []
 var _work_semaphore: Semaphore = Semaphore.new()
 var _shutdown: bool = false
@@ -22,7 +21,7 @@ func _init(generator: ChunkGenerator, cache: ChunkCache, max_concurrent: int) ->
 		_threads.append(thread)
 		thread.start(_worker_loop.bind(i))
 
-func request_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int, collision_lod: int, required_lod_for_collision: int, priority: float = 0.0) -> void:
+func request_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int, priority: float = 0.0) -> void:
 	_request_mutex.lock()
 	var key := _make_key(coord, lod_level)
 	if _pending_requests.has(key):
@@ -31,8 +30,7 @@ func request_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int, collisi
 			existing.priority = minf(existing.priority, priority)
 			_request_mutex.unlock()
 			return
-	var request := ChunkRequest.new(coord, chunk_size, lod_level, collision_lod, required_lod_for_collision, priority)
-	_pending_requests[key] = request
+	_pending_requests[key] = ChunkRequest.new(coord, chunk_size, lod_level, priority)
 	_request_mutex.unlock()
 	_work_semaphore.post()
 
@@ -68,10 +66,6 @@ func _process_request(request: ChunkRequest, generator: ChunkGenerator) -> void:
 	var chunk := generator.update_or_generate_chunk(
 		request.coord, request.chunk_size, request.lod_level, _cache
 	)
-	if request.lod_level <= request.required_lod_for_collision:
-		generator.update_or_generate_chunk(
-			request.coord, request.chunk_size, request.generated_collision_lod, _cache
-		)
 	if chunk:
 		_complete(request, chunk, "")
 	else:
@@ -79,9 +73,8 @@ func _process_request(request: ChunkRequest, generator: ChunkGenerator) -> void:
 
 func _complete(request: ChunkRequest, chunk: ChunkMeshData, error: String) -> void:
 	_request_mutex.lock()
-	var key := request.get_key()
 	var cancelled := request.state == ChunkRequest.RequestState.CANCELLED
-	_pending_requests.erase(key)
+	_pending_requests.erase(request.get_key())
 	_request_mutex.unlock()
 	if cancelled:
 		return
@@ -120,7 +113,7 @@ func cancel_all() -> void:
 func shutdown() -> void:
 	_shutdown = true
 	for i in _threads.size():
-		_work_semaphore.post() 
+		_work_semaphore.post()
 	for thread in _threads:
 		thread.wait_to_finish()
 	_threads.clear()

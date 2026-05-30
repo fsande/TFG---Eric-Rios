@@ -37,10 +37,10 @@ metadata/_custom_type_script = "uid://x7gc7eg20w0b"
 
 [sub_resource type="Resource" id="Resource_e0al4"]
 script = ExtResource("6_f8u6v")
-load_radius = 15
-unload_radius = 17
+load_radius = 6
+unload_radius = 20
 view_angle = 135.0
-max_view_distance = 2000.0
+max_view_distance = 1600.0
 metadata/_custom_type_script = "uid://bx23sx47qvqta"
 
 [sub_resource type="Resource" id="Resource_spfy5"]
@@ -65,12 +65,11 @@ modifier_stages = Array[ExtResource("3_yxcpq")]([SubResource("Resource_mm8fh")])
 load_strategy = SubResource("Resource_e0al4")
 max_concurrent_chunk_requests = 8
 use_gpu_heightmap = true
-lod_distances = Array[float]([64.0, 700.0, 1000.0, 1200.0])
+lod_distances = Array[float]([500.0, 1200.0, 1500.0, 1700.0])
 sea_material = ExtResource("13_k7x4a")
 terrain_material = ExtResource("9_k7x4a")
 environment = ExtResource("2_0omvn")
 collision_lod = 2
-auto_generate = false
 metadata/_custom_type_script = "uid://c6oemke3y0i62"
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qigeq"]
@@ -82,11 +81,11 @@ script = ExtResource("1_ipgxq")
 configuration = SubResource("Resource_qigeq")
 metadata/_edit_lock_ = true
 
-[node name="ChunksContainer" type="Node3D" parent="TerrainPresenter" unique_id=578123631]
+[node name="ChunksContainer" type="Node3D" parent="TerrainPresenter" unique_id=2038164397]
 
-[node name="PropsContainer" type="Node3D" parent="TerrainPresenter" unique_id=922284984]
+[node name="PropsContainer" type="Node3D" parent="TerrainPresenter" unique_id=957867410]
 
-[node name="Environment" type="WorldEnvironment" parent="TerrainPresenter" unique_id=239561309]
+[node name="Environment" type="WorldEnvironment" parent="TerrainPresenter" unique_id=1406354339]
 environment = ExtResource("2_0omvn")
 
 [node name="DebugHUD" type="Control" parent="." unique_id=2004353774]
@@ -117,4 +116,4 @@ light_color = Color(0.862678, 0.5543531, 0.6468668, 1)
 shadow_enabled = true
 
 [node name="FlyCamera" parent="." unique_id=2105645240 instance=ExtResource("11_dcklx")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.755394, 173.88943, 85.41673)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -51.93064, 327.4881, 188.20947)

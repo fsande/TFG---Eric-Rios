@@ -65,7 +65,6 @@ func generate(context: TerrainGenerationContext) -> TerrainModifierResult:
 		)
 		if _try_place_tunnel(result, cliff["position"], cliff["normal"], context):
 			placed += 1
-			print("Placed tunnel at ", cliff["position"])
 	if placed == 0:
 		return TerrainModifierResult.create_failure(
 			"No valid tunnel placements found",

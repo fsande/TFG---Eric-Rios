@@ -8,7 +8,7 @@ class_name RuneErosion extends HeightmapProcessor
 
 const SHADER_PATH := "res://terrain_generation/heightmap/processors/shaders/rune_erosion.glsl"
 
-# Erosion parameters — see the shader for detailed explanations.
+# Erosion parameters - see the shader for detailed explanations.
 ## The scale of the erosion effect, affecting it both horizontally and vertically.
 @export var erosion_scale: float = 0.15:
 	set(v):
@@ -214,12 +214,10 @@ func _create_params_buffer(rd: RenderingDevice, width: int, height: int) -> RID:
 	var bytes := PackedByteArray()
 	bytes.resize((INT_COUNT + FLOAT_COUNT) * 4)
 	var off := 0
-	# Integers
 	bytes.encode_s32(off, width); off += 4
 	bytes.encode_s32(off, height); off += 4
 	bytes.encode_s32(off, erosion_octaves); off += 4
 	bytes.encode_s32(off, 0); off += 4  # padding
-	# Floats
 	bytes.encode_float(off, erosion_strength); off += 4
 	bytes.encode_float(off, erosion_gully_weight); off += 4
 	bytes.encode_float(off, erosion_detail); off += 4

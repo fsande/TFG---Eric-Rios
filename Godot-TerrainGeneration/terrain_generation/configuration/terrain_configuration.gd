@@ -72,8 +72,8 @@ signal load_strategy_changed()
 
 @export_group("Collision")
 @export var generate_collision: bool = true
-## Lod level at which to start generating collision meshes (0 = highest detail)
-@export var required_lod_for_collision: int = 0
+## Radius around the camera at which to generate collision
+@export var collision_radius:float = 64
 ## LOD level to use for collision meshes (0 = highest detail)
 @export var collision_lod: int = 0
 @export_flags_3d_physics var collision_layers: int = 1

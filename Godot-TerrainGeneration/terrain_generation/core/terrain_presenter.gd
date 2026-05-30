@@ -28,6 +28,7 @@ var _loaded_chunks: Dictionary[Vector2i, LoadedChunkState] = {}
 var _chunk_instances: Dictionary[Vector2i, MeshInstance3D] = {}
 var _collision_bodies: Dictionary[Vector2i, StaticBody3D] = {}
 var _pending_chunk_requests: Dictionary[Vector2i, int] = {}
+var _pending_collision_requests: Dictionary[Vector2i, bool] = {}
 var _ready_chunks_queue: Array[ChunkReadyData] = []
 var _chunks_container: Node3D
 var _props_container: Node3D
@@ -38,7 +39,7 @@ var _camera: Camera3D
 var _load_context: ChunkLoadContext = null
 
 func _ready() -> void:
-	if (configuration.heightmap_source and configuration.auto_generate) or not Engine.is_editor_hint(): 
+	if (configuration.heightmap_source and configuration.auto_generate) or not Engine.is_editor_hint():
 		print("Auto-generating terrain on ready")
 		NodeCreationHelper.remove_all_children(self)
 		regenerate.call_deferred()
@@ -56,11 +57,9 @@ func _process_ready_chunks_queue() -> void:
 	if _ready_chunks_queue.is_empty():
 		return
 	var start_time_usec := Time.get_ticks_usec()
-	var budget_ms: float = configuration.chunk_instantiation_budget_ms if configuration else 5.0
-	var budget_usec: float = budget_ms * 1000.0
+	var budget_usec: float = (configuration.chunk_instantiation_budget_ms if configuration else 5.0) * 1000.0
 	while not _ready_chunks_queue.is_empty():
-		var elapsed_usec := Time.get_ticks_usec() - start_time_usec
-		if elapsed_usec >= budget_usec:
+		if Time.get_ticks_usec() - start_time_usec >= budget_usec:
 			break
 		var data: ChunkReadyData = _ready_chunks_queue.pop_front()
 		if _loaded_chunks.has(data.coord):
@@ -105,10 +104,7 @@ func regenerate() -> void:
 	if configuration.use_gpu_mesh_generation and configuration.use_async_loading:
 		push_warning("TerrainPresenterV2: GPU mesh generation REQUIRES synchronous loading. Disabling async loading.")
 		configuration.use_async_loading = false
-	_generation_service = ChunkGenerationService.new(
-		_terrain_definition,
-		configuration
-	)
+	_generation_service = ChunkGenerationService.new(_terrain_definition, configuration)
 	_generation_service.set_use_threading(configuration.use_async_loading)
 	_generation_service.set_max_concurrent_requests(configuration.max_concurrent_chunk_requests)
 	_generation_service.chunk_generated.connect(_on_async_chunk_ready, ConnectFlags.CONNECT_DEFERRED)
@@ -136,6 +132,7 @@ func clear_all_chunks() -> void:
 	_loaded_chunks.clear()
 	_collision_bodies.clear()
 	_pending_chunk_requests.clear()
+	_pending_collision_requests.clear()
 	_ready_chunks_queue.clear()
 	if _generation_service:
 		_generation_service.cancel_all_pending_requests()
@@ -151,11 +148,11 @@ func get_cache_stats() -> Dictionary:
 	if _generation_service:
 		return _generation_service.get_cache_stats()
 	return {}
-	
+
 func _on_config_changed() -> void:
 	if configuration.auto_generate and is_inside_tree():
 		regenerate()
-		
+
 func _on_load_strategy_changed() -> void:
 	_load_context = null
 
@@ -198,6 +195,41 @@ func _update_visible_chunks() -> void:
 			continue
 		_request_chunk_load(chunk, lod, priority)
 	_cancel_out_of_range_requests(camera)
+	_update_collision_streaming(camera_pos)
+
+func _update_collision_streaming(camera_pos: Vector3) -> void:
+	if not configuration.generate_collision:
+		return
+	for coord in _loaded_chunks.keys():
+		var in_radius := _is_within_collision_radius(coord, camera_pos)
+		var has_collision := _collision_bodies.has(coord)
+		var has_pending := _pending_collision_requests.has(coord)
+		if in_radius and not has_collision and not has_pending:
+			var state: LoadedChunkState = _loaded_chunks[coord]
+			if state.lod != 0:
+				continue
+			_request_collision_lod(coord, state)
+		elif not in_radius and has_collision:
+			var body: StaticBody3D = _collision_bodies[coord]
+			if is_instance_valid(body):
+				body.queue_free()
+			_collision_bodies.erase(coord)
+		elif not in_radius and has_pending:
+			_generation_service.cancel_request(coord, configuration.collision_lod)
+			_pending_collision_requests.erase(coord)
+
+func _request_collision_lod(coord: Vector2i, state: LoadedChunkState) -> void:
+	_pending_collision_requests[coord] = true
+	var priority := 0.0
+	if _load_context:
+		priority = configuration.load_strategy.get_load_priority(coord, _get_camera(), _load_context)
+	if configuration.use_async_loading:
+		_generation_service.request_chunk_async(coord, configuration.chunk_size, configuration.collision_lod, priority)
+	else:
+		var chunk := _generation_service.get_or_generate_chunk(coord, configuration.chunk_size, configuration.collision_lod)
+		_pending_collision_requests.erase(coord)
+		if chunk:
+			_build_collision_for_chunk(coord, chunk)
 
 func _apply_lod_hysteresis(coord: Vector2i, target_lod: int, camera_pos: Vector3) -> int:
 	if not _loaded_chunks.has(coord):
@@ -214,23 +246,27 @@ func _apply_lod_hysteresis(coord: Vector2i, target_lod: int, camera_pos: Vector3
 	var lod_distances := configuration.lod_distances
 	if target_lod > current_lod:
 		var threshold_distance: float = lod_distances[current_lod] if current_lod < lod_distances.size() else lod_distances[-1]
-		var hysteresis_distance: float = threshold_distance * (1.0 + hysteresis)
-		if distance < hysteresis_distance:
+		if distance < threshold_distance * (1.0 + hysteresis):
 			return current_lod
 	elif target_lod < current_lod:
 		var threshold_distance: float = lod_distances[target_lod] if target_lod < lod_distances.size() else lod_distances[-1]
-		var hysteresis_distance: float = threshold_distance * (1.0 - hysteresis)
-		if distance > hysteresis_distance:
+		if distance > threshold_distance * (1.0 - hysteresis):
 			return current_lod
 	return target_lod
 
 func _get_chunk_world_center(coord: Vector2i) -> Vector3:
-	var chunk_size := configuration.chunk_size
-	var terrain_size := configuration.terrain_size
-	var half_terrain := terrain_size / 2.0
-	var x := coord.x * chunk_size.x - half_terrain.x + chunk_size.x / 2.0
-	var z := coord.y * chunk_size.y - half_terrain.y + chunk_size.y / 2.0
-	return global_position + Vector3(x, 0, z)
+	var half_terrain := configuration.terrain_size / 2.0
+	return global_position + Vector3(
+		coord.x * configuration.chunk_size.x - half_terrain.x + configuration.chunk_size.x / 2.0,
+		0,
+		coord.y * configuration.chunk_size.y - half_terrain.y + configuration.chunk_size.y / 2.0
+	)
+
+func _is_within_collision_radius(coord: Vector2i, camera_pos: Vector3) -> bool:
+	var chunk_center := _get_chunk_world_center(coord)
+	var dist_sq := Vector2(camera_pos.x - chunk_center.x, camera_pos.z - chunk_center.z).length_squared()
+	var radius := configuration.collision_radius
+	return dist_sq <= radius * radius
 
 func update_chunk_lod(coord: Vector2i, new_lod: int, priority: float) -> void:
 	if not _loaded_chunks.has(coord):
@@ -278,9 +314,13 @@ func _request_chunk_load(coord: Vector2i, lod_level: int, priority: float) -> vo
 			_instantiate_chunk(coord, lod_level, chunk)
 
 func _on_async_chunk_ready(coord: Vector2i, lod: int, chunk: ChunkMeshData) -> void:
+	if _pending_collision_requests.has(coord) and lod == configuration.collision_lod:
+		_pending_collision_requests.erase(coord)
+		if _loaded_chunks.has(coord) and _is_within_collision_radius(coord, _get_camera_pos()):
+			_build_collision_for_chunk(coord, chunk)
+		return
 	_pending_chunk_requests.erase(coord)
-	var is_lod_update := _loaded_chunks.has(coord)
-	if is_lod_update:
+	if _loaded_chunks.has(coord):
 		var state: LoadedChunkState = _loaded_chunks[coord]
 		if state.lod == lod:
 			return
@@ -288,12 +328,11 @@ func _on_async_chunk_ready(coord: Vector2i, lod: int, chunk: ChunkMeshData) -> v
 		return
 	if not _should_still_load_chunk(coord):
 		return
-	var camera_pos := _get_camera()
+	var camera := _get_camera()
 	var priority := 0.0
 	if configuration.load_strategy and _load_context:
-		priority = configuration.load_strategy.get_load_priority(coord, camera_pos, _load_context)
-	var ready_data := ChunkReadyData.new(coord, lod, chunk, priority)
-	_insert_into_ready_queue(ready_data)
+		priority = configuration.load_strategy.get_load_priority(coord, camera, _load_context)
+	_insert_into_ready_queue(ChunkReadyData.new(coord, lod, chunk, priority))
 
 func _insert_into_ready_queue(data: ChunkReadyData) -> void:
 	var insert_idx := 0
@@ -304,15 +343,17 @@ func _insert_into_ready_queue(data: ChunkReadyData) -> void:
 	_ready_chunks_queue.insert(insert_idx, data)
 
 func _on_async_chunk_failed(coord: Vector2i, lod: int, error: String) -> void:
-	_pending_chunk_requests.erase(coord)
+	if lod == configuration.collision_lod:
+		_pending_collision_requests.erase(coord)
+	else:
+		_pending_chunk_requests.erase(coord)
 	if configuration.show_debug_info:
 		push_warning("TerrainPresenterV2: Failed to load chunk %s LOD %d: %s" % [coord, lod, error])
 
 func _should_still_load_chunk(coord: Vector2i) -> bool:
 	if not configuration.load_strategy or not _load_context:
 		return true
-	var camera_pos := _get_camera()
-	return configuration.load_strategy.should_load(coord, camera_pos, _load_context)
+	return configuration.load_strategy.should_load(coord, _get_camera(), _load_context)
 
 func _cancel_out_of_range_requests(camera: Camera3D) -> void:
 	var coords_to_cancel: Array[Vector2i] = []
@@ -320,8 +361,7 @@ func _cancel_out_of_range_requests(camera: Camera3D) -> void:
 		if configuration.load_strategy.should_unload(coord, camera, _load_context):
 			coords_to_cancel.append(coord)
 	for coord in coords_to_cancel:
-		var lod: int = _pending_chunk_requests[coord]
-		_generation_service.cancel_request(coord, lod)
+		_generation_service.cancel_request(coord, _pending_chunk_requests[coord])
 		_pending_chunk_requests.erase(coord)
 
 func _instantiate_chunk(coord: Vector2i, lod_level: int, chunk: ChunkMeshData) -> void:
@@ -337,8 +377,8 @@ func _instantiate_chunk(coord: Vector2i, lod_level: int, chunk: ChunkMeshData) -
 	_chunks_container.add_child(mesh_instance)
 	_chunk_instances[coord] = mesh_instance
 	_loaded_chunks[coord] = LoadedChunkState.new(lod_level, chunk)
-	if configuration.generate_collision and lod_level == 0:
-		WorkerThreadPool.add_task(_create_collision_for_chunk.bind(coord, chunk, mesh_instance, lod_level), true)
+	if configuration.generate_collision and lod_level == 0 and _is_within_collision_radius(coord, _get_camera_pos()):
+		_request_collision_lod(coord, _loaded_chunks[coord])
 	if _feature_manager and lod_level <= 1:
 		_feature_manager.spawn_features_for_chunk(chunk, lod_level)
 	chunk_loaded.emit(coord, lod_level)
@@ -354,12 +394,21 @@ func _unload_chunk(coord: Vector2i) -> void:
 		if is_instance_valid(body):
 			body.queue_free()
 		_collision_bodies.erase(coord)
+	if _pending_collision_requests.has(coord):
+		_generation_service.cancel_request(coord, configuration.collision_lod)
+		_pending_collision_requests.erase(coord)
 	if _feature_manager:
 		_feature_manager.despawn_features_for_chunk(coord)
 	_loaded_chunks.erase(coord)
 	chunk_unloaded.emit(coord)
 
-func _create_collision_for_chunk(coord: Vector2i, chunk: ChunkMeshData, mesh_instance: MeshInstance3D, lod_level: int) -> void:
+func _build_collision_for_chunk(coord: Vector2i, chunk: ChunkMeshData) -> void:
+	var mesh_instance: MeshInstance3D = _chunk_instances.get(coord)
+	if not mesh_instance:
+		return
+	WorkerThreadPool.add_task(_create_collision_for_chunk.bind(coord, chunk, mesh_instance), true)
+
+func _create_collision_for_chunk(coord: Vector2i, chunk: ChunkMeshData, mesh_instance: MeshInstance3D) -> void:
 	var shape := chunk.build_collision(configuration.collision_lod)
 	if not shape:
 		return
@@ -381,7 +430,7 @@ func _add_collision_to_tree(coord: Vector2i, shape: CollisionShape3D, body: Stat
 func _get_camera() -> Camera3D:
 	if configuration.track_camera:
 		if not _camera or not is_instance_valid(_camera):
-			var viewport = get_viewport()
+			var viewport := get_viewport()
 			if viewport:
 				_camera = viewport.get_camera_3d()
 		if _camera:
@@ -391,7 +440,7 @@ func _get_camera() -> Camera3D:
 func _get_camera_pos() -> Vector3:
 	if configuration.track_camera:
 		if not _camera or not is_instance_valid(_camera):
-			var viewport = get_viewport()
+			var viewport := get_viewport()
 			if viewport:
 				_camera = viewport.get_camera_3d()
 		if _camera:
@@ -409,7 +458,7 @@ func _create_sea_plane() -> void:
 		configuration.sea_material
 	)
 	if configuration.show_debug_info:
-		print("TerrainPresenterV2: Created sea plane - Size: %s, Level: %.2f, Subdivisions: %d" % 
+		print("TerrainPresenterV2: Created sea plane - Size: %s, Level: %.2f, Subdivisions: %d" %
 			[sea_size, configuration.sea_level, configuration.sea_subdivisions])
 
 func _create_environment(environment: Environment) -> void:

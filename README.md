@@ -4,7 +4,7 @@ Final Degree Project on Procedural Terrain Generation for Games.
 
 ## Description
 
-This project seeks to provide a customizable, user-friendly and extensible Procedural Terrain Generation System for the Godot Engine. 
+This project seeks to provide a customizable, user-friendly and extensible Procedural Terrain Generation System for the Godot Engine.
 It has been made as a Final Degree Project (TFG) for the Grado en Ingeniería Informática at Universidad de La Laguna.
 
 ## Getting Started

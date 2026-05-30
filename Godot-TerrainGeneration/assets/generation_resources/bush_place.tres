@@ -41,6 +41,5 @@ density_map = SubResource("NoiseTexture2D_d4x01")
 constraints = Array[ExtResource("1_xpem2")]([SubResource("Resource_i2fpo"), SubResource("Resource_iqkpn"), SubResource("Resource_72xlf"), SubResource("Resource_wwk5c")])
 scale_range = Vector2(0.2, 0.5)
 max_tilt = 10.0
-use_multimesh = true
 lod_density_factor = 0.1
 rule_id = "prop_rule_2"

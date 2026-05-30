@@ -5,8 +5,7 @@
 ## GPU generation is ALWAYS synchronous (main thread only).
 ## CPU generation supports async (multithreaded via WorkerThreadPool).
 ##
-## Threading is opt-in. Call set_use_threading(true) before using
-
+## Threading is opt-in. Call set_use_threading(true) before using.
 class_name ChunkGenerationService extends RefCounted
 
 signal chunk_generated(coord: Vector2i, lod: int, chunk: ChunkMeshData)
@@ -38,8 +37,6 @@ func get_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int 
 	if _cache.has_chunk_with_lod(coord, lod_level):
 		return _cache.get_chunk(coord)
 	var chunk := _generator.update_or_generate_chunk(coord, chunk_size, lod_level, _cache)
-	if lod_level <= _terrain_configuration.required_lod_for_collision:
-		_generator.update_or_generate_chunk(coord, chunk_size, _terrain_configuration.collision_lod, _cache)
 	if chunk:
 		chunk_generated.emit(coord, lod_level, chunk)
 	else:
@@ -48,7 +45,7 @@ func get_or_generate_chunk(coord: Vector2i, chunk_size: Vector2, lod_level: int 
 
 func request_chunk_async(coord: Vector2i, chunk_size: Vector2, lod_level: int = 0, priority: float = 0.0) -> void:
 	if _use_gpu or not _use_threading:
-		if not _use_gpu: 
+		if not _use_gpu:
 			push_warning(
 				"ChunkGenerationService.request_chunk_async: threading is disabled. " +
 				"falling back to synchronous generation. Call set_use_threading(true) to enable async."
@@ -67,7 +64,7 @@ func request_chunk_async(coord: Vector2i, chunk_size: Vector2, lod_level: int = 
 	if _cache.has_chunk_with_lod(coord, lod_level):
 		chunk_generated.emit.call_deferred(coord, lod_level, _cache.get_chunk(coord))
 		return
-	_request_queue.request_chunk(coord, chunk_size, lod_level, _terrain_configuration.required_lod_for_collision, _terrain_configuration.collision_lod, priority)
+	_request_queue.request_chunk(coord, chunk_size, lod_level, priority)
 
 func cancel_request(coord: Vector2i, lod_level: int) -> void:
 	if _request_queue:
@@ -142,7 +139,7 @@ func _make_queue() -> ChunkRequestQueue:
 	queue.chunk_failed.connect(_on_queue_chunk_failed, ConnectFlags.CONNECT_DEFERRED)
 	return queue
 
-## Cancels all requests on the current queue. Safe to call at any time
+## Cancels all requests on the current queue. Safe to call at any time.
 func _replace_queue() -> void:
 	if _request_queue:
 		_request_queue.shutdown()

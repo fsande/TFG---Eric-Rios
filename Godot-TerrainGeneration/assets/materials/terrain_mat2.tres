@@ -11,12 +11,12 @@
 [sub_resource type="Resource" id="Resource_4gi05"]
 script = ExtResource("1_o4pkv")
 material = ExtResource("2_4gi05")
-blend_height = 22.0
+blend_height = 65.0
 
 [sub_resource type="Resource" id="Resource_a7faj"]
 script = ExtResource("1_o4pkv")
 material = ExtResource("3_4gi05")
-blend_height = 65.0
+blend_height = 110.0
 
 [sub_resource type="Resource" id="Resource_mm8fh"]
 script = ExtResource("1_o4pkv")
@@ -44,7 +44,7 @@ shader_parameter/blend_width = 5.0
 shader_parameter/texture_count = 4
 shader_parameter/height_noise = SubResource("NoiseTexture2D_3q2jc")
 shader_parameter/height_noise_strength = 15.0
-shader_parameter/blend_heights = [22.0, 65.0, 190.0, 200.0]
+shader_parameter/blend_heights = [65.0, 110.0, 190.0, 200.0]
 shader_parameter/uv_scale = Vector2(3, 3)
 shader_parameter/triplanar_sharpness = 4.0
 shader_parameter/slope_start = 1.0

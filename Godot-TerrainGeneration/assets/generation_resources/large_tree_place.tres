@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="PropPlacementRule" format=3 uid="uid://b4dhmyar3pt08"]
+
+[ext_resource type="Script" uid="uid://dfj6tvyliq72c" path="res://terrain_generation/props/constraints/prop_placement_constraint.gd" id="1_sn7ia"]
+[ext_resource type="Script" uid="uid://xhugo1ik73qn" path="res://terrain_generation/props/constraints/sea_level_constraint.gd" id="2_h3dry"]
+[ext_resource type="Script" uid="uid://b21jxmdkcxufw" path="res://terrain_generation/props/constraints/slope_range_constraint.gd" id="3_yh5db"]
+[ext_resource type="Script" uid="uid://by55fqudu8iv0" path="res://terrain_generation/props/constraints/volume_exclusion_constraint.gd" id="4_5h4lo"]
+[ext_resource type="Script" uid="uid://djk7rjk0dkpll" path="res://terrain_generation/props/constraints/zone_constraint.gd" id="5_qojvm"]
+[ext_resource type="Script" uid="uid://chus0ya38wnpu" path="res://terrain_generation/props/constraints/spacing_constraint.gd" id="6_ys1dj"]
+[ext_resource type="PackedScene" uid="uid://dq5pasv2tvmt0" path="res://assets/models/environment/tree/tree.glb" id="7_pngm0"]
+[ext_resource type="Script" uid="uid://ck8uw8dx6at8u" path="res://terrain_generation/props/prop_placement_rule.gd" id="8_yo0g7"]
+
+[sub_resource type="Resource" id="Resource_skfwi"]
+script = ExtResource("2_h3dry")
+
+[sub_resource type="Resource" id="Resource_swklc"]
+script = ExtResource("3_yh5db")
+max_slope = 40.0
+
+[sub_resource type="Resource" id="Resource_3lhjx"]
+script = ExtResource("4_5h4lo")
+
+[sub_resource type="Resource" id="Resource_ih7yn"]
+script = ExtResource("5_qojvm")
+zone_tag = &"river"
+
+[sub_resource type="Resource" id="Resource_3l8p1"]
+script = ExtResource("6_ys1dj")
+min_distance = 5000.0
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ih7yn"]
+noise_type = 2
+frequency = 0.05
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_3l8p1"]
+noise = SubResource("FastNoiseLite_ih7yn")
+
+[resource]
+script = ExtResource("8_yo0g7")
+prop_scene = ExtResource("7_pngm0")
+density = 0.001
+density_map = SubResource("NoiseTexture2D_3l8p1")
+constraints = Array[ExtResource("1_sn7ia")]([SubResource("Resource_skfwi"), SubResource("Resource_swklc"), SubResource("Resource_3lhjx"), SubResource("Resource_ih7yn"), SubResource("Resource_3l8p1")])
+scale_range = Vector2(2, 2.8)
+align_to_normal = false
+ground_offset = -1.0
+use_multimesh = true
+lod_density_factor = 0.3
+rule_id = "prop_rule_0"
