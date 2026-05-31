@@ -17,15 +17,15 @@ It has been made as a Final Degree Project (TFG) for the Grado en Ingeniería In
 
 ### Usage
 
-1. Download [Godot](https://godotengine.org/).
+1. Download [Godot](https://godotengine.org/). The .NET version is not needed, prefer the basic one.
 
 2. Clone the repository.
 
     ```
-    git  clone git@github.com:fsande/TFG---Eric-Rios.git
+    git  clone https://github.com/fsande/TFG---Eric-Rios.git
     ```
 
-3. Run the Godot executable and import the project from its location.
+3. Run the Godot executable and import the project from its location at the Godot-TerrainGeneration directory of this repository.
 
 4. Compile the GDExtension code by following [the instructions](Godot-TerrainGeneration\terrain_native\README.md).
 
@@ -37,7 +37,7 @@ This one aims to serve as a simple introduction.
 6. To modify terrain generation, select the TerrainPresenter node in the scene tree and change the configuration. 
 You can load predefined generation configurations with right click -> quick load or create your own.
 Explore the various options. 
-Keep in mind that extremely large heightmaps, too many agents or an excessive density of props might impact performance.
+Keep in mind that extremely large heightmaps, too many agents or an excessive density of props might negatively impact performance.
 
 ## Help
 
