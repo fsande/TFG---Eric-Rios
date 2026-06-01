@@ -49,7 +49,7 @@ Chunk mesh generation runs on a native C++ GDExtension (~35× faster than GDScri
 MultiMesh support and LOD-aware density scaling for performance-friendly dense scenes.
 * **Designer-friendly configuration**: all parameters exposed through Godot's native Resource system. Save, load, and share generation profiles without writing code. Full real-time preview in the editor via the `@tool` annotation.
 * **Benchmarking framework**: measure per-stage execution time and cache metrics across configurations. 
-Results exportable as CSV or JSON, with interactive HTML visualizations via Plotly (see [DataAnalysis](DataAnalysis)).
+Results exportable as CSV or JSON, with interactive HTML visualizations via Plotly (see [DataAnalysis](DataAnalysis/README.md)).
 
 For a full description of the system's architecture, implementation, and evaluation results,
 see the [project memoria](Memoria/Memoria_TFG_Eric_Ríos.pdf).
