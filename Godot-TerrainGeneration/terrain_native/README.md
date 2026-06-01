@@ -1,33 +1,25 @@
 # terrain_native GDExtension
+## Summary
+This file explains how to compile the project's GDExtension code, which provides
+native C++ implementations of noise algorithms and chunk mesh generation exposed to Godot via GDExtension.
 
-## Before building
+## Supported Platforms
+Windows, Linux, and macOS. Each platform must be compiled on its target machine.
 
-Ensure the submodule is initialized and updated:
+## Before Building
+Initialize and update the submodule:
+    git submodule update --init --recursive
 
-```
-git submodule update --init --recursive
-```
+Requires C++ build tools and [SCons](https://scons.org/):
+    pip install scons
 
 ## Building
+Run from inside `terrain_native/`. Output lands in `terrain_native/bin/`.
 
-Needs c++ build tools and [SCons](https://scons.org/) installed. Install SCons with pip:
-
-```
-pip install scons
-```
-
-From inside `terrain_native/`:
-
-### Debug (use during development)
-```
-scons target=template_debug
-```
+### Debug
+Use during development.
+    scons target=template_debug
 
 ### Release
-```
-scons target=template_release
-```
-
-### All platforms from the same machine (cross-compile not supported)
-
-Output lands in `terrain_native/bin/`.
+Required to run the project outside the editor.
+    scons target=template_release
