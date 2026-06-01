@@ -7,49 +7,65 @@
 \cleardoublepage
 \chapter{Introduction} \label{chap:Introduction}
 % Introducción al lector en el problema que se propone resolver.
-% Procedural Content Generation \cite{Maleki:2024:PCG} (PCG) is defined as the automatic creation of game content using algorithms. 
-% PCG has a long history in both the game industry and the academic world. 
-% It can increase player engagement and ease the work of game designers. 
-% While recent advances in deep learning approaches in PCG have enabled researchers and practitioners to create more sophisticated content, it is the arrival of Large Language Models (LLMs) that truly disrupted the trajectory of PCG advancement. 
 
-The virtual worlds explorable in video games are at the core of the player experience, interacting with and influencing every other characteristic of the work. 
-From gameplay mechanics to graphics, and everything in between, each element of a video game must work in consonance with its virtual representation of space.
-As games grow more ambitious, a need of huge, organic worlds for the player to explore and get lost in arises.
-However, as the size their worlds increases, so does the effort and man-power required to hand-craft them.
-To avoid impossible workloads and streamline development processes many studios have adopted procedural generation to algorithmically generate their game worlds.
+This document summarizes the research and development work carried out by the student in the achievement of his Final Degree Project (\textit{Trabajo de Fin de Grado}, TFG), which will conclude his studies for the degree \textit{Grado en Ingeniería Informática} at the \textit{Escuela Superior de Ingeniería y Tecnología} at the University of La Laguna (ULL).
+
+%The virtual worlds explorable in video games are at the core of the player experience, interacting with and influencing every aspect of the game. 
+%From gameplay mechanics to graphics, and everything in between, each element of a video game must work in consonance with its virtual representation of space.
+%As games grow more ambitious, a need for huge, organic worlds arises.
+%However, as the size the worlds increases, so does the effort and man-power required to hand-craft them.
+%To avoid impossible workloads and streamline development processes many studios have adopted procedural generation to algorithmically generate their game worlds.
 
 \section{Tools \& Technologies}
 \begin{itemize}
-    \item{\textbf{Engine}} 
-    Godot\footnote{https://godotengine.org/} will be used as a graphics and physics engine.
-    It is a free, open source, lightweight engine that can easily be modified to suit various purposes and supports a wide array of programming languages.
-    Its ease of use and extensibility makes it ideal for this kind of project.
+    \item{\textbf{Engine}}
+    
+    Godot\footnote{\href{https://godotengine.org/}{Godot official site} - \url{https://godotengine.org/}} will be used as a graphics and physics engine.
+    It is a free, open-source, lightweight engine that can easily be modified to suit various purposes and supports a wide range of programming languages.
+    Its ease of use and extensibility make it well suited for this kind of project.
+    The Unreal\footnote{\href{https://www.unrealengine.com/}{Unreal Engine} - \url{https://www.unrealengine.com/}} and Unity\footnote{\href{https://unity.com/}{Unity Engine} - \url{https://unity.com/}} engines were also considered for the project, as well as a custom-built graphics engine.
+    Both commercial engines were discarded in favour of Godot due to its open-source nature and simplicity.
+    Additionally, Godot’s flexible scene system and the rapid prototyping capabilities provided by GDScript facilitate quick experimentation.
+    The custom engine was considered too complex an endeavour for the scope of this project.
     \item{\textbf{Languages}} 
-    \begin{itemize}
-        %C# - Lenguaje con el que más familiarizado estoy. Suficientemente eficiente, muchísimo más cómodo y rápido para desarrollar que C++.
-        \item{\textbf{GDScript}}\footnote{https://gdscript.com/} 
-        is an interpreted scripting, object-oriented language designed for the ground up for the Godot engine.
-        It is great for quick prototyping and iteration, although it not always sports the best performance. 
-        In situations where the best performance is critical, other languages will be taken into account.
-        \item{\textbf{C++}}\footnote{https://isocpp.org/} 
-        is a proven multiparadigm language.
+    \begin{itemize}        \item{\textbf{GDScript}}\footnote{\href{https://gdscript.com/}{GDScript Documentation} - \url{https://gdscript.com/}}
+        is an interpreted scripting, object-oriented language designed from the ground up for the Godot engine.
+        It is powerful for quick prototyping and iteration, although it does not always yield the best performance.
+        In situations where performance is critical, other languages and approaches will be taken into account.
+        \item{\textbf{C++}}
+        is a proven multi-paradigm language.
         It will mainly be used for its performance benefits over GDScript, especially in parallelization.
-        \item{\textbf{The OpenGL Shading Language (GLSL)}}\footnote{https://registry.khronos.org/OpenGL/index\_gl.php}
+        \item{\textbf{The OpenGL Shading Language (GLSL)}}\footnote{\href{https://registry.khronos.org/OpenGL/index\_gl.php}{OpenGL Registry} - \url{https://registry.khronos.org/OpenGL/index\_gl.php}}
         is a high-level shading language with a syntax similar to that of C.
         It provides relatively simple access to the GPU, allowing for the execution of complex algorithms in it.
         This language will be used to design compute shaders when the extreme parallelization capabilities of the GPU suit a solution to a problem.
-        \item{\textbf{Godot Shading Language (GDSL)}} 
+        \item{\textbf{Godot Shading Language (GDSL)}\footnote{\href{https://docs.godotengine.org/en/stable/tutorials/shaders/shader_reference/shading_language.html}{GDSL Documentation} - \url{https://tinyurl.com/gdsl-docs}}} 
         is a shading language designed for the Godot engine.
         It is based on GLSL, but provides some useful features for integration within the engine.
         It will be used for visual shaders.
         \end{itemize}
     \item{\textbf{Integrated development environment (IDE)}}
-    JetBrains Rider \footnote{https://www.jetbrains.com/rider/} is a .NET and game development centered IDE.
-    Although originally .NET focused, its widespread use in game development has driven it to adopt other game development related technologies, such as Godot integration.
-    It is free of use for non-commercial projects and possesses ample capabilities, such as integrated debugging and dynamic program analysis.
-    \item{\textbf{Version control}} GitHub \footnote{https://github.com/} is a development platform that provides Git\footnote{https://git-scm.com/}-based distributed version control.
-    It will be used to host the repository worked on in this project.
+    
+    JetBrains Rider\footnote{\href{https://www.jetbrains.com/rider/}{JetBrains Rider official site} - \url{https://www.jetbrains.com/rider/}} is a .NET-centered IDE with strong support for game development workflows.
+    Although originally focused on .NET development, its widespread adoption within the games industry has led to the integration of technologies such as Godot support.
+    It is free to use for non-commercial projects and provides extensive features, including integrated debugging and dynamic program analysis.
+    \item{\textbf{Version control}} 
+    
+    GitHub\footnote{\href{https://github.com/}{GitHub official site} - \url{https://github.com/}} is a development platform that provides Git\footnote{\href{https://git-scm.com/}{Git official site} - \url{https://git-scm.com/}}-based distributed version control.
+    It will be used to host the project's repository.
+    
     \item{\textbf{Programming assistance}}
-    GitHub Copilot \footnote{https://github.com/features/copilot} is an AI assistant integrated into the IDE. 
-    It will be used for coding assistance during development.
+    
+    GitHub Copilot\footnote{\href{https://github.com/features/copilot}{Official information on GitHub Copilot} - \url{https://github.com/features/copilot}} is an AI assistant integrated into the IDE. 
+    It was used for coding assistance during development and proved especially useful for generating documentation comments.
+    All code suggested by the assistant has been manually reviewed.
 \end{itemize}
+
+All the code written for this work follows the principles set out in Martin's Clean Code book \cite{Martin:2008:CC} and adheres to the GDScript Style Guide.\footnote{\href{https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_styleguide.html}{GDScript Style Guide} - \url{https://tinyurl.com/gdscript-styleguide}}
+In addition, a set of conventions has been established regarding code accessibility and referencing.
+Every piece of code written for this work is publicly available in its dedicated GitHub repository \cite{URL::TFG}, which includes a \href{https://github.com/fsande/TFG---Eric-Rios/blob/main/README.md}{\textit{README.md}} file that serves as a simple user guide.
+Due to space constraints, few explicit code examples are included in this document. 
+Instead, whenever an implemented class or method is mentioned, the corresponding repository path and a clickable link to its source code will be provided.
+When the referenced element does not correspond to a custom implementation, a footnote linking to the official documentation will be included instead.
+Additionally, \texttt{classes} and \texttt{methods()} are distinguished using a monospace typeface, with methods always followed by “\texttt{()}” regardless of their actual arguments.
+%Also note that every code listing has a link to its original source and, in case of original code, there will be a direct link to the corresponding file in the TFG's repository, labeled as \textit{``See on GitHub''}.

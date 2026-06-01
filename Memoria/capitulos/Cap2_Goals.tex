@@ -6,17 +6,28 @@
 
 
 \chapter{Goals} \label{chap:Goals}
-Este capítulo se escribe normalmente al final de la realización del trabajo. 
-En ese momento se tendrá una perspectiva más clara de lo que se ha pretendido hacer y de lo que realmente se ha hecho.
-
-This document summarizes the research and development work carried out by the student in the achievement of his Final Degree Project (\textit{Trabajo de Fin de Grado}, TFG), which will conclude his studies for the degree \textit{Grado en Ingeniería Informática} at the \textit{Escuela Superior de Ingeniería y Tecnología} at the University of La Laguna (ULL).
-
-This project has the following main goals:
-
+This project's main goal, the creation of a modular procedural terrain generation tool, can be subdivided into the following objectives, which cover the system’s main functional, architectural, and usability aspects:
 \begin{enumerate}
-    \item A first objective has been ... 
-    \item Another key objective is ... 
-    \item The implementation and ...
-    \item Additionally, the student will apply....
-    \item Finally, after thorough experimentation and evaluation, the student is expected to deliver...
+    \item \textbf{Procedural generation of heightmaps}.
+    The system must provide a variety of algorithmic approaches to heightmap generation, including noise-based methods, custom processors and compositing of multiple sources, offering designers a flexible starting point for terrain creation.
+    \item \textbf{Generation of 3D geometry from a heightmap}.
+    The system must be capable of converting a two-dimensional heightmap into renderable three-dimensional terrain geometry.
+    This includes the generation of vertex positions, normals, and tangents required for correct lighting and shading.
+    \item \textbf{Implementation of agents for terrain modification}.
+    Following the agent-based approach proposed by Doran and Parberry \cite{Doran:2010:CPT}, the system must support a pipeline of software agents capable of introducing specific geographic features in a controlled and parametrizable manner, addressing the limitations of purely stochastic methods.
+    \item \textbf{Real time Level of Detail (LOD) system}. 
+    To support large-scale terrain within the constraints of real-time rendering, the system must implement a level of detail mechanism that reduces geometric complexity for terrain distant from the viewer while maintaining visual fidelity where it matters, without interrupting gameplay.
+    \item \textbf{Modularity and fine-grained parametrization}.
+    Every component of the system must be designed to be independently configurable and replaceable. 
+    This ensures that the tool can adapt to the requirements of different game projects without requiring modifications to core logic.
+    \item \textbf{Benchmarking system}.
+    A dedicated framework must be developed to measure the computational performance of each stage of the generation pipeline.
+    This allows for informed optimization decisions and provides a quantitative basis for evaluating the system's performance.
+    \item \textbf{Designer-friendliness}.
+    The system must be usable by game designers who are not necessarily programmers.
+    Configuration of the generation pipeline should be achievable through Godot's native interface without requiring custom code, lowering the barrier to practical adoption.
+    \item \textbf{Integration with Godot's native interface}.
+    All generation parameters and configurations must be exposed through Godot's Resource system, enabling storage, reuse, and sharing of terrain configurations as native engine assets.
+
+    
 \end{enumerate}

@@ -5,4 +5,46 @@
 % ----------------------------------------------------
 
 \chapter{Conclusiones y Líneas de Trabajo Futuras} \label{chap:Conclusiones} 
-Traducir a español el correspondiente capítulo en inglés
+Este proyecto ha logrado alcanzar los objetivos fijados, habiendo creado un sistema de generación de terreno procedural modular y bien estructurado en el motor Godot.
+La generación de mapas de altura base destaca como uno de los resultados más sólidos del proyecto y la combinación de distintas fuentes, procesadores y composición mediante el uso de los patrones Estrategia y Decorador ha producido un sistema flexible y extensible.
+Los resultados de \textit{benchmarking} demuestran que la generación acelerada con GPU es aproximadamente 15 veces más rápida que su contraparte en CPU para mapas de altura grandes.
+Esto valida la decisión de invertir tiempo y esfuerzo en un \textit{shader} de cómputo para implementaciones de operaciones de procesado de imágenes y sugiere buen escalado a terrenos de mayor tamaño.
+
+El sistema de modificación de terreno basado en agentes inspirado por el trabajo de Doran y Parberry \cite{Doran:2010:CPT} también ha logrado resultados satisfactorios, siendo capaz de superponer agentes secuencialmente, cada uno de ellos tomando parámetros comprensibles para introducir características geográficas concretas.
+Esto soluciona la falta de control e intuitividad típica de los métodos tradicionales.
+
+Los agentes de túneles y de ríos (\href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_generation/agents/river/river_agent.gd}}{\texttt{RiverAgent}}\footnote{\href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_generation/agents/river/river_agent.gd}}{\textit{Godot-TerrainGeneration/terrain\_generation/agents/river/river\_agent.gd}}} y \href{{https://github.com/fsande/TFG---Eric-Rios/tree/main/Godot-TerrainGeneration/terrain_generation/agents/tunnels}}{\texttt{TunnelAgent}}\footnote{\href{{https://github.com/fsande/TFG---Eric-Rios/tree/main/Godot-TerrainGeneration/terrain_generation/agents/tunnels}}{\textit{Godot-TerrainGeneration/terrain\_generation/agents/tunnels/tunnel\_boring\_agent.gd}}}) en concreto demuestran que el sistema es capaz de manejar tareas de generación complejas para características no triviales, incluyendo aquellas poco comunes para sistemas de terreno basados en mapas de altura, como túneles y salientes, gracias a la abstracción \href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_generation/agents/volume_definition.gd}}{\texttt{VolumeDefinition}}\footnote{\href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_generation/agents/volume_definition.gd}}{\textit{Godot-TerrainGeneration/terrain\_generation/agents/volume\_definition.gd}}}
+
+Los sistemas de generación de \textit{chunks} y LOD son los componentes que más efecto tienen en la jugabilidad del terreno generado.
+La implementación de DLOD mediante \textit{chunking}, con generación asíncrona a demanda y una caché LRU ha producido un sistema capaz de generar terrenos grandes con tasas de FPS estables sin interrumpir el juego.
+
+El sistema de colocación de \textit{props} también ha demostrado su utilidad para crear terreno único y con mejor apariencia, además de permitir personalización extensa.
+
+Implementar un sistema de \textit{benchmarking} sólido ha impulsado varias optimizaciones, incluyendo la identificación del cuello de botella de GDScript en la generación de \textit{chunks} que motivó la migración a C++.
+También ha ayudado a decidir qué fases de la generación son las más beneficiadas por ejecución en CPU o GPU.
+
+Desde el punto de vista de la ingeniería del software, la aplicación de diversos patrones de diseño apropiados, como Estrategia o Decorador, así como el uso del sistema de Resources de Godot para una serialización sencilla, ha resultado en un sistema extensible. Se pueden añadir nuevas fuentes de \textit{heightmap}, procesadores, combinadores, agentes y restricciones de colocación de \textit{props} sin fricción, un objetivo principal del proyecto.
+
+Sin embargo, existen algunas limitaciones.
+El \href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_generation/heightmap/processors/mask_processor.gd}}{\texttt{MaskProcessor}}\footnote{\href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_generation/heightmap/processors/mask_processor.gd}}{\textit{Godot-TerrainGeneration/terrain\_generation/heightmap/processors/mask\_processor.gd}}} sigue implementado exclusivamente en CPU, y algunas implementaciones de agentes, aunque funcionales, se acercan más a pruebas de concepto que a sistemas completos, y no rinden tan bien como las propuestas más clásicas basadas en \textit{heightmaps}.
+
+En general, el proyecto cumple sus objetivos. 
+Es una herramienta de generación procedural práctica, de código abierto, orientada al diseñador y extensible para Godot, y es algo que me veo utilizando, quizá también a otros usuarios, en proyectos futuros.
+
+\section{Trabajo futuro}
+Aunque los resultados obtenidos son satisfactorios, se han identificado posibles vías de trabajo futuro:
+
+\begin{itemize}
+    \item \textbf{Optimizar traduciendo más código a C++}. Aunque la implementación actual de la mayoría del sistema con GDScript es lo suficientemente rápida para el caso de uso, una migración a C++ para las secciones que más recursos de CPU consumen, como los agentes, tendría seguramente un impacto positivo en el rendimiento.
+    La traducción de clases utilizadas por varias partes del sistema, como ya se ha hecho con \href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_native/include/mesh_data.h}}{\texttt{MeshData}}\footnote{\href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_native/include/mesh_data.h}}{\textit{Godot-TerrainGeneration/terrain\_native/include/mesh\_data.h}}} también sería beneficioso.
+
+    \item \textbf{Ampliar el número de fuentes de mapas de altura y agentes} para mejorar la personalización de la generación y permitir paisajes más variados.
+
+    \item \textbf{Crear una interfaz de usuario personalizada dentro del motor} para que la generación de terrenos resulte más intuitiva, ya que manejar manualmente diversos recursos de generación puede resultar poco intuitivo para los diseñadores.
+    
+    \item \textbf{Introducir un sistema de biomas} aprovechando la modularidad existente para crear mapas únicos con mayor variabilidad.
+
+    \item \textbf{Crear un sistema de pintura de mapas} que permita al usuario definir masas continentales dentro del motor, así como modificar manualmente la elevación.
+\end{itemize}
+
+Estas líneas de trabajo se basarían en las bases establecidas por este proyecto y lo harían evolucionar hacia una herramienta de generación procedural de terrenos más fácil de usar y lista para producción.

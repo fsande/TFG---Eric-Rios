@@ -8,9 +8,11 @@
 %\documentclass[a4paper, twoside, 12pt]{book}
 \usepackage{listingsutf8}
 \usepackage{listings}
+\usepackage{minted}
 \usepackage[scale=0.82]{FiraMono}
 \usepackage[T1]{fontenc}
 \usepackage[a4paper]{geometry}
+\geometry{left=2cm, right=2cm, top=2cm, bottom=3.3cm}
 \usepackage[spanish, main=english]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern,textcomp}  % For € symbol
@@ -25,6 +27,7 @@
 \floatstyle{ruled}
 \newfloat{Code}{htbp}{lop}
 \floatname{Code}{Listing}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Next 3+3 lines select PDF or PS output (comment as apropriate)
 % To switch from PDF and PS comment/uncomment here and change Makefile
@@ -51,7 +54,7 @@
 \usepackage{subcaption}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Comandos para escribir "siempre igual"
-\newcommand{\TitleTopic}{\texttt{Automatic Procedural Terrain Generation for Games}}
+\newcommand{\TitleTopic}{\texttt{Modular Procedural Terrain Generation for Games}}
 
 
 %%% Traducimos el pseudocodigo
@@ -262,11 +265,136 @@
 \newcommand{\codigofuente}[3]{%
   \lstlisting[language=#1,caption={#2}]{#3}%
 }
+
+
+% Para títulos de capítulos
+\usepackage{titlesec}
+\titleformat{\chapter}[hang]
+  {\normalfont\huge\bfseries}
+  {Chapter \thechapter\\:}
+  {0.5em}
+  {}
+\titlespacing*{\chapter}
+  {0pt}   % left margin
+  {0pt}   % space before
+  {8pt}  % space after
+
+\titlespacing*{\section}
+  {0pt}   % left margin
+  {8pt}   % space before
+  {5pt}  % space after
+
+\titlespacing*{\subsection}
+  {0pt}   % left margin
+  {8pt}   % space before
+  {5pt}  % space after
+
+\titlespacing*{\subsubsection}
+  {0pt}   % left margin
+  {8pt}   % space before
+  {2pt}  % space after
+
+
+\usepackage{enumitem}
+% Global settings
+\setlist{
+  itemsep=2pt,    % space between items
+  topsep=4pt,     % space before and after the list
+  parsep=0pt,     % space between paragraphs within items
+  partopsep=0pt   % extra space when list starts a new paragraph
+}
+
+ \usepackage{booktabs} 
+
+% Para justificado y que no se salga texto al margen
+\usepackage{microtype}
+\emergencystretch=3em
+
+\usepackage{xcolor}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
+
+% AI generated godot language for listing
+% --- Colors ---
+\definecolor{gdKeyword}{RGB}{180,40,40}
+\definecolor{gdType}{RGB}{40,90,180}
+\definecolor{gdBuiltin}{RGB}{120,60,160}
+\definecolor{gdComment}{RGB}{20,120,20}
+\definecolor{gdString}{RGB}{200,120,20}
+\definecolor{gdFunction}{RGB}{0,0,0}
+
+% --- GDScript Language Definition ---
+\lstdefinelanguage{GDScript}{
+    sensitive=true,
+    % Keywords
+    keywords={
+        if, elif, else, for, while, break, continue, pass, return,
+        class, class_name, extends, is, in, and, or, not,
+        func, static, var, const, enum, signal, tool,
+        onready, export, setget, preload, yield, await, assert
+    },
+    % Datatypes / engine classes
+    keywords=[2]{
+        void, int, float, bool, String, Array, Dictionary,
+        Vector2, Vector3, Vector4,
+        Transform2D, Transform3D,
+        Basis, Quaternion,
+        Color, Rect2,
+        Node, Node2D, Node3D,
+        Resource, PackedScene,
+        Image, Texture2D,
+        RID, Callable,
+        PackedByteArray,
+        PackedInt32Array,
+        PackedFloat32Array
+    },
+    % Built-in functions
+    keywords=[3]{
+        print, prints, printerr, push_error,
+        clamp, lerp, inverse_lerp,
+        min, max, abs, sign,
+        sin, cos, tan,
+        floor, ceil, round,
+        preload, load, instantiate
+    },
+    % Comments and strings
+    comment=[l]\#,
+    morestring=[b]",
+    morestring=[b]',
+    % Function highlighting
+    emph={_ready,_process,_physics_process,_input,_init},
+    emphstyle=\color{gdFunction}\bfseries,
+}
+
+% --- Style Definition ---
+\lstdefinestyle{gdstyle}{
+    language=GDScript,
+    backgroundcolor=\color{white},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{gdKeyword}\bfseries,
+    keywordstyle=[2]\color{gdType}\bfseries,
+    keywordstyle=[3]\color{gdBuiltin},
+    commentstyle=\color{gdComment}\itshape,
+    stringstyle=\color{gdString},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=true,
+    tabsize=4,
+    frame=single,
+    rulecolor=\color{black!30},
+    columns=fullflexible,
+    keepspaces=true,
+    captionpos=b
+}
+
+
 %% Para los metadatos del fichero PDF que se genera:
 \hypersetup{
-    pdftitle={Automatic Procedural Terrain Generation for Games},
+    pdftitle={Modular Procedural Terrain Generation for Games},
     pdfauthor={Eric Ríos Hamilton},
     pdfkeywords={Terrain Generation},
     pdfsubject={Final Degree Project on Procedural Terrain Generation for Games}
@@ -289,9 +417,9 @@
     \fontsize{20pt}{20pt}\selectfont Grado en Ingeniería Informática\par}
     \HRule\vspace*{-2mm}
     \begin{flushright}
-        {\fontsize{32pt}{32pt}\selectfont Automatic Procedural Terrain Generation for Games\par
+        {\fontsize{32pt}{32pt}\selectfont Modular Procedural Terrain Generation for Games\par
         \vspace*{3mm}
-        \fontsize{18pt}{18pt}\selectfont \textit{Generación procedural automatizada de terreno para juegos}\par
+        \fontsize{18pt}{18pt}\selectfont \textit{Generación procedural modular de terreno para juegos}\par
         \vspace*{11mm}
         \fontsize{16pt}{16pt}\selectfont Eric Ríos Hamilton
         }\vspace*{12mm}
@@ -300,7 +428,7 @@
     
     \vspace*{\stretch{1}}
     \begin{center}
-        \fontsize{18pt}{18pt}\selectfont La Laguna, \today
+        \fontsize{18pt}{18pt}\selectfont La Laguna, May 30, 2026
     \end{center}
 }
 
@@ -337,7 +465,7 @@ Que el presente trabajo de Fin de Grado titulado:
 \bigskip
 
 Y para que así conste, en cumplimiento de la legislación vigente y a los efectos
-oportunos firman la presente memoria del Trabajo en La Laguna a {\selectlanguage{spanish}\today}.
+oportunos firman la presente memoria del Trabajo en La Laguna a 30 de mayo de 2026.
 
 %\cleardoublepage
 \newpage
@@ -358,12 +486,16 @@ Agradecimientos
 \hspace{3mm}
 
 \hspace{3mm}
-Agradecimientos 
+Al director de este Trabajo de Fin de Grado, Francisco de Sande, por haberme orientado durante su realización, asegurándose siempre de mantener el rigor y la seriedad que el trabajo merece.
 
-Este trabajo ha sido financiado por el Ministerio de Ciencia e Innovación a través de los proyectos 
-PID2023-151073NB-I00, 
-TED2021-131019B-I00 y
-PDC2022-134013-I00 
+A mi familia y amigos, por apoyarme y no abandonar la sala cada vez que hablo de generación procedural. 
+
+­\newline
+
+
+
+Este trabajo ha sido financiado por el Ministerio de Ciencia e Innovación a través del proyecto
+PID2023-151073NB-I00 Aceleración y Optimización en Aprendizaje Automático: Análisis de Rendimiento y Energia
 \end{large}
 
 }
@@ -389,11 +521,23 @@ Licencia
 \selectlanguage{spanish}
 \begin{abstract}
 {\em
-El objetivo de este trabajo ha sido ...
+Los mundos virtuales explorables en los videojuegos constituyen el núcleo de la experiencia del jugador, interactuando e influyendo en todos los aspectos del juego. 
+Tanto la mecánica de juego como los gráficos o la narrativa, cada elemento de un videojuego debe funcionar en armonía con su representación virtual del espacio. 
+A medida que los juegos se vuelven más ambiciosos, surge la necesidad de crear mundos enormes y orgánicos.
+Sin embargo, a la vez que aumenta el tamaño de los mundos, también lo hace el esfuerzo necesario para crearlos a mano.
+Para evitar cargas de trabajo imposibles y optimizar los procesos de desarrollo, muchos estudios han adoptado la generación procedural para crear algorítmicamente los mundos de sus juegos.
+
+El objetivo de este proyecto ha sido desarrollar un sistema de generación procedural de terrenos dentro del motor de juegos Godot, con el propósito principal de crear una herramienta de diseño útil y ampliable para el desarrollo de cualquier videojuego que requiera un mapa de gran tamaño.
+El sistema se basa en un proceso de generación con varias etapas que incluye la generación de mapas de altura, la modificación del terreno basada en agentes, la colocación de elementos visuales, la gestión del nivel de detalle y la generación de colisiones, cada una de ellas diseñada para funcionar de forma modular e independiente de las demás.
+Se desarrolló un marco de pruebas de rendimiento específico para evaluar el coste computacional de cada etapa del proceso.
+
+El sistema está implementado principalmente en GDScript, con algunas partes en C++, y se emplean sombreadores (\textit{shaders}) de cómputo en GPU cuando ofrecen beneficios significativos en el rendimiento.
+Toda la configuración se expone a través del sistema de recursos nativo de Godot, lo que permite a los diseñadores parametrizar y guardar perfiles de generación sin necesidad de escribir código.
+La implementación completa está disponible públicamente como un repositorio de código abierto, con la intención de proporcionar una base práctica para los desarrolladores de videojuegos que necesiten generación procedural de terrenos.
 }
 
 \begin{palabrasClave}
-Aprendizaje Profundo, Imágenes Multiespectrales, Sentinel-2, Segmentación Semántica, Detección de Carreteras, Redes Neuronales Convolucionales, OpenStreetMap, Teledetección.
+Generación Procedural de Contenido, Generación de Terreno, Mapa de Alturas, Funciones de Ruido, Agentes Software, Nivel de Detalle, Simulación de Erosión, Motor Godot, Desarrollo de Videojuegos, Fragmentación
 \end{palabrasClave}
 \end{abstract}
 \selectlanguage{english}
@@ -401,18 +545,29 @@ Aprendizaje Profundo, Imágenes Multiespectrales, Sentinel-2, Segmentación Sem�
 \newpage  %\cleardoublepage
 \begin{abstract}
 {\em
-The objective of this work has been ...
+The virtual worlds explorable in video games are at the core of the player experience, interacting with and influencing every aspect of the game. 
+From gameplay mechanics to graphics, and everything in between, each element of a video game must work in harmony with its virtual representation of space. 
+As games grow more ambitious, a need for huge, organic worlds arises.
+However, as the size of the worlds increases, so does the effort required to hand-craft them.
+To avoid impossible workloads and streamline development processes many studios have adopted procedural generation to algorithmically generate their game worlds.
+
+The goal of this project has been to develop a procedural terrain generation system within the Godot game engine, with the primary aim of creating a useful and extensible design tool for the development of any video game requiring a large map.
+The system is built around a multi-stage generation pipeline comprising heightmap generation, agent-based terrain modification, feature placement, level of detail management, and collision generation, each designed to operate modularly and independently of the others.
+A dedicated benchmarking framework was developed to evaluate the computational cost of each stage of the pipeline.
+
+The system is implemented mainly in GDScript, with some regions in C++, and GPU compute shaders employed where they yield significant performance benefits. 
+All configuration is exposed through Godot's native resource system, enabling designers to parametrize and save generation profiles without writing code. 
+The complete implementation is publicly available as an open-source repository, with the intention of providing a practical foundation for game developers requiring procedural terrain generation.
 }
 
 \begin{keywords}
- Deep Learning, Multispectral Images, Sentinel-2, Semantic Segmentation, Road Detection, Convolutional Neural Networks, OpenStreetMap, Remote Sensing.
+Procedural Content Generation, Terrain Generation, Heightmap, Noise Functions, Software Agents, Level of Detail, Erosion Simulation, Godot Engine, Game Development, Chunking
 \end{keywords}
 
 \end{abstract}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage{\pagestyle{empty}}
 \thispagestyle{empty}
-
 
 \pagestyle{myheadings} %my head defined by markboth or markright
 % No funciona bien \markboth sin "twoside" en \documentclass, pero al
@@ -431,17 +586,17 @@ The objective of this work has been ...
 \tableofcontents
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage{\pagestyle{empty}}
-{
-\hypersetup{linkcolor=black}
-\listoffigures
-}
+%\newpage{\pagestyle{empty}}
+%{
+%\hypersetup{linkcolor=black}
+%%\listoffigures
+%}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage{\pagestyle{empty}}
-{
-\hypersetup{linkcolor=black}
-\listoftables
-}
+%\newpage{\pagestyle{empty}}
+%{
+%\hypersetup{linkcolor=black}
+%\listoftables
+%}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage{\pagestyle{empty}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -453,12 +608,14 @@ The objective of this work has been ...
 % --------    Estan en el directorio capitulos/   ----------
 % ==========================================================
 % Comentar la siguiente línea en la versión final
-\include{capitulos/Cap0_Instrucciones}
-\include{capitulos/Cap1_Preface}
+% \include{capitulos/Cap0_Instrucciones}
+%\include{capitulos/Cap1_Preface}
 \include{capitulos/Cap2_Goals}
 \include{capitulos/Cap3_Introduction}
 \include{capitulos/Cap4_Related_Work}
-\include{capitulos/Cap5_Results}
+\include{Memoria/capitulos/Implementation}
+\include{Memoria/capitulos/GraphicsAndVisualAssets}
+\include{Memoria/capitulos/Evaluation}
 \include{capitulos/Cap6_Conclusiones_y_Lineas_de_Trabajo_Futuras}
 \include{capitulos/Cap7_Conclusions_and_Future_Lines_of_Work}
 \include{capitulos/Cap8_Budget}

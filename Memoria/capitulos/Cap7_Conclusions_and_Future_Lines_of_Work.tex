@@ -4,25 +4,49 @@
 % Chapter: Conclusions and Future Lines of Work
 % ----------------------------------------------------
 
-\chapter{Conclusions and Future Lines of Work} \label{chap:Conclusions} 
-Normalmente este capítulo lo escribiremos al final incluyendo al menos dos apartados: 
+\chapter{Conclusions and \\ Future Lines of Work} \label{chap:Conclusions} 
 
+This work has managed to accomplish the goals set, having created a modular, well-structured procedural terrain generation system within the Godot engine.
+
+The heightmap generation pipeline stands out as one of the strongest results of the project.
+The combination of various sources, processors and compositing using the Strategy and Decorator software patterns has produced a flexible and extensible system.
+The benchmarking results demonstrate that the GPU-accelerated generation is approximately 15x faster than its CPU counterpart for large heightmaps.
+This validates the decision to invest time and effort in compute shader implementations for image-processing operations, and suggests good scaling to larger terrain sizes.
+
+The agent-based terrain modification system, inspired by the work of Doran and Parberry \cite{Doran:2010:CPT}, has also achieved satisfactory results.
+Being able to layer agents sequentially in a pipeline and having each of them take comprehensible parameters to introduce specific geographic features addresses the main weakness of traditional stochastic methods.
+In particular, the \href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_generation/agents/river/river_agent.gd}}{\texttt{RiverAgent}}\footnote{\href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_generation/agents/river/river_agent.gd}}{\textit{Godot-TerrainGeneration/terrain\_generation/agents/river/river\_agent.gd}}} and \href{{https://github.com/fsande/TFG---Eric-Rios/tree/main/Godot-TerrainGeneration/terrain_generation/agents/tunnels}}{\texttt{TunnelAgent}}\footnote{\href{{https://github.com/fsande/TFG---Eric-Rios/tree/main/Godot-TerrainGeneration/terrain_generation/agents/tunnels}}{\textit{Godot-TerrainGeneration/terrain\_generation/agents/tunnels/tunnel\_boring\_agent.gd}}}, prove that the system can handle more complex generation tasks for non-trivial terrain features, including those unusual for heightmap-based terrain systems, such as tunnels and overhangs, thanks to the  \href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_generation/agents/volume_definition.gd}}{\texttt{VolumeDefinition}}\footnote{\href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_generation/agents/volume_definition.gd}}{\textit{Godot-TerrainGeneration/terrain\_generation/agents/volume\_definition.gd}}} abstraction.
+The chunk generation and LOD systems are the components that most directly affect the playability of the generated terrain.
+Implementing DLOD through chunking, with on-demand asynchronous generation and an LRU cache, has produced a system capable of generating large terrain at stable framerates without interrupting gameplay.
+
+The prop placement system has also proven to be useful to deliver more unique and better looking terrain, while allowing for extensive customization.
+
+Implementing a solid benchmarking system has allowed for several optimizations to be made, including identifying the GDScript chunk generation bottleneck that motivated the C++ migration, as well as helped inform which stages of the generation pipeline benefit from CPU or GPU execution.
+
+From a software engineering perspective, the application of various appropriate design patterns, such as Strategy or Decorator, as well as the use of Godot's Resource system for easy serialization has resulted in an extensible system.
+New heightmap sources, processors, combiners, agents and prop placement constraints can be added without friction, which was a primary objective for the project.
+
+There are, nonetheless, some limitations to acknowledge.
+The \href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_generation/heightmap/processors/mask_processor.gd}}{\texttt{MaskProcessor}}\footnote{\href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_generation/heightmap/processors/mask_processor.gd}}{\textit{Godot-TerrainGeneration/terrain\_generation/heightmap/processors/mask\_processor.gd}}} remains CPU-only and several agent implementations, while functional, are closer to proofs of concept than complete systems and do not perform as well as the more classic heightmap-based proposals.
+
+Overall, the project achieves its goals.
+It is a practical, open-source, designer-friendly, extensible procedural generation tool for Godot and is something I see myself, and possibly others, using in future game projects.
+
+% Mencionar que funciona como plugin, si se acaba publicando como tal
+
+\section{Future Work}
+While the results obtained are satisfactory, several avenues for future work have been identified:
 
 \begin{itemize}
-    \item Un resumen de todo lo que se ha realizado, investigado y conseguido
-    \item Unas conclusiones en sí (científicas) de lo que se puede extraer, concluir, del trabajo realizado
+    \item \textbf{Optimize by translating code to C++}. Although the current implementation with GDScript for most of the system is fast enough for the use-case, a migration to C++ for the most CPU-intensive sections, such as the Agents, would certainly positively impact performance. Translating classes used by large parts of the system, like already done with \href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_native/include/mesh_data.h}}{\texttt{MeshData}}\footnote{\href{{https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration/terrain_native/include/mesh_data.h}}{\textit{Godot-TerrainGeneration/terrain\_native/include/mesh\_data.h}}} would also be greatly beneficial.
+
+    \item \textbf{Expand the number of heightmap sources and agents} to improve the customizability of the generation and allow for more varied landscapes.
+
+    \item \textbf{Create custom in-engine UI} to make terrain generation more intuitive, as manually juggling various generation resources can be unintuitive for designers.
+    
+    \item \textbf{Introduce a biome system} leveraging the existing modularity to create single maps with more variance.
+
+    \item \textbf{Create a map painting system} that allows the user to define landmasses in-engine as well as manually modifying elevation.
 \end{itemize}
 
-\subsection{Future Work}
-While the results obtained are promising, several avenues for future work have been identified:
-
-\begin{itemize}
-    \item \textbf{Expand to more complex segmentation tasks}, such as multi-class ...
-
-    \item \textbf{Explore the use of more advanced and complex architectures} to improve...
-
-    \item bla, bla, bla...
-    \item bla, bla, bla...
-\end{itemize}
-
-These directions aim to build upon the foundation established in this work and move toward more robust, scalable, and generalizable remote sensing solutions powered by deep learning.
+These lines of work would build upon the solid foundation established by this project and move toward a more user-friendly and production-ready procedural terrain generation tool.
