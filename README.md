@@ -14,7 +14,7 @@ It has been made as a Final Degree Project (TFG) for the Grado en Ingeniería In
 * [Godot 4.6](https://godotengine.org/) and its requirements (See [Godot Engine Requirements](https://docs.godotengine.org/en/stable/about/system_requirements.html))
 The .NET version is not needed, prefer the basic one.
 * A C++ compiler (e.g. [gcc](https://gcc.gnu.org/))
-* [SCons](https://scons.org/) and its requirements to compile GDExtension code. More information [here](https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration%2Fterrain_native%2FREADME.md).
+* [SCons](https://scons.org/) and its requirements to compile GDExtension code. More information [here](Godot-TerrainGeneration/terrain_native/README.md).
 
 ### Usage
 
@@ -28,7 +28,7 @@ The .NET version is not needed, prefer the basic one.
 
 3. Run the Godot executable and import the project from its location at the Godot-TerrainGeneration directory of this repository.
 
-4. Compile the GDExtension code by following [the instructions](https://github.com/fsande/TFG---Eric-Rios/blob/main/Godot-TerrainGeneration%2Fterrain_native%2FREADME.md).
+4. Compile the GDExtension code by following [the instructions](Godot-TerrainGeneration/terrain_native/README.md).
 
 6. With the project open, open the TerrainDemo (Godot-TerrainGeneration/scenes/terrain_demo.tscn) scene, which contains an example setup. The system supports larger and more complex configurations.
 
